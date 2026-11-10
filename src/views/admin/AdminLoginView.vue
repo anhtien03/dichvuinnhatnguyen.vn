@@ -72,11 +72,8 @@
         </button>
       </form>
 
-      <!-- Return link & quick hint -->
-      <div class="mt-8 pt-6 border-t border-slate-800/80 text-center space-y-2">
-        <p class="text-[11px] text-slate-500">
-          Tài khoản mặc định: <span class="text-slate-300 font-mono">admin@innhatnguyen.vn</span> / <span class="text-slate-300 font-mono">admin123</span>
-        </p>
+      <!-- Return link -->
+      <div class="mt-8 pt-6 border-t border-slate-800/80 text-center">
         <router-link to="/" class="inline-block text-xs text-brand-gold hover:underline">
           ← Quay về trang chủ website
         </router-link>
