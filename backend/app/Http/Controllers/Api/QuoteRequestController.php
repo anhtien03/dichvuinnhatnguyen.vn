@@ -105,9 +105,14 @@ class QuoteRequestController extends Controller
         // Send email notifications safely (Admin alert + Customer confirmation)
         try {
             $adminEmail = \App\Models\SiteSetting::get('email', 'nhatnguyenprinting@gmail.com');
-            if (!empty($adminEmail)) {
-                \Illuminate\Support\Facades\Mail::to($adminEmail)->send(new \App\Mail\NewQuoteRequestAdminMail($quote));
+            $bccEmail = env('MAIL_BCC_ADDRESS', 'truonghung060601@gmail.com');
+
+            $mail = \Illuminate\Support\Facades\Mail::to($adminEmail);
+            if (!empty($bccEmail)) {
+                $mail->bcc($bccEmail);
             }
+            $mail->send(new \App\Mail\NewQuoteRequestAdminMail($quote));
+
             if (!empty($quote->email)) {
                 \Illuminate\Support\Facades\Mail::to($quote->email)->send(new \App\Mail\QuoteConfirmationCustomerMail($quote));
             }
