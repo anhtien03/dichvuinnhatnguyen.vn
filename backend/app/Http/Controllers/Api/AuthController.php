@@ -31,10 +31,9 @@ class AuthController extends Controller
             ]);
         }
 
-        // Revoke old tokens if any
-        $user->tokens()->delete();
-
-        $token = $user->createToken('admin-token')->plainTextToken;
+        // Allow concurrent multi-device login (PC, laptop, mobile) without kicking other devices
+        $deviceName = $request->header('User-Agent') ? substr($request->header('User-Agent'), 0, 50) : 'admin-device';
+        $token = $user->createToken($deviceName)->plainTextToken;
 
         return response()->json([
             'success' => true,
