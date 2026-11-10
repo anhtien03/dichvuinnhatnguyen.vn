@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div :class="[isDarkMode ? 'dark bg-[#1A222C] text-[#DEE4EE]' : 'bg-[#F1F5F9] text-[#64748B]']" class="min-h-screen flex font-sans transition-colors duration-200">
     <!-- Mobile Sidebar Backdrop -->
     <div
@@ -18,7 +18,7 @@
     >
       <!-- Sidebar Header & Brand -->
       <div class="h-20 px-6 flex items-center justify-between border-b" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
-        <router-link to="/he-thong-nn/dashboard" class="flex items-center gap-3 overflow-hidden">
+        <router-link to="/he-thong-admin/dashboard" class="flex items-center gap-3 overflow-hidden">
           <img
             src="/logo-icon.png"
             alt="Nhật Nguyên"
@@ -321,7 +321,7 @@
                 </p>
                 <router-link
                   v-else
-                  to="/he-thong-nn/quotes"
+                  to="/he-thong-admin/quotes"
                   @click="isNotificationOpen = false"
                   class="block p-2.5 rounded-xl transition-colors hover:bg-brand-gold/10 border border-brand-gold/20"
                 >
@@ -330,7 +330,7 @@
                 </router-link>
               </div>
               <router-link
-                to="/he-thong-nn/quotes"
+                to="/he-thong-admin/quotes"
                 @click="isNotificationOpen = false"
                 class="block text-center text-brand-gold hover:underline font-semibold pt-2 text-[11px]"
               >
@@ -372,7 +372,7 @@
 
               <router-link
                 v-if="can('users.view')"
-                to="/he-thong-nn/users"
+                to="/he-thong-admin/users"
                 @click="isUserMenuOpen = false"
                 class="flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors"
                 :class="isDarkMode ? 'hover:bg-[#24303F]' : 'hover:bg-slate-100'"
@@ -383,7 +383,7 @@
 
               <router-link
                 v-if="can('users.manage')"
-                to="/he-thong-nn/roles"
+                to="/he-thong-admin/roles"
                 @click="isUserMenuOpen = false"
                 class="flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors"
                 :class="isDarkMode ? 'hover:bg-[#24303F]' : 'hover:bg-slate-100'"
@@ -394,7 +394,7 @@
 
               <router-link
                 v-if="can('settings.manage')"
-                to="/he-thong-nn/settings"
+                to="/he-thong-admin/settings"
                 @click="isUserMenuOpen = false"
                 class="flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors"
                 :class="isDarkMode ? 'hover:bg-[#24303F]' : 'hover:bg-slate-100'"
@@ -488,31 +488,31 @@ const isUserMenuOpen = ref(false)
 const globalSearch = ref('')
 
 const primaryNav = [
-  { path: '/he-thong-nn/dashboard', label: 'Bảng Điều Khiển & KPI', icon: LayoutDashboard }
+  { path: '/he-thong-admin/dashboard', label: 'Bảng Điều Khiển & KPI', icon: LayoutDashboard }
 ]
 
 const erpNav = [
-  { path: '/he-thong-nn/orders', label: '1. Đơn Hàng & Sản Xuất', icon: ShoppingBag, permission: 'orders.view' },
-  { path: '/he-thong-nn/clients', label: '2. Khách Hàng & CRM Zalo', icon: Users, permission: 'clients.view' },
-  { path: '/he-thong-nn/cashbook', label: '3. Sổ Quỹ Thu Chi', icon: Wallet, permission: 'cashbook.view' },
-  { path: '/he-thong-nn/suppliers', label: '4. Xưởng In & Công Nợ', icon: Building2, permission: 'suppliers.view' },
-  { path: '/he-thong-nn/invoices', label: '5. Quản Lý Hóa Đơn VAT', icon: Receipt, permission: 'cashbook.view' },
-  { path: '/he-thong-nn/finance', label: '6. Tài Chính & Chia Lãi', icon: TrendingUp, permission: 'finance.dashboard' }
+  { path: '/he-thong-admin/orders', label: '1. Đơn Hàng & Sản Xuất', icon: ShoppingBag, permission: 'orders.view' },
+  { path: '/he-thong-admin/clients', label: '2. Khách Hàng & CRM Zalo', icon: Users, permission: 'clients.view' },
+  { path: '/he-thong-admin/cashbook', label: '3. Sổ Quỹ Thu Chi', icon: Wallet, permission: 'cashbook.view' },
+  { path: '/he-thong-admin/suppliers', label: '4. Xưởng In & Công Nợ', icon: Building2, permission: 'suppliers.view' },
+  { path: '/he-thong-admin/invoices', label: '5. Quản Lý Hóa Đơn VAT', icon: Receipt, permission: 'cashbook.view' },
+  { path: '/he-thong-admin/finance', label: '6. Tài Chính & Chia Lãi', icon: TrendingUp, permission: 'finance.dashboard' }
 ]
 
 const dataNav = [
-  { path: '/he-thong-nn/quotes', label: '1. Đơn Báo Giá', icon: ClipboardList, badge: true, permission: 'quotes.view' },
-  { path: '/he-thong-nn/products', label: '2. Ấn Phẩm In Ấn', icon: Package, permission: 'products.manage' },
-  { path: '/he-thong-nn/pricing', label: '3. Cấu Hình Bảng Giá', icon: Calculator, permission: 'pricing.manage' },
-  { path: '/he-thong-nn/categories', label: '4. Danh Mục Nhóm In', icon: Tags, permission: 'categories.manage' },
-  { path: '/he-thong-nn/banners', label: '5. Banner & Slider', icon: ImageIcon, permission: 'banners.manage' },
-  { path: '/he-thong-nn/posts', label: '6. Bài Viết & Cẩm Nang', icon: Newspaper, permission: 'posts.manage' }
+  { path: '/he-thong-admin/quotes', label: '1. Đơn Báo Giá', icon: ClipboardList, badge: true, permission: 'quotes.view' },
+  { path: '/he-thong-admin/products', label: '2. Ấn Phẩm In Ấn', icon: Package, permission: 'products.manage' },
+  { path: '/he-thong-admin/pricing', label: '3. Cấu Hình Bảng Giá', icon: Calculator, permission: 'pricing.manage' },
+  { path: '/he-thong-admin/categories', label: '4. Danh Mục Nhóm In', icon: Tags, permission: 'categories.manage' },
+  { path: '/he-thong-admin/banners', label: '5. Banner & Slider', icon: ImageIcon, permission: 'banners.manage' },
+  { path: '/he-thong-admin/posts', label: '6. Bài Viết & Cẩm Nang', icon: Newspaper, permission: 'posts.manage' }
 ]
 
 const systemNav = [
-  { path: '/he-thong-nn/users', label: '1. Nhân Sự & Tài Khoản', icon: UserCheck, permission: 'users.view' },
-  { path: '/he-thong-nn/roles', label: '2. Ma Trận Phân Quyền', icon: ShieldCheck, permission: 'users.manage' },
-  { path: '/he-thong-nn/settings', label: '3. Cài Đặt Xưởng & SEO', icon: Settings, permission: 'settings.manage' }
+  { path: '/he-thong-admin/users', label: '1. Nhân Sự & Tài Khoản', icon: UserCheck, permission: 'users.view' },
+  { path: '/he-thong-admin/roles', label: '2. Ma Trận Phân Quyền', icon: ShieldCheck, permission: 'users.manage' },
+  { path: '/he-thong-admin/settings', label: '3. Cài Đặt Xưởng & SEO', icon: Settings, permission: 'settings.manage' }
 ]
 
 const visiblePrimaryNav = computed(() => primaryNav.filter(item => !item.permission || can(item.permission)))
@@ -521,15 +521,15 @@ const visibleDataNav = computed(() => dataNav.filter(item => !item.permission ||
 const visibleSystemNav = computed(() => systemNav.filter(item => !item.permission || can(item.permission)))
 
 function isItemActive(path) {
-  if (path === '/he-thong-nn/dashboard') {
-    return route.path === '/he-thong-nn/dashboard'
+  if (path === '/he-thong-admin/dashboard') {
+    return route.path === '/he-thong-admin/dashboard'
   }
   return route.path.startsWith(path)
 }
 
 function handleGlobalSearch() {
   if (globalSearch.value.trim()) {
-    router.push({ path: '/he-thong-nn/quotes', query: { search: globalSearch.value.trim() } })
+    router.push({ path: '/he-thong-admin/quotes', query: { search: globalSearch.value.trim() } })
     globalSearch.value = ''
   }
 }
@@ -551,7 +551,7 @@ async function handleLogout() {
   } finally {
     setAdminToken(null)
     setAdminUser(null)
-    router.push('/he-thong-nn/login')
+    router.push('/he-thong-admin/login')
   }
 }
 
@@ -581,3 +581,4 @@ onMounted(async () => {
   border-radius: 4px;
 }
 </style>
+

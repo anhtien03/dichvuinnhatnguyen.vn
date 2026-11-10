@@ -4,7 +4,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="flex items-center gap-3">
         <router-link
-          to="/he-thong-nn/banners"
+          to="/he-thong-admin/banners"
           class="p-2.5 rounded-xl border text-slate-400 hover:text-white transition-colors cursor-pointer"
           :class="isDarkMode ? 'border-[#2E3A47] hover:bg-[#2E3A47]' : 'border-slate-200 hover:bg-slate-100 hover:text-slate-900'"
           title="Quay lại danh sách banner"
@@ -32,7 +32,7 @@
       <!-- Header Action Buttons -->
       <div class="flex items-center gap-3">
         <router-link
-          to="/he-thong-nn/banners"
+          to="/he-thong-admin/banners"
           class="px-4 py-2.5 rounded-xl border text-xs font-bold transition-colors cursor-pointer"
           :class="isDarkMode ? 'border-[#2E3A47] text-slate-300 hover:bg-[#2E3A47]' : 'border-slate-200 text-slate-700 hover:bg-slate-100'"
         >
@@ -391,7 +391,7 @@
             </button>
 
             <router-link
-              to="/he-thong-nn/banners"
+              to="/he-thong-admin/banners"
               class="block w-full py-2 rounded-xl border text-center text-xs font-bold transition-colors cursor-pointer"
               :class="isDarkMode ? 'border-[#2E3A47] text-slate-300 hover:bg-[#1A222C]' : 'border-slate-200 text-slate-600 hover:bg-slate-100'"
             >
@@ -706,7 +706,7 @@ async function saveBanner() {
     }
 
     setTimeout(() => {
-      router.push('/he-thong-nn/banners')
+      router.push('/he-thong-admin/banners')
     }, 800)
   } catch (err) {
     console.error('Failed to save banner', err)
@@ -720,5 +720,6 @@ onMounted(() => {
   fetchBanner()
 })
 </script>
+
 
 

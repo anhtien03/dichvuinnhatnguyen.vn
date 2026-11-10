@@ -462,7 +462,7 @@ function convertToOrder(quote) {
     specifications: quote.specs_description,
     notes: `Khách gửi báo giá từ web mã ${quote.code}. ${quote.admin_notes || ''}`
   }))
-  router.push('/he-thong-nn/orders/create?from_quote=1')
+  router.push('/he-thong-admin/orders/create?from_quote=1')
 }
 
 function openEditModal(quote) {
@@ -505,4 +505,5 @@ onMounted(() => {
   loadQuotes()
 })
 </script>
+
 

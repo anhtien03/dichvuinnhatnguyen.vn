@@ -3,7 +3,7 @@
     <!-- Top Bar Navigation -->
     <div class="flex items-center justify-between gap-4">
       <router-link
-        to="/he-thong-nn/products"
+        to="/he-thong-admin/products"
         class="inline-flex items-center gap-2 text-xs font-bold transition-colors cursor-pointer"
         :class="isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'"
       >
@@ -809,7 +809,7 @@ async function loadProductDetail(id) {
 }
 
 function handleCancel() {
-  router.push('/he-thong-nn/products')
+  router.push('/he-thong-admin/products')
 }
 
 async function handleSubmit() {
@@ -845,7 +845,7 @@ async function handleSubmit() {
     }
 
     setTimeout(() => {
-      router.push('/he-thong-nn/products')
+      router.push('/he-thong-admin/products')
     }, 600)
   } catch (err) {
     errorMessage.value = err.message || 'Có lỗi xảy ra khi lưu ấn phẩm. Vui lòng thử lại.'
@@ -861,4 +861,5 @@ onMounted(async () => {
   }
 })
 </script>
+
 

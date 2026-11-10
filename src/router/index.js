@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+﻿import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import { getAdminToken, can } from '../services/api'
 import { usePageLoader } from '../composables/usePageLoader'
@@ -65,23 +65,23 @@ const router = createRouter({
 
     // Admin Routes
     {
-      path: '/he-thong-nn/login',
+      path: '/he-thong-admin/login',
       name: 'admin-login',
       component: () => import('../views/admin/AdminLoginView.vue'),
       meta: { title: 'Đăng Nhập Quản Trị' }
     },
     {
-      path: '/he-thong-nn',
+      path: '/he-thong-admin',
       component: () => import('../views/admin/AdminLayout.vue'),
       meta: { requiresAuth: true },
       children: [
         {
           path: '',
-          redirect: '/he-thong-nn/dashboard'
+          redirect: '/he-thong-admin/dashboard'
         },
         {
           path: 'manage',
-          redirect: '/he-thong-nn/dashboard'
+          redirect: '/he-thong-admin/dashboard'
         },
         {
           path: 'dashboard',
@@ -276,7 +276,7 @@ router.beforeEach((to, from, next) => {
     robotsMeta.name = 'robots'
     document.head.appendChild(robotsMeta)
   }
-  if (to.path.startsWith('/he-thong-nn')) {
+  if (to.path.startsWith('/he-thong-admin')) {
     robotsMeta.content = 'noindex, nofollow, noarchive, nosnippet'
   } else {
     robotsMeta.content = 'index, follow'
@@ -287,7 +287,7 @@ router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!token) {
       finishNavLoading()
-      return next({ path: '/he-thong-nn/login', query: { redirect: to.fullPath } })
+      return next({ path: '/he-thong-admin/login', query: { redirect: to.fullPath } })
     }
 
     // Permission authorization check
@@ -296,12 +296,12 @@ router.beforeEach((to, from, next) => {
       if (!can(matchedRecord.meta.permission)) {
         finishNavLoading()
         alert(`Bạn không có quyền truy cập trang này (${matchedRecord.meta.permission}).`)
-        return next('/he-thong-nn/dashboard')
+        return next('/he-thong-admin/dashboard')
       }
     }
-  } else if (to.path === '/he-thong-nn/login' && token) {
+  } else if (to.path === '/he-thong-admin/login' && token) {
     finishNavLoading()
-    return next('/he-thong-nn/dashboard')
+    return next('/he-thong-admin/dashboard')
   }
 
   next()
@@ -312,3 +312,4 @@ router.afterEach(() => {
 })
 
 export default router
+

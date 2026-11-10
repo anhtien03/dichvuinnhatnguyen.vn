@@ -1,4 +1,4 @@
-// Central API client for In Ấn Nhật Nguyên
+﻿// Central API client for In Ấn Nhật Nguyên
 
 const API_BASE = '/api/v1'
 
@@ -68,8 +68,8 @@ export async function apiRequest(endpoint, options = {}) {
   if (response.status === 401 && !endpoint.includes('/auth/login')) {
     setAdminToken(null)
     setAdminUser(null)
-    if (window.location.pathname.startsWith('/he-thong-nn') && !window.location.pathname.includes('/login')) {
-      window.location.href = '/he-thong-nn/login'
+    if (window.location.pathname.startsWith('/he-thong-admin') && !window.location.pathname.includes('/login')) {
+      window.location.href = '/he-thong-admin/login'
     }
   }
 
@@ -256,4 +256,5 @@ export const api = {
   getAdminPermissions: () => apiRequest('/admin/permissions'),
   updateRolePermissions: (roleId, permissionIds) => apiRequest(`/admin/roles/${roleId}/permissions`, { method: 'POST', body: { permission_ids: permissionIds } })
 }
+
 

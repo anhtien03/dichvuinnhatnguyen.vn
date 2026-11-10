@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- Global Top Progress Bar on navigation -->
   <TopProgressBar />
 
@@ -55,7 +55,7 @@ import TopProgressBar from './components/common/TopProgressBar.vue'
 import ScrollProgressBar from './components/common/ScrollProgressBar.vue'
 
 const route = useRoute()
-const isAdminRoute = computed(() => route.path.startsWith('/he-thong-nn'))
+const isAdminRoute = computed(() => route.path.startsWith('/he-thong-admin'))
 
 onMounted(async () => {
   try {
@@ -112,3 +112,4 @@ onMounted(async () => {
   transform: translateY(-5px);
 }
 </style>
+

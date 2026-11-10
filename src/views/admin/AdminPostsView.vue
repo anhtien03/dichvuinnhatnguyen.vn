@@ -13,7 +13,7 @@
 
       <div class="flex items-center gap-3">
         <router-link
-          to="/he-thong-nn/posts/create"
+          to="/he-thong-admin/posts/create"
           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-amber-500 hover:from-amber-400 hover:to-brand-gold text-slate-950 font-black text-xs shadow-md transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
         >
           <Plus class="w-4 h-4" />
@@ -111,7 +111,7 @@
         Hãy bắt đầu đăng bài viết hướng dẫn hoặc cẩm nang đầu tiên để thu hút khách hàng từ Google.
       </p>
       <router-link
-        to="/he-thong-nn/posts/create"
+        to="/he-thong-admin/posts/create"
         class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-gold text-slate-950 font-bold text-xs"
       >
         <Plus class="w-4 h-4" />
@@ -166,7 +166,7 @@
               <!-- Title & Slug -->
               <td class="py-3 px-4 max-w-md">
                 <router-link
-                  :to="`/he-thong-nn/posts/${post.id}/edit`"
+                  :to="`/he-thong-admin/posts/${post.id}/edit`"
                   class="font-bold text-sm leading-snug hover:text-brand-gold transition-colors line-clamp-1"
                   :class="isDarkMode ? 'text-white' : 'text-slate-900'"
                 >
@@ -222,7 +222,7 @@
               <td class="py-3 px-4 text-right whitespace-nowrap">
                 <div class="flex items-center justify-end gap-1">
                   <router-link
-                    :to="`/he-thong-nn/posts/${post.id}/edit`"
+                    :to="`/he-thong-admin/posts/${post.id}/edit`"
                     class="p-2 rounded-lg text-slate-400 hover:text-white transition-colors"
                     :class="isDarkMode ? 'hover:bg-[#2E3A47]' : 'hover:bg-slate-100 hover:text-slate-900'"
                     title="Chỉnh sửa bài viết"
@@ -435,5 +435,6 @@ onMounted(() => {
   fetchPosts()
 })
 </script>
+
 
 

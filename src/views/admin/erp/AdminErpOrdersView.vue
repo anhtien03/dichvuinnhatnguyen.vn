@@ -13,7 +13,7 @@
 
       <div class="flex items-center gap-2.5">
         <router-link
-          to="/he-thong-nn/orders/create"
+          to="/he-thong-admin/orders/create"
           class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-brand-gold hover:bg-amber-400 text-slate-950 shadow-md shadow-brand-gold/20 transition-all cursor-pointer"
         >
           <Plus class="w-4 h-4" />
@@ -227,7 +227,7 @@
 
                   <!-- Edit -->
                   <router-link
-                    :to="`/he-thong-nn/orders/${order.id}/edit`"
+                    :to="`/he-thong-admin/orders/${order.id}/edit`"
                     class="p-1.5 rounded-lg border text-blue-400 hover:bg-blue-500/10 transition-colors inline-flex items-center"
                     :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'"
                     title="Chỉnh sửa đơn"
@@ -1653,5 +1653,6 @@ onMounted(() => {
   transform: scale(0.97) translateY(-6px);
 }
 </style>
+
 
 

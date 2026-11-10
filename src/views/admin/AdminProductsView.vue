@@ -13,7 +13,7 @@
 
       <!-- Action Button -> Chuyển sang trang Create Form dọc -->
       <router-link
-        to="/he-thong-nn/products/create"
+        to="/he-thong-admin/products/create"
         class="self-start sm:self-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-amber-500 hover:from-amber-400 hover:to-brand-gold text-slate-950 font-black text-xs shadow-md shadow-brand-gold/25 flex items-center gap-2 transition-all cursor-pointer"
       >
         <Plus class="w-4 h-4" />
@@ -98,7 +98,7 @@
                 <Package class="w-10 h-10 text-slate-400 mx-auto mb-2 opacity-50" />
                 <p class="text-slate-400 font-medium">Không tìm thấy ấn phẩm nào phù hợp</p>
                 <router-link
-                  to="/he-thong-nn/products/create"
+                  to="/he-thong-admin/products/create"
                   class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-gold text-slate-950 font-bold text-xs"
                 >
                   <Plus class="w-4 h-4" />
@@ -208,7 +208,7 @@
 
                 <!-- Nút Cấu Hình Bảng Giá -->
                 <router-link
-                  :to="`/he-thong-nn/pricing?product_id=${prod.id}`"
+                  :to="`/he-thong-admin/pricing?product_id=${prod.id}`"
                   class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer"
                   :class="isDarkMode
                     ? 'bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20'
@@ -221,7 +221,7 @@
 
                 <!-- Nút Sửa -> Chuyển sang form chỉnh sửa -->
                 <router-link
-                  :to="`/he-thong-nn/products/${prod.id}/edit`"
+                  :to="`/he-thong-admin/products/${prod.id}/edit`"
                   class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer"
                   :class="isDarkMode
                     ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200 hover:text-white hover:bg-[#333A48]'
@@ -362,4 +362,5 @@ onMounted(async () => {
   await Promise.all([loadCategories(), loadProducts()])
 })
 </script>
+
 

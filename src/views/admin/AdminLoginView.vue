@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="min-h-screen bg-slate-950 flex items-center justify-center p-4">
     <!-- Background glow decorative effects -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
@@ -108,7 +108,7 @@ async function handleLogin() {
     if (res.token) {
       setAdminToken(res.token)
       setAdminUser(res.user)
-      router.push('/he-thong-nn/dashboard')
+      router.push('/he-thong-admin/dashboard')
     }
   } catch (err) {
     errorMessage.value = err.message || 'Email hoặc mật khẩu không chính xác.'
@@ -117,4 +117,5 @@ async function handleLogin() {
   }
 }
 </script>
+
 

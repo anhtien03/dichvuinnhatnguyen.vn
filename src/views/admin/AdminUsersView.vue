@@ -18,7 +18,7 @@
 
       <div class="flex items-center gap-2.5 flex-wrap">
         <router-link
-          to="/he-thong-nn/roles"
+          to="/he-thong-admin/roles"
           class="px-4 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
           :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200 hover:bg-[#24303F]' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'"
         >
@@ -574,5 +574,6 @@ onMounted(() => {
   loadData()
 })
 </script>
+
 
 
