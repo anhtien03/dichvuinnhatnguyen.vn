@@ -19,6 +19,18 @@
         <p class="text-xs text-slate-400">Đang tải danh sách bài viết...</p>
       </div>
 
+      <!-- Empty State -->
+      <div v-else-if="posts.length === 0" class="text-center py-20 bg-white rounded-3xl p-8 border border-slate-200">
+        <BookOpen class="w-12 h-12 text-slate-300 mx-auto mb-3" />
+        <h3 class="text-lg font-bold text-slate-800">Chưa có bài viết nào</h3>
+        <p class="text-xs text-slate-500 mt-1">Các bài viết cẩm nang in ấn hữu ích sẽ sớm được cập nhật tại đây.</p>
+        <div class="mt-6">
+          <router-link to="/" class="px-5 py-2.5 rounded-xl bg-brand-blue text-white font-bold text-xs">
+            Quay về trang chủ
+          </router-link>
+        </div>
+      </div>
+
       <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <article
           v-for="post in posts"
@@ -27,7 +39,7 @@
         >
           <router-link :to="`/tin-tuc/${post.slug || post.id}`" class="aspect-[16/10] bg-slate-100 overflow-hidden relative block">
             <img
-              :src="post.thumbnail || post.image"
+              :src="post.thumbnail || post.image || '/logo.png'"
               :alt="post.title"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
@@ -38,7 +50,7 @@
 
           <div class="p-6 flex-1 flex flex-col justify-between">
             <div>
-              <span class="text-[11px] text-slate-400 block mb-1.5">{{ formatDate(post.published_at || post.date) }}</span>
+              <span class="text-[11px] text-slate-400 block mb-1.5">{{ formatDate(post.published_at || post.created_at) }}</span>
               <router-link
                 :to="`/tin-tuc/${post.slug || post.id}`"
                 class="font-bold text-slate-900 text-base group-hover:text-brand-blue transition-colors leading-snug line-clamp-2"
@@ -68,44 +80,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Loader2 } from 'lucide-vue-next'
+import { Loader2, BookOpen } from 'lucide-vue-next'
 import { api } from '../services/api'
 import { setMetaTags } from '../composables/useSEO'
 
 const isLoading = ref(true)
-const defaultPosts = [
-  {
-    id: 1,
-    slug: 'phan-biet-he-mau-cmyk-va-rgb',
-    title: 'Phân Biệt Hệ Màu CMYK Và RGB: Vì Sao Bản In Bị Lệch Màu?',
-    category: 'Kỹ thuật in',
-    date: '15/10/2026',
-    readTime: '4 phút',
-    thumbnail: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=800&q=80',
-    excerpt: 'Hầu hết các lỗi sai màu khi in ấn xuất phát từ việc file thiết kế để hệ màu RGB (màn hình) thay vì chuyển sang CMYK (mực in). Tìm hiểu cách convert chuẩn xác.'
-  },
-  {
-    id: 2,
-    slug: 'bang-so-sanh-cac-dinh-luong-giay-in',
-    title: 'Bảng So Sánh Các Định Lượng Giấy In: Couche, Fort, Bristol, Kraft',
-    category: 'Vật liệu in',
-    date: '12/10/2026',
-    readTime: '6 phút',
-    thumbnail: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80',
-    excerpt: 'Làm sao để biết khi nào nên chọn C150, C300 hay giấy mỹ thuật? Hướng dẫn chi tiết giúp bạn chọn đúng độ dày giấy phù hợp ngân sách và đẳng cấp thương hiệu.'
-  },
-  {
-    id: 3,
-    slug: 'ky-thuat-can-mang-mo-vs-mang-bong',
-    title: 'Kỹ Thuật Cán Màng Mờ vs Màng Bóng: Ưu Điểm Và Ứng Dụng Thực Tế',
-    category: 'Gia công',
-    date: '08/10/2026',
-    readTime: '5 phút',
-    thumbnail: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80',
-    excerpt: 'Cán màng không chỉ tăng tính thẩm mỹ mà còn bảo vệ mực in chống trầy xước và kháng nước. Khi nào nên cán mờ sang trọng, khi nào nên cán bóng bắt sáng?'
-  }
-]
-
 const posts = ref([])
 
 function formatDate(dateStr) {
@@ -126,21 +105,22 @@ async function loadPosts() {
     if (res.data && res.data.length > 0) {
       posts.value = res.data
     } else {
-      posts.value = defaultPosts
+      posts.value = []
     }
   } catch (err) {
-    posts.value = defaultPosts
+    posts.value = []
   } finally {
     isLoading.value = false
   }
+
+  setMetaTags({
+    title: 'Cẩm Nang Kỹ Thuật & Xuất Bản In Ấn | Xưởng In Nhật Nguyên',
+    description: 'Chuyên mục chia sẻ kinh nghiệm in ấn thực chiến, hướng dẫn xuất file PDF chuẩn CMYK, mẹo chọn giấy in ấn tiết kiệm chi phí cho doanh nghiệp.',
+    url: 'https://innhatnguyen.vn/tin-tuc'
+  })
 }
 
 onMounted(() => {
-  setMetaTags({
-    title: 'Cẩm Nang Kỹ Thuật & Kiến Thức In Ấn Chuyên Sâu',
-    description: 'Tổng hợp các bài viết hướng dẫn chọn chất liệu giấy, quy chuẩn xuất file in CMYK và kinh nghiệm tiết kiệm chi phí in ấn từ Xưởng In Nhật Nguyên.'
-  })
   loadPosts()
 })
 </script>
-

@@ -487,7 +487,7 @@
           <div class="bg-white rounded-2xl overflow-hidden border border-slate-200/90 shadow-sm text-slate-900">
             <div class="aspect-[16/10] bg-slate-100 overflow-hidden relative">
               <img
-                :src="form.thumbnail || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80'"
+                :src="form.thumbnail || '/logo.png'"
                 alt="Thumbnail"
                 class="w-full h-full object-cover"
               />

@@ -106,7 +106,7 @@ withDefaults(defineProps(), {
   brandName: 'Xưởng In Nhật Nguyên',
   tag: 'Số lượng ít',
   deliveryTag: 'Giao hàng nhanh chóng',
-  image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=600&q=80',
+  image: '/logo.png',
   link: '/san-pham/in-tui-giay-kraft-couche-gia-xuong'
 })
 </script>

@@ -432,15 +432,17 @@ async function loadData() {
     if (catRes?.data?.length) {
       categories.value = catRes.data
     }
-    if (prodRes?.data?.length) {
+    if (prodRes?.data && Array.isArray(prodRes.data)) {
       products.value = prodRes.data.map(p => ({
         ...p,
         basePrice: p.base_price,
         categoryId: p.category?.slug || p.category_id
       }))
+    } else {
+      products.value = []
     }
   } catch (err) {
-    // Keep fallback
+    products.value = []
   }
   applyCategorySEO()
 }

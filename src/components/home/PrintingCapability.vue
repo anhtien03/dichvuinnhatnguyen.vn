@@ -18,7 +18,7 @@
         <div class="bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-lg transition-all group">
           <div class="aspect-[16/10] bg-slate-200 overflow-hidden">
             <img
-              src="https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80"
+              src="/anh-1.jpg"
               alt="Hệ thống máy in Offset Komori Nhật Bản"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
@@ -36,7 +36,7 @@
         <div class="bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-lg transition-all group">
           <div class="aspect-[16/10] bg-slate-200 overflow-hidden">
             <img
-              src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80"
+              src="/anh-2.jpg"
               alt="Máy in nhanh kỹ thuật số Fuji Xerox"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
@@ -54,7 +54,7 @@
         <div class="bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-lg transition-all group">
           <div class="aspect-[16/10] bg-slate-200 overflow-hidden">
             <img
-              src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80"
+              src="/anh-3.jpg"
               alt="Dây chuyền bế khuôn cán màng tự động"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />

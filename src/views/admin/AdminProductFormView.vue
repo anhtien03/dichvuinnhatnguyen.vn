@@ -685,7 +685,7 @@ const form = ref({
   canonical_url: ''
 })
 
-const defaultPlaceholderImage = 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=600&q=80'
+const defaultPlaceholderImage = '/logo.png'
 
 const previewImage = computed(() => {
   return form.value.image ? form.value.image : defaultPlaceholderImage

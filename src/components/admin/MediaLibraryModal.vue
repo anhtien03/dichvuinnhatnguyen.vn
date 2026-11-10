@@ -533,7 +533,7 @@ function selectItem(item) {
 }
 
 function onImgError(e) {
-  e.target.src = 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=400&q=80'
+  e.target.src = '/logo.png'
 }
 
 function copyUrl(url) {
