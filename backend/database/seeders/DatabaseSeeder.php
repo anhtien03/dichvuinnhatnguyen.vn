@@ -151,9 +151,11 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        // Clean any dummy test data
+        // Clean any dummy test data safely without foreign key conflicts
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
         QuoteRequest::truncate();
         Product::truncate();
         Post::truncate();
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
     }
 }
