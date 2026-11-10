@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="space-y-6">
     <!-- Top Header & Action Bar -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -13,7 +13,7 @@
 
       <div class="flex items-center gap-3">
         <router-link
-          to="/admin/banners/create"
+          to="/he-thong-nn/banners/create"
           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-amber-500 hover:from-amber-400 hover:to-brand-gold text-slate-950 font-black text-xs shadow-md transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
         >
           <Plus class="w-4 h-4" />
@@ -81,7 +81,7 @@
         Hãy bấm "Thêm Mới Banner" để tạo banner hiển thị đầu tiên trên trang chủ.
       </p>
       <router-link
-        to="/admin/banners/create"
+        to="/he-thong-nn/banners/create"
         class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-gold text-slate-950 font-bold text-xs cursor-pointer hover:bg-amber-400"
       >
         <Plus class="w-4 h-4" />
@@ -172,7 +172,7 @@
             <!-- Edit & Delete Buttons -->
             <div class="flex items-center gap-1">
               <router-link
-                :to="'/admin/banners/' + banner.id + '/edit'"
+                :to="'/he-thong-nn/banners/' + banner.id + '/edit'"
                 class="p-2 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
                 :class="isDarkMode ? 'hover:bg-[#2E3A47]' : 'hover:bg-slate-100 hover:text-slate-900'"
                 title="Chỉnh sửa banner"
@@ -403,3 +403,4 @@ onMounted(() => {
   fetchBanners()
 })
 </script>
+

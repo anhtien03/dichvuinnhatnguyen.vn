@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="space-y-6">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -462,7 +462,7 @@ function convertToOrder(quote) {
     specifications: quote.specs_description,
     notes: `Khách gửi báo giá từ web mã ${quote.code}. ${quote.admin_notes || ''}`
   }))
-  router.push('/admin/orders/create?from_quote=1')
+  router.push('/he-thong-nn/orders/create?from_quote=1')
 }
 
 function openEditModal(quote) {
@@ -505,3 +505,4 @@ onMounted(() => {
   loadQuotes()
 })
 </script>
+

@@ -65,23 +65,23 @@ const router = createRouter({
 
     // Admin Routes
     {
-      path: '/admin/login',
+      path: '/he-thong-nn/login',
       name: 'admin-login',
       component: () => import('../views/admin/AdminLoginView.vue'),
       meta: { title: 'Đăng Nhập Quản Trị' }
     },
     {
-      path: '/admin',
+      path: '/he-thong-nn',
       component: () => import('../views/admin/AdminLayout.vue'),
       meta: { requiresAuth: true },
       children: [
         {
           path: '',
-          redirect: '/admin/dashboard'
+          redirect: '/he-thong-nn/dashboard'
         },
         {
           path: 'manage',
-          redirect: '/admin/dashboard'
+          redirect: '/he-thong-nn/dashboard'
         },
         {
           path: 'dashboard',
@@ -276,7 +276,7 @@ router.beforeEach((to, from, next) => {
     robotsMeta.name = 'robots'
     document.head.appendChild(robotsMeta)
   }
-  if (to.path.startsWith('/admin')) {
+  if (to.path.startsWith('/he-thong-nn')) {
     robotsMeta.content = 'noindex, nofollow, noarchive, nosnippet'
   } else {
     robotsMeta.content = 'index, follow'
@@ -287,7 +287,7 @@ router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!token) {
       finishNavLoading()
-      return next({ path: '/admin/login', query: { redirect: to.fullPath } })
+      return next({ path: '/he-thong-nn/login', query: { redirect: to.fullPath } })
     }
 
     // Permission authorization check
@@ -296,12 +296,12 @@ router.beforeEach((to, from, next) => {
       if (!can(matchedRecord.meta.permission)) {
         finishNavLoading()
         alert(`Bạn không có quyền truy cập trang này (${matchedRecord.meta.permission}).`)
-        return next('/admin/dashboard')
+        return next('/he-thong-nn/dashboard')
       }
     }
-  } else if (to.path === '/admin/login' && token) {
+  } else if (to.path === '/he-thong-nn/login' && token) {
     finishNavLoading()
-    return next('/admin/dashboard')
+    return next('/he-thong-nn/dashboard')
   }
 
   next()

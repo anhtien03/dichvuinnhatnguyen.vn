@@ -3,6 +3,8 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /admin/
+Disallow: /he-thong-nn
+Disallow: /he-thong-nn/
 Disallow: /api/
 
 # Sitemap location

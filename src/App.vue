@@ -55,7 +55,7 @@ import TopProgressBar from './components/common/TopProgressBar.vue'
 import ScrollProgressBar from './components/common/ScrollProgressBar.vue'
 
 const route = useRoute()
-const isAdminRoute = computed(() => route.path.startsWith('/admin'))
+const isAdminRoute = computed(() => route.path.startsWith('/he-thong-nn'))
 
 onMounted(async () => {
   try {

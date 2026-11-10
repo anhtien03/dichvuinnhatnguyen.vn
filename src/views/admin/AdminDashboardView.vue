@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="space-y-6">
     <!-- Header Greeting & Quick Actions -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -17,7 +17,7 @@
         <!-- Action for Quotes / Sales -->
         <router-link
           v-if="can('quotes.view')"
-          to="/admin/quotes"
+          to="/he-thong-nn/quotes"
           class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-amber-500 hover:from-amber-400 hover:to-brand-gold text-slate-950 font-black text-xs shadow-md shadow-brand-gold/20 flex items-center gap-2 transition-all cursor-pointer"
         >
           <ClipboardList class="w-4 h-4" />
@@ -27,7 +27,7 @@
         <!-- Action for Content Marketing -->
         <router-link
           v-else-if="can('posts.manage')"
-          to="/admin/posts/create"
+          to="/he-thong-nn/posts/create"
           class="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md shadow-purple-600/20 flex items-center gap-2 transition-all cursor-pointer"
         >
           <Plus class="w-4 h-4" />
@@ -625,7 +625,7 @@
 
         <div class="pt-5 mt-4 border-t" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
           <router-link
-            to="/admin/products"
+            to="/he-thong-nn/products"
             class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer"
             :class="isDarkMode ? 'bg-[#1C2434] hover:bg-[#333A48] text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'"
           >
@@ -691,7 +691,7 @@
 
         <div class="pt-4 mt-4 border-t" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
           <router-link
-            to="/admin/posts/create"
+            to="/he-thong-nn/posts/create"
             class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 transition-colors shadow-sm"
           >
             <Plus class="w-4 h-4" />
@@ -717,7 +717,7 @@
           <!-- Shortcuts for Content Manager -->
           <div v-if="can('products.manage')" class="grid grid-cols-2 gap-3 mt-5">
             <router-link
-              to="/admin/posts/create"
+              to="/he-thong-nn/posts/create"
               class="p-4 rounded-xl border text-left transition-all hover:border-purple-500 hover:shadow-sm group cursor-pointer"
               :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'"
             >
@@ -731,7 +731,7 @@
             </router-link>
 
             <router-link
-              to="/admin/banners/create"
+              to="/he-thong-nn/banners/create"
               class="p-4 rounded-xl border text-left transition-all hover:border-blue-500 hover:shadow-sm group cursor-pointer"
               :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'"
             >
@@ -745,7 +745,7 @@
             </router-link>
 
             <router-link
-              to="/admin/categories/create"
+              to="/he-thong-nn/categories/create"
               class="p-4 rounded-xl border text-left transition-all hover:border-amber-500 hover:shadow-sm group cursor-pointer"
               :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'"
             >
@@ -759,7 +759,7 @@
             </router-link>
 
             <router-link
-              to="/admin/pricing"
+              to="/he-thong-nn/pricing"
               class="p-4 rounded-xl border text-left transition-all hover:border-emerald-500 hover:shadow-sm group cursor-pointer"
               :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'"
             >
@@ -776,7 +776,7 @@
           <!-- Shortcuts for Writer / Cộng tác viên -->
           <div v-else class="grid grid-cols-2 gap-3 mt-5">
             <router-link
-              to="/admin/posts/create"
+              to="/he-thong-nn/posts/create"
               class="p-4 rounded-xl border text-left transition-all hover:border-purple-500 hover:shadow-sm group cursor-pointer"
               :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'"
             >
@@ -790,7 +790,7 @@
             </router-link>
 
             <router-link
-              to="/admin/posts"
+              to="/he-thong-nn/posts"
               class="p-4 rounded-xl border text-left transition-all hover:border-blue-500 hover:shadow-sm group cursor-pointer"
               :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'"
             >
@@ -864,7 +864,7 @@
         </div>
 
         <router-link
-          to="/admin/quotes"
+          to="/he-thong-nn/quotes"
           class="text-xs font-bold text-brand-gold hover:underline flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
         >
           <span>Xem Tất Cả Đơn Báo Giá</span>
@@ -953,7 +953,7 @@
               <!-- Action button -->
               <td class="py-4 px-6 text-right">
                 <router-link
-                  to="/admin/quotes"
+                  to="/he-thong-nn/quotes"
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
                   :class="isDarkMode ? 'bg-[#333A48] hover:bg-[#3C50E0] text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'"
                 >
@@ -986,7 +986,7 @@
         </div>
 
         <router-link
-          to="/admin/posts"
+          to="/he-thong-nn/posts"
           class="text-xs font-bold text-purple-500 hover:underline flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
         >
           <span>Xem Tất Cả Bài Viết</span>
@@ -1055,7 +1055,7 @@
               <!-- Actions -->
               <td class="py-4 px-6 text-right">
                 <router-link
-                  :to="`/admin/posts/${post.id}/edit`"
+                  :to="`/he-thong-nn/posts/${post.id}/edit`"
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
                   :class="isDarkMode ? 'bg-[#333A48] hover:bg-[#3C50E0] text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'"
                 >
@@ -1178,3 +1178,4 @@ onMounted(() => {
   loadData()
 })
 </script>
+

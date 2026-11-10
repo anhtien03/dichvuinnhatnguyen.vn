@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="space-y-6">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -12,7 +12,7 @@
       </div>
 
       <router-link
-        to="/admin/categories/create"
+        to="/he-thong-nn/categories/create"
         class="self-start sm:self-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-amber-500 hover:from-amber-400 hover:to-brand-gold text-slate-950 font-black text-xs shadow-md shadow-brand-gold/25 flex items-center gap-2 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
       >
         <Plus class="w-4 h-4" />
@@ -83,7 +83,7 @@
 
                   <div>
                     <router-link
-                      :to="'/admin/categories/' + cat.id + '/edit'"
+                      :to="'/he-thong-nn/categories/' + cat.id + '/edit'"
                       class="font-bold text-sm hover:text-brand-gold transition-colors block"
                       :class="isDarkMode ? 'text-white' : 'text-slate-900'"
                     >
@@ -131,7 +131,7 @@
               <!-- Cột 6: Hành động -->
               <td class="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
                 <router-link
-                  :to="'/admin/categories/' + cat.id + '/edit'"
+                  :to="'/he-thong-nn/categories/' + cat.id + '/edit'"
                   class="px-2.5 py-1.5 rounded-lg border font-bold text-xs cursor-pointer transition-colors inline-flex items-center"
                   :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200 hover:text-white hover:bg-[#333A48]' : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'"
                 >
@@ -201,3 +201,4 @@ onMounted(() => {
   loadCategories()
 })
 </script>
+

@@ -108,7 +108,7 @@ async function handleLogin() {
     if (res.token) {
       setAdminToken(res.token)
       setAdminUser(res.user)
-      router.push('/admin/dashboard')
+      router.push('/he-thong-nn/dashboard')
     }
   } catch (err) {
     errorMessage.value = err.message || 'Email hoặc mật khẩu không chính xác.'

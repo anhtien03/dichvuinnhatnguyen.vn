@@ -1,10 +1,10 @@
-<template>
+﻿<template>
   <div class="space-y-6">
     <!-- Top Bar: Back & Action Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="flex items-center gap-3">
         <router-link
-          to="/admin/posts"
+          to="/he-thong-nn/posts"
           class="p-2.5 rounded-xl border text-slate-400 hover:text-white transition-colors cursor-pointer"
           :class="isDarkMode ? 'border-[#2E3A47] hover:bg-[#2E3A47]' : 'border-slate-200 hover:bg-slate-100 hover:text-slate-900'"
           title="Quay lại danh sách bài viết"
@@ -32,7 +32,7 @@
       <!-- Header Action Buttons -->
       <div class="flex items-center gap-3">
         <router-link
-          to="/admin/posts"
+          to="/he-thong-nn/posts"
           class="px-4 py-2.5 rounded-xl border text-xs font-bold transition-colors cursor-pointer"
           :class="isDarkMode ? 'border-[#2E3A47] text-slate-300 hover:bg-[#2E3A47]' : 'border-slate-200 text-slate-700 hover:bg-slate-100'"
         >
@@ -739,7 +739,7 @@ async function savePost() {
     } else {
       const res = await api.createAdminPost(payload)
       showToast('Đăng bài viết mới thành công!')
-      router.push(`/admin/posts/${res.data.id}/edit`)
+      router.push(`/he-thong-nn/posts/${res.data.id}/edit`)
     }
   } catch (err) {
     console.error('Failed to save post', err)
@@ -755,4 +755,5 @@ onMounted(() => {
   }
 })
 </script>
+
 

@@ -68,8 +68,8 @@ export async function apiRequest(endpoint, options = {}) {
   if (response.status === 401 && !endpoint.includes('/auth/login')) {
     setAdminToken(null)
     setAdminUser(null)
-    if (window.location.pathname.startsWith('/admin') && !window.location.pathname.includes('/login')) {
-      window.location.href = '/admin/login'
+    if (window.location.pathname.startsWith('/he-thong-nn') && !window.location.pathname.includes('/login')) {
+      window.location.href = '/he-thong-nn/login'
     }
   }
 

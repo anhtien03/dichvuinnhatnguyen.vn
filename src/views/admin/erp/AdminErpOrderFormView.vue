@@ -1,10 +1,10 @@
-<template>
+﻿<template>
   <div class="space-y-6 max-w-7xl mx-auto py-2">
     <!-- Top Action Bar & Breadcrumbs -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
       <div class="space-y-1">
         <router-link
-          to="/admin/orders"
+          to="/he-thong-nn/orders"
           class="inline-flex items-center gap-1.5 text-xs font-bold transition-colors cursor-pointer"
           :class="isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'"
         >
@@ -43,7 +43,7 @@
         </button>
 
         <router-link
-          to="/admin/orders"
+          to="/he-thong-nn/orders"
           class="px-4 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer"
           :class="isDarkMode ? 'border-[#2E3A47] text-slate-300 hover:bg-[#24303F]' : 'border-slate-200 text-slate-700 hover:bg-slate-100'"
         >
@@ -569,7 +569,7 @@
       <!-- BOTTOM ACTION BUTTONS -->
       <div class="flex items-center justify-end gap-3 pt-4 border-t" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
         <router-link
-          to="/admin/orders"
+          to="/he-thong-nn/orders"
           class="px-5 py-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer"
           :class="isDarkMode ? 'border-[#2E3A47] text-slate-300 hover:bg-[#24303F]' : 'border-slate-200 text-slate-700 hover:bg-slate-100'"
         >
@@ -961,7 +961,7 @@ async function submitOrder() {
       alert('✅ Tạo đơn hàng in ấn mới thành công!')
     }
 
-    router.push('/admin/orders')
+    router.push('/he-thong-nn/orders')
   } catch (err) {
     alert('Lỗi: ' + (err.response?.data?.message || err.message))
   } finally {
@@ -1021,7 +1021,7 @@ async function loadOrderData(id) {
     }
   } catch (err) {
     alert('Không thể tải thông tin đơn hàng: ' + err.message)
-    router.push('/admin/orders')
+    router.push('/he-thong-nn/orders')
   }
 }
 
@@ -1095,4 +1095,5 @@ onMounted(() => {
   border-radius: 9999px;
 }
 </style>
+
 
