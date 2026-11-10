@@ -1,0 +1,32 @@
+node_modules
+.pnp
+.pnp.js
+dist-ssr
+*.local
+
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Deploy files
+*.zip
+
+# REA / Reverse engineering temp files & outputs
+.rea/
+rea-output/
+*.decompiled/
+*.jadx/

@@ -1,0 +1,10 @@
+# Robots.txt for In An Nhat Nguyen
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://innhatnguyen.vn/sitemap.xml
+
