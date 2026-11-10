@@ -102,6 +102,19 @@ class QuoteRequestController extends Controller
             'status' => 'pending',
         ]);
 
+        // Send email notifications safely (Admin alert + Customer confirmation)
+        try {
+            $adminEmail = \App\Models\SiteSetting::get('email', 'nhatnguyenprinting@gmail.com');
+            if (!empty($adminEmail)) {
+                \Illuminate\Support\Facades\Mail::to($adminEmail)->send(new \App\Mail\NewQuoteRequestAdminMail($quote));
+            }
+            if (!empty($quote->email)) {
+                \Illuminate\Support\Facades\Mail::to($quote->email)->send(new \App\Mail\QuoteConfirmationCustomerMail($quote));
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Quote notification email error: ' . $e->getMessage());
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Gửi yêu cầu báo giá thành công! Xưởng in Nhật Nguyên sẽ liên hệ bạn ngay.',
