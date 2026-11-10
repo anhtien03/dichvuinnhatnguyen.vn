@@ -34,7 +34,7 @@
               v-model="email"
               type="email"
               required
-              placeholder="admin@innhatnguyen.vn"
+              placeholder="name@example.com"
               class="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold transition-colors"
             />
           </div>
@@ -89,7 +89,7 @@ import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-vue-next'
 import { api, setAdminToken, setAdminUser } from '../../services/api'
 
 const router = useRouter()
-const email = ref('admin@innhatnguyen.vn')
+const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const isLoading = ref(false)

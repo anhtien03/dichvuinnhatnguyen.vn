@@ -6,5 +6,5 @@ Disallow: /admin/
 Disallow: /api/
 
 # Sitemap location
-Sitemap: https://innhatnguyen.vn/sitemap.xml
+Sitemap: https://dichvuinnhatnguyen.vn/sitemap.xml
 

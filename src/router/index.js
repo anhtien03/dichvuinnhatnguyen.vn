@@ -269,6 +269,19 @@ router.beforeEach((to, from, next) => {
   // Update document title
   document.title = to.meta.title ? `${to.meta.title} | In Ấn Nhật Nguyên` : 'In Ấn Nhật Nguyên'
 
+  // Security: Prevent search engines and crawlers from indexing admin pages
+  let robotsMeta = document.querySelector('meta[name="robots"]')
+  if (!robotsMeta) {
+    robotsMeta = document.createElement('meta')
+    robotsMeta.name = 'robots'
+    document.head.appendChild(robotsMeta)
+  }
+  if (to.path.startsWith('/admin')) {
+    robotsMeta.content = 'noindex, nofollow, noarchive, nosnippet'
+  } else {
+    robotsMeta.content = 'index, follow'
+  }
+
   // Admin authentication guard
   const token = getAdminToken()
   if (to.matched.some(record => record.meta.requiresAuth)) {
