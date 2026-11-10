@@ -24,3 +24,4 @@ class QuoteConfirmationCustomerMail extends Mailable
                     ->view('emails.quote_confirmation_customer');
     }
 }
+

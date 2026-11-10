@@ -24,3 +24,4 @@ class NewQuoteRequestAdminMail extends Mailable
                     ->view('emails.new_quote_admin');
     }
 }
+
