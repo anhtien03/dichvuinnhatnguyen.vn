@@ -13,10 +13,11 @@
             ref="inputRef"
             v-model="query"
             type="text"
-            placeholder="Tìm theo tên ấn phẩm (namecard, tờ rơi, tem decal, bao bì...)"
+            placeholder="Tìm theo tên ấn phẩm (bao thư, danh thiếp, namecard, tờ rơi, decal...)"
             class="w-full py-4 text-base sm:text-lg bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
             @keydown.esc="close"
           />
+          <Loader2 v-if="isLoading" class="w-4 h-4 text-brand-gold animate-spin mr-2" />
           <button
             v-if="query"
             @click="query = ''"
@@ -49,9 +50,9 @@
                   @click="onSelect(item)"
                 >
                   <img
-                    :src="item.image"
+                    :src="item.image || '/logo-icon.png'"
                     :alt="item.name"
-                    class="w-12 h-12 object-cover rounded-lg border border-slate-200 shrink-0"
+                    class="w-12 h-12 object-cover rounded-lg border border-slate-200 shrink-0 bg-slate-100"
                   />
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
@@ -63,10 +64,10 @@
                       </span>
                     </div>
                     <div class="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
-                      <span>{{ item.categoryName }}</span>
+                      <span>{{ item.category?.name || item.categoryName || 'Ấn phẩm in' }}</span>
                       <span>•</span>
                       <span class="text-brand-accent font-semibold">
-                        Từ {{ formatCurrency(item.basePrice) }} / {{ item.unit }}
+                        Từ {{ formatCurrency(item.base_price || item.basePrice || 0) }} / {{ item.unit || 'cái' }}
                       </span>
                     </div>
                   </div>
@@ -77,7 +78,7 @@
             <div v-else class="text-center py-10">
               <PackageSearch class="w-12 h-12 text-slate-300 mx-auto mb-3" />
               <p class="text-sm text-slate-600 font-medium">Không tìm thấy ấn phẩm phù hợp với "{{ query }}"</p>
-              <p class="text-xs text-slate-400 mt-1">Vui lòng thử tìm với từ khóa: namecard, tờ rơi, decal, túi giấy...</p>
+              <p class="text-xs text-slate-400 mt-1">Vui lòng thử tìm với từ khóa: bao thư, danh thiếp, namecard, tờ rơi, decal...</p>
             </div>
           </div>
 
@@ -110,7 +111,7 @@
               </h3>
               <div class="grid grid-cols-2 gap-2">
                 <router-link
-                  v-for="cat in categories"
+                  v-for="cat in displayCategories"
                   :key="cat.id"
                   :to="'/danh-muc/' + cat.slug"
                   class="p-2.5 rounded-lg border border-slate-100 hover:border-brand-blue hover:bg-slate-50 transition-colors flex items-center justify-between group"
@@ -137,10 +138,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
-import { Search, X, ChevronRight, PackageSearch, Sparkles, ArrowUpRight } from 'lucide-vue-next'
-import { products } from '../../data/products'
-import { categories } from '../../data/categories'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { Search, X, ChevronRight, PackageSearch, Sparkles, ArrowUpRight, Loader2 } from 'lucide-vue-next'
+import { api } from '../../services/api'
+import { categories as fallbackCategories } from '../../data/categories'
 
 const props = defineProps({
   modelValue: {
@@ -154,28 +155,97 @@ const emit = defineEmits(['update:modelValue'])
 const isOpen = computed(() => props.modelValue)
 const query = ref('')
 const inputRef = ref(null)
+const isLoading = ref(false)
+
+const allProducts = ref([])
+const allCategories = ref([])
 
 const popularChips = [
-  'Namecard', 'Tờ rơi A5', 'Tem decal', 'Túi giấy', 'Standee', 'Catalogue', 'Decal chống nước'
+  'Bao thư', 'Danh thiếp', 'Namecard', 'Tờ rơi', 'Tem decal', 'Túi giấy', 'Catalogue'
 ]
+
+// Chuẩn hóa loại bỏ dấu tiếng Việt để tìm kiếm không phân biệt có dấu / không dấu
+function removeVietnameseTones(str) {
+  if (!str) return ''
+  str = String(str).toLowerCase()
+  str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a')
+  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e')
+  str = str.replace(/ì|í|ị|ỉ|ĩ/g, 'i')
+  str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o')
+  str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u')
+  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, 'y')
+  str = str.replace(/đ/g, 'd')
+  str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, '')
+  str = str.replace(/\u02C6|\u0306|\u031B/g, '')
+  return str.trim()
+}
+
+async function loadData() {
+  if (allProducts.value.length === 0) {
+    isLoading.value = true
+    try {
+      const [resProd, resCat] = await Promise.allSettled([
+        api.getProducts(),
+        api.getCategories()
+      ])
+      if (resProd.status === 'fulfilled' && resProd.value?.data) {
+        allProducts.value = Array.isArray(resProd.value.data) ? resProd.value.data : (resProd.value.data.data || [])
+      }
+      if (resCat.status === 'fulfilled' && resCat.value?.data) {
+        allCategories.value = Array.isArray(resCat.value.data) ? resCat.value.data : (resCat.value.data.data || [])
+      }
+    } catch (err) {
+      console.error('Failed to load search data', err)
+    } finally {
+      isLoading.value = false
+    }
+  }
+}
+
+const displayCategories = computed(() => {
+  return allCategories.value.length > 0 ? allCategories.value : fallbackCategories
+})
 
 const results = computed(() => {
   if (!query.value.trim()) return []
-  const q = query.value.toLowerCase().trim()
-  return products.filter(p => 
-    p.name.toLowerCase().includes(q) || 
-    p.categoryName.toLowerCase().includes(q) ||
-    p.description.toLowerCase().includes(q)
-  )
+  const rawQ = query.value.trim()
+  const cleanQ = removeVietnameseTones(rawQ)
+  const qWords = cleanQ.split(/\s+/).filter(Boolean)
+
+  return allProducts.value.filter(p => {
+    const name = p.name || ''
+    const desc = p.description || ''
+    const catName = p.category?.name || p.categoryName || ''
+    const tag = p.tag || ''
+    const slug = p.slug || ''
+
+    // 1. Khớp chuỗi có dấu
+    const rawTarget = `${name} ${desc} ${catName} ${tag} ${slug}`.toLowerCase()
+    if (rawTarget.includes(rawQ.toLowerCase())) return true
+
+    // 2. Khớp chuỗi không dấu (ví dụ: "bao thu" khớp với "Bao Thư Nhỏ")
+    const cleanTarget = removeVietnameseTones(rawTarget)
+    if (cleanTarget.includes(cleanQ)) return true
+
+    // 3. Khớp từng từ khóa trong câu (ví dụ: "nho bao thu" cũng khớp)
+    if (qWords.length > 1 && qWords.every(w => cleanTarget.includes(w))) return true
+
+    return false
+  })
 })
 
 watch(isOpen, async (val) => {
   if (val) {
+    loadData()
     await nextTick()
     inputRef.value?.focus()
   } else {
     query.value = ''
   }
+})
+
+onMounted(() => {
+  loadData()
 })
 
 function close() {

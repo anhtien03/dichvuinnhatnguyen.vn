@@ -152,8 +152,8 @@
                 class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-800 bg-white focus:outline-none focus:border-brand-blue"
               >
                 <option value="">-- Chọn ấn phẩm in hoặc nhập mục khác --</option>
-                <option v-for="p in products" :key="p.id" :value="p.name">
-                  {{ p.name }} ({{ p.categoryName }})
+                <option v-for="p in availableProducts" :key="p.id" :value="p.name">
+                  {{ p.name }} ({{ p.category?.name || 'Ấn phẩm in' }})
                 </option>
                 <option value="Sản phẩm đặc thù khác">Sản phẩm đặc thù khác</option>
               </select>
@@ -226,7 +226,6 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { User, Package, FileUp, Send, CheckCircle2, MessageSquare } from 'lucide-vue-next'
-import { products } from '../data/products'
 import { siteSettings } from '../data/siteSettings'
 import { api } from '../services/api'
 import { useQuoteStore } from '../stores/quote'
@@ -238,6 +237,7 @@ const quoteStore = useQuoteStore()
 const isSubmitting = ref(false)
 const isSubmitted = ref(false)
 const submittedQuoteId = ref('')
+const availableProducts = ref([])
 
 const form = ref({
   customerName: '',
@@ -250,13 +250,22 @@ const form = ref({
   files: []
 })
 
-onMounted(() => {
+onMounted(async () => {
+  try {
+    const res = await api.getProducts()
+    if (res?.data) {
+      availableProducts.value = Array.isArray(res.data) ? res.data : (res.data.data || [])
+    }
+  } catch (err) {
+    console.error('Failed to load products for quote request', err)
+  }
+
   if (route.query.product) {
-    const prod = products.find(p => p.slug === route.query.product)
+    const prod = availableProducts.value.find(p => p.slug === route.query.product)
     if (prod) {
       form.value.productName = prod.name
       if (route.query.qty) {
-        form.value.quantity = `${route.query.qty} ${prod.unit}`
+        form.value.quantity = `${route.query.qty} ${prod.unit || 'cái'}`
       }
     }
   }
