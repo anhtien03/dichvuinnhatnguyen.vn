@@ -86,24 +86,33 @@ export async function apiRequest(endpoint, options = {}) {
   return data
 }
 
+// Client In-Memory Cache (TTL 90s for public homepage catalog data)
+const publicCache = new Map()
+const CACHE_TTL = 90 * 1000 // 90 giây
+
+function cachedPublicRequest(endpoint, params = {}) {
+  const query = new URLSearchParams(params).toString()
+  const fullPath = `${endpoint}${query ? '?' + query : ''}`
+  const now = Date.now()
+  const hit = publicCache.get(fullPath)
+  if (hit && (now - hit.time < CACHE_TTL)) {
+    return Promise.resolve(hit.data)
+  }
+  return apiRequest(fullPath).then(res => {
+    publicCache.set(fullPath, { time: Date.now(), data: res })
+    return res
+  })
+}
+
 // API Endpoints
 export const api = {
-  // Public
-  getCategories: () => apiRequest('/categories'),
+  // Public (Áp dụng cache tức thì khi chuyển trang qua lại, F5 sẽ xóa cache)
+  getCategories: () => cachedPublicRequest('/categories'),
   getCategoryBySlug: (slug) => apiRequest(`/categories/${slug}`),
-  getProducts: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/products${query ? '?' + query : ''}`)
-  },
+  getProducts: (params = {}) => cachedPublicRequest('/products', params),
   getProductBySlug: (slug) => apiRequest(`/products/${slug}`),
-  getBanners: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/banners${query ? '?' + query : ''}`)
-  },
-  getPosts: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/posts${query ? '?' + query : ''}`)
-  },
+  getBanners: (params = {}) => cachedPublicRequest('/banners', params),
+  getPosts: (params = {}) => cachedPublicRequest('/posts', params),
   getPostBySlug: (slug) => apiRequest(`/posts/${slug}`),
   submitQuote: (formData) => apiRequest('/quotes', { method: 'POST', body: formData }),
   getSettings: () => apiRequest('/settings'),

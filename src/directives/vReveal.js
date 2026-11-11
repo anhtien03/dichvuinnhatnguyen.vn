@@ -1,5 +1,12 @@
 export const vReveal = {
   mounted(el, binding) {
+    // If element is already in viewport upon mount, reveal immediately without animation delay
+    const rect = el.getBoundingClientRect()
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      el.classList.add('is-revealed')
+      return
+    }
+
     el.classList.add('reveal-on-scroll')
     if (typeof binding.value === 'number') {
       el.style.transitionDelay = `${binding.value}ms`
@@ -14,8 +21,8 @@ export const vReveal = {
         })
       },
       {
-        threshold: 0.08,
-        rootMargin: '0px 0px -40px 0px'
+        threshold: 0.05,
+        rootMargin: '50px 0px 0px 0px'
       }
     )
     observer.observe(el)
