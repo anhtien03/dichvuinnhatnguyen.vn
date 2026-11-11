@@ -136,44 +136,6 @@
                   {{ post.title }}
                 </h1>
 
-                <!-- Author Sub-bar & Quick Action Tools -->
-                <div class="flex items-center justify-between pt-2">
-                  <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-blue via-blue-700 to-indigo-900 text-white font-black flex items-center justify-center text-sm shadow-sm ring-2 ring-blue-100 shrink-0">
-                      NN
-                    </div>
-                    <div>
-                      <div class="flex items-center gap-1.5">
-                        <p class="text-xs sm:text-sm font-bold text-slate-800">
-                          {{ post.author_name || 'Kỹ Thuật Viên Xưởng In Nhật Nguyên' }}
-                        </p>
-                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500" title="Đang trực tuyến"></span>
-                      </div>
-                      <p class="text-xs text-slate-500">Kinh nghiệm 10+ năm in Offset & Kỹ thuật số</p>
-                    </div>
-                  </div>
-
-                  <!-- Quick Action Buttons -->
-                  <div class="flex items-center gap-2">
-                    <button
-                      @click="copyLink"
-                      class="p-2 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:text-brand-blue hover:border-brand-blue text-xs font-semibold flex items-center gap-1.5 transition-all"
-                      :title="isCopied ? 'Đã sao chép link' : 'Sao chép liên kết'"
-                    >
-                      <Check v-if="isCopied" class="w-3.5 h-3.5 text-emerald-600" />
-                      <Copy v-else class="w-3.5 h-3.5" />
-                      <span class="hidden sm:inline">{{ isCopied ? 'Đã chép' : 'Sao chép' }}</span>
-                    </button>
-                    <button
-                      @click="printArticle"
-                      class="p-2 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 text-xs hidden sm:flex items-center"
-                      title="In bài viết"
-                    >
-                      <Printer class="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-
                 <!-- Excerpt / Key Takeaways Box -->
                 <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-blue-50/50 border border-amber-200/60 space-y-2">
                   <div class="flex items-center gap-2 text-xs font-bold text-amber-900 tracking-wide uppercase">
