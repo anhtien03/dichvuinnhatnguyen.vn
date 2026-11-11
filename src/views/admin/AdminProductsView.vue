@@ -277,14 +277,14 @@ const indexingLoadingId = ref(null)
 
 async function handleGoogleIndex(prod) {
   indexingLoadingId.value = prod.id
-  const url = `https://innhatnguyen.vn/san-pham/${prod.slug}`
+  const url = `https://dichvuinnhatnguyen.vn/san-pham/${prod.slug}`
   try {
     const res = await api.publishGoogleIndexingUrl(url, 'URL_UPDATED')
     alert(`✅ ${res.message || 'Đã gửi yêu cầu Index tới Google thành công!'}\nURL: ${url}`)
   } catch (err) {
     const msg = err.response?.data?.message || err.message
     if (confirm(`⚠️ ${msg}\n\nBạn có muốn mở ngay Google Search Console để kiểm tra URL này không?`)) {
-      window.open(`https://search.google.com/search-console/inspect?resource_id=https%3A%2F%2Finnhatnguyen.vn%2F&id=${encodeURIComponent(url)}`, '_blank')
+      window.open(`https://search.google.com/search-console/inspect?resource_id=https%3A%2F%2Fdichvuinnhatnguyen.vn%2F&id=${encodeURIComponent(url)}`, '_blank')
     }
   } finally {
     indexingLoadingId.value = null

@@ -124,7 +124,7 @@
       <div class="mt-12 pt-6 border-t border-slate-200/90 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-3">
         <p>© 2026 In Ấn Nhật Nguyên. Tất cả các quyền được bảo lưu.</p>
         <p class="flex items-center gap-2">
-          <span class="text-brand-blue font-bold">innhatnguyen.vn</span>
+          <span class="text-brand-blue font-bold">dichvuinnhatnguyen.vn</span>
         </p>
       </div>
     </div>

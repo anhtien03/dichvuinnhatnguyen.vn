@@ -2,118 +2,118 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Core Pages -->
   <url>
-    <loc>https://innhatnguyen.vn/</loc>
+    <loc>https://dichvuinnhatnguyen.vn/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/san-pham</loc>
+    <loc>https://dichvuinnhatnguyen.vn/san-pham</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/yeu-cau-bao-gia</loc>
+    <loc>https://dichvuinnhatnguyen.vn/yeu-cau-bao-gia</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/gioi-thieu</loc>
+    <loc>https://dichvuinnhatnguyen.vn/gioi-thieu</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/tin-tuc</loc>
+    <loc>https://dichvuinnhatnguyen.vn/tin-tuc</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/lien-he</loc>
+    <loc>https://dichvuinnhatnguyen.vn/lien-he</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <!-- Categories -->
   <url>
-    <loc>https://innhatnguyen.vn/danh-muc/an-pham-van-phong</loc>
+    <loc>https://dichvuinnhatnguyen.vn/danh-muc/an-pham-van-phong</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/danh-muc/bao-bi-tui-giay</loc>
+    <loc>https://dichvuinnhatnguyen.vn/danh-muc/bao-bi-tui-giay</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/danh-muc/lich-so-tay</loc>
+    <loc>https://dichvuinnhatnguyen.vn/danh-muc/lich-so-tay</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/danh-muc/su-kien-trien-lam</loc>
+    <loc>https://dichvuinnhatnguyen.vn/danh-muc/su-kien-trien-lam</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/danh-muc/tem-nhan-decal</loc>
+    <loc>https://dichvuinnhatnguyen.vn/danh-muc/tem-nhan-decal</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/danh-muc/tiep-thi-quang-cao</loc>
+    <loc>https://dichvuinnhatnguyen.vn/danh-muc/tiep-thi-quang-cao</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- Products -->
   <url>
-    <loc>https://innhatnguyen.vn/san-pham/in-bao-thu-phong-bi</loc>
+    <loc>https://dichvuinnhatnguyen.vn/san-pham/in-bao-thu-phong-bi</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/san-pham/in-danh-thiep-namecard</loc>
+    <loc>https://dichvuinnhatnguyen.vn/san-pham/in-danh-thiep-namecard</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/san-pham/in-hop-giay-hop-cung</loc>
+    <loc>https://dichvuinnhatnguyen.vn/san-pham/in-hop-giay-hop-cung</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/san-pham/in-tag-treo-nhan-mac</loc>
+    <loc>https://dichvuinnhatnguyen.vn/san-pham/in-tag-treo-nhan-mac</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/san-pham/in-tem-nhan-decal</loc>
+    <loc>https://dichvuinnhatnguyen.vn/san-pham/in-tem-nhan-decal</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/san-pham/in-to-roi-brochure</loc>
+    <loc>https://dichvuinnhatnguyen.vn/san-pham/in-to-roi-brochure</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/san-pham/in-tui-giay-cao-cap</loc>
+    <loc>https://dichvuinnhatnguyen.vn/san-pham/in-tui-giay-cao-cap</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <!-- News & Guide Posts -->
   <url>
-    <loc>https://innhatnguyen.vn/tin-tuc/bi-quyet-chon-kich-thuoc-namecard-va-catalogue-chuan-phong-thuy</loc>
+    <loc>https://dichvuinnhatnguyen.vn/tin-tuc/bi-quyet-chon-kich-thuoc-namecard-va-catalogue-chuan-phong-thuy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/tin-tuc/cach-xuat-file-in-chuan-he-mau-cmyk-va-chua-le-cat-xen-2mm</loc>
+    <loc>https://dichvuinnhatnguyen.vn/tin-tuc/cach-xuat-file-in-chuan-he-mau-cmyk-va-chua-le-cat-xen-2mm</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://innhatnguyen.vn/tin-tuc/phan-biet-giay-ford-couche-ivory-bristol-khi-dat-in</loc>
+    <loc>https://dichvuinnhatnguyen.vn/tin-tuc/phan-biet-giay-ford-couche-ivory-bristol-khi-dat-in</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

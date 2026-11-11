@@ -15,7 +15,7 @@ export function setMetaTags({
   title = 'Xưởng In Nhật Nguyên - In Nhanh, Giá Gốc Trực Tiếp TPHCM',
   description = 'Xưởng in Offset & Kỹ thuật số Nhật Nguyên chuyên in hộp giấy, túi giấy, tem nhãn decal, catalogue, namecard giá gốc tận xưởng.',
   keywords = 'in hộp giấy, in túi giấy, xưởng in offset tphcm, in decal tem nhãn, in catalogue',
-  image = 'https://innhatnguyen.vn/og-banner.jpg',
+  image = 'https://dichvuinnhatnguyen.vn/og-banner.jpg',
   url = window.location.href,
   type = 'website',
   robots = 'index, follow',

@@ -116,7 +116,7 @@ async function loadPosts() {
   setMetaTags({
     title: 'Cẩm Nang Kỹ Thuật & Xuất Bản In Ấn | Xưởng In Nhật Nguyên',
     description: 'Chuyên mục chia sẻ kinh nghiệm in ấn thực chiến, hướng dẫn xuất file PDF chuẩn CMYK, mẹo chọn giấy in ấn tiết kiệm chi phí cho doanh nghiệp.',
-    url: 'https://innhatnguyen.vn/tin-tuc'
+    url: 'https://dichvuinnhatnguyen.vn/tin-tuc'
   })
 }
 

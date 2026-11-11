@@ -367,7 +367,7 @@
             >
               <div class="px-3 py-2 border-b" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
                 <div class="font-bold truncate">{{ user?.name || 'Quản Trị Viên' }}</div>
-                <div class="text-[10px] text-slate-400 truncate">{{ user?.email || 'admin@innhatnguyen.vn' }}</div>
+                <div class="text-[10px] text-slate-400 truncate">{{ user?.email || 'admin@dichvuinnhatnguyen.vn' }}</div>
               </div>
 
               <router-link

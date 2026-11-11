@@ -177,7 +177,7 @@
             Xem Trước Hiển Thị Google:
           </span>
           <div class="bg-white rounded-xl p-4 text-slate-800 space-y-1 border border-slate-200 shadow-sm">
-            <div class="text-[11px] text-emerald-800 truncate">https://innhatnguyen.vn</div>
+            <div class="text-[11px] text-emerald-800 truncate">https://dichvuinnhatnguyen.vn</div>
             <div class="text-sm font-semibold text-blue-800 hover:underline cursor-pointer line-clamp-1">
               {{ form.meta_title_default || 'Xưởng In Ấn Nhật Nguyên' }}
             </div>
@@ -211,7 +211,7 @@
 
         <div class="flex items-center gap-2">
           <a
-            href="https://search.google.com/search-console?resource_id=https://innhatnguyen.vn/"
+            href="https://search.google.com/search-console?resource_id=https://dichvuinnhatnguyen.vn/"
             target="_blank"
             class="px-3.5 py-1.5 rounded-xl font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 transition-all shadow-sm"
           >
@@ -283,7 +283,7 @@
             <div class="flex items-center justify-between p-2.5 rounded-lg border bg-black/10" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
               <div>
                 <div class="font-bold">Sitemap XML (Sơ đồ website):</div>
-                <div class="text-[11px] text-slate-400 font-mono">https://innhatnguyen.vn/sitemap.xml</div>
+                <div class="text-[11px] text-slate-400 font-mono">https://dichvuinnhatnguyen.vn/sitemap.xml</div>
               </div>
               <a
                 href="/sitemap.xml"
@@ -298,7 +298,7 @@
             <div class="flex items-center justify-between p-2.5 rounded-lg border bg-black/10" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
               <div>
                 <div class="font-bold">Robots.txt (Quy tắc thu thập Googlebot):</div>
-                <div class="text-[11px] text-slate-400 font-mono">https://innhatnguyen.vn/robots.txt</div>
+                <div class="text-[11px] text-slate-400 font-mono">https://dichvuinnhatnguyen.vn/robots.txt</div>
               </div>
               <a
                 href="/robots.txt"
@@ -315,7 +315,7 @@
           <!-- Guide Steps -->
           <div class="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[11px] space-y-1 text-slate-300">
             <div class="font-bold text-blue-400">3 Bước kết nối Google Search Console:</div>
-            <div>1. Mở Search Console, chọn thêm tài sản bằng <strong>Tiền tố URL</strong> (<code class="text-brand-gold">https://innhatnguyen.vn</code>).</div>
+            <div>1. Mở Search Console, chọn thêm tài sản bằng <strong>Tiền tố URL</strong> (<code class="text-brand-gold">https://dichvuinnhatnguyen.vn</code>).</div>
             <div>2. Chọn phương thức <strong>Thẻ HTML (HTML Tag)</strong>, dán mã vào ô bên trái rồi bấm <strong>Lưu Tất Cả Cài Đặt</strong>.</div>
             <div>3. Quay lại Search Console bấm <strong>XÁC MINH</strong>, sau đó vào mục <strong>Sơ đồ trang web (Sitemaps)</strong> gửi link <code class="text-emerald-400">sitemap.xml</code>.</div>
           </div>
@@ -470,7 +470,7 @@
               <input
                 v-model="manualPingUrl"
                 type="url"
-                placeholder="https://innhatnguyen.vn/san-pham/..."
+                placeholder="https://dichvuinnhatnguyen.vn/san-pham/..."
                 class="w-full rounded-xl px-3 py-2 border font-mono text-xs focus:outline-none focus:ring-1 focus:ring-brand-gold"
                 :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
               />
@@ -580,7 +580,7 @@ const indexingJsonInput = ref('')
 const isSavingIndexing = ref(false)
 const indexingSaveMsg = ref('')
 const isTestingIndexing = ref(false)
-const manualPingUrl = ref('https://innhatnguyen.vn/')
+const manualPingUrl = ref('https://dichvuinnhatnguyen.vn/')
 const manualPingType = ref('URL_UPDATED')
 const isPingingUrl = ref(false)
 const manualPingResult = ref(null)

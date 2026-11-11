@@ -192,7 +192,7 @@ class AdminUserController extends Controller
             ], 422);
         }
 
-        if ($user->id === 1 || $user->email === 'admin@innhatnguyen.vn') {
+        if ($user->id === 1 || $user->email === 'admin@dichvuinnhatnguyen.vn' || $user->email === 'admin@innhatnguyen.vn') {
             return response()->json([
                 'success' => false,
                 'message' => 'Không thể xóa tài khoản Quản Trị Viên Gốc của xưởng.',

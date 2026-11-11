@@ -314,7 +314,7 @@ function applyCategorySEO() {
       title: 'Tất Cả Sản Phẩm & Dịch Vụ In Ấn Trực Tiếp Tại Xưởng | Nhật Nguyên',
       description: 'Bảng danh mục đầy đủ các ấn phẩm in Offset và In Kỹ Thuật Số trực tiếp tại xưởng in Nhật Nguyên. Nhận in mọi số lượng, chuẩn màu nhận diện, giá gốc xưởng.',
       keywords: 'in hop giay, in tui giay, in decal, in catalogue, in to roi, in namecard, xuong in tphcm',
-      url: 'https://innhatnguyen.vn/san-pham'
+      url: 'https://dichvuinnhatnguyen.vn/san-pham'
     })
     return
   }
@@ -325,13 +325,13 @@ function applyCategorySEO() {
       title: cat.meta_title || `${cat.name} - Giá Gốc Trực Tiếp Tại Xưởng TPHCM | Nhật Nguyên`,
       description: cat.meta_description || cat.description || `Xưởng in Nhật Nguyên chuyên sản xuất ${cat.name} chất lượng cao, công nghệ in hiện đại, giá xưởng trực tiếp không qua trung gian.`,
       keywords: cat.meta_keywords || `${cat.name}, xuong in nhat nguyen, in gia goc, bao gia ${cat.name}`,
-      url: cat.canonical_url || `https://innhatnguyen.vn/danh-muc/${cat.slug}`,
+      url: cat.canonical_url || `https://dichvuinnhatnguyen.vn/danh-muc/${cat.slug}`,
       schema: {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
         name: cat.meta_title || cat.name,
         description: cat.meta_description || cat.description,
-        url: `https://innhatnguyen.vn/danh-muc/${cat.slug}`
+        url: `https://dichvuinnhatnguyen.vn/danh-muc/${cat.slug}`
       }
     })
   }

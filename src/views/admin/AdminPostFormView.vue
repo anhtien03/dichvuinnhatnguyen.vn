@@ -298,7 +298,7 @@
             <div class="p-4 rounded-xl border bg-white text-slate-900 shadow-xs space-y-1">
               <div class="flex items-center gap-2 text-xs text-slate-600">
                 <span class="w-4 h-4 rounded-full bg-brand-gold/30 text-[9px] font-bold flex items-center justify-center text-slate-900">N</span>
-                <span class="font-medium text-slate-700">innhatnguyen.vn</span>
+                <span class="font-medium text-slate-700">dichvuinnhatnguyen.vn</span>
                 <span class="text-slate-400">&rsaquo; tin-tuc &rsaquo; {{ form.slug || 'bai-viet' }}</span>
               </div>
               <div class="text-[#1a0dab] font-semibold text-base hover:underline cursor-pointer leading-snug line-clamp-1">

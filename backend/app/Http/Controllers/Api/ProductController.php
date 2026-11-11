@@ -98,7 +98,7 @@ class ProductController extends Controller
         if (SiteSetting::get('google_indexing_auto_publish', true)) {
             try {
                 $indexingService = app(GoogleIndexingService::class);
-                $indexingService->publishUrl('https://innhatnguyen.vn/san-pham/' . $product->slug, 'URL_UPDATED');
+                $indexingService->publishUrl('https://dichvuinnhatnguyen.vn/san-pham/' . $product->slug, 'URL_UPDATED');
             } catch (\Throwable $e) {}
         }
 
@@ -140,7 +140,7 @@ class ProductController extends Controller
         if (SiteSetting::get('google_indexing_auto_publish', true)) {
             try {
                 $indexingService = app(GoogleIndexingService::class);
-                $indexingService->publishUrl('https://innhatnguyen.vn/san-pham/' . $product->slug, 'URL_UPDATED');
+                $indexingService->publishUrl('https://dichvuinnhatnguyen.vn/san-pham/' . $product->slug, 'URL_UPDATED');
             } catch (\Throwable $e) {}
         }
 
@@ -160,7 +160,7 @@ class ProductController extends Controller
         if (SiteSetting::get('google_indexing_auto_publish', true)) {
             try {
                 $indexingService = app(GoogleIndexingService::class);
-                $indexingService->publishUrl('https://innhatnguyen.vn/san-pham/' . $deletedSlug, 'URL_DELETED');
+                $indexingService->publishUrl('https://dichvuinnhatnguyen.vn/san-pham/' . $deletedSlug, 'URL_DELETED');
             } catch (\Throwable $e) {}
         }
 

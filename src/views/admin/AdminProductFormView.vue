@@ -508,7 +508,7 @@
           <div v-if="previewTab === 'card'" class="space-y-3">
             <div class="text-[11px] text-slate-400 flex items-center justify-between">
               <span>Khách hàng sẽ nhìn thấy thẻ này trên trang chủ & catalog:</span>
-              <span class="text-brand-gold font-bold">innhatnguyen.vn</span>
+              <span class="text-brand-gold font-bold">dichvuinnhatnguyen.vn</span>
             </div>
 
             <!-- Real Mockup Card Component -->
@@ -592,7 +592,7 @@
               <div class="flex items-center gap-2">
                 <img src="/logo-icon.png" alt="Favicon" class="w-4 h-4 rounded-full object-contain shrink-0" />
                 <div class="text-[12px] text-slate-700 truncate font-sans">
-                  https://innhatnguyen.vn <span class="text-slate-400">› san-pham ›</span> <span class="font-medium text-slate-900">{{ form.slug || 'slug-san-pham' }}</span>
+                  https://dichvuinnhatnguyen.vn <span class="text-slate-400">› san-pham ›</span> <span class="font-medium text-slate-900">{{ form.slug || 'slug-san-pham' }}</span>
                 </div>
               </div>
 
@@ -705,7 +705,7 @@ function formatCurrency(val) {
 }
 
 const previewFullUrl = computed(() => {
-  return `https://innhatnguyen.vn/san-pham/${form.value.slug || 'slug-san-pham'}`
+  return `https://dichvuinnhatnguyen.vn/san-pham/${form.value.slug || 'slug-san-pham'}`
 })
 
 const metaTitleLengthClass = computed(() => {
@@ -765,7 +765,7 @@ function autoFillSEO() {
   if (!form.value.name) return
   form.value.meta_title = `${form.value.name} - Giá Gốc Trực Tiếp Tại Xưởng | Nhật Nguyên`
   form.value.meta_description = `Xưởng in Nhật Nguyên chuyên ${form.value.name.toLowerCase()} chất lượng cao, công nghệ in hiện đại, lấy nhanh trong ${form.value.turnaround || '24h-48h'}, giá gốc tận xưởng không qua trung gian.`
-  form.value.canonical_url = `https://innhatnguyen.vn/san-pham/${form.value.slug || slugify(form.value.name)}`
+  form.value.canonical_url = `https://dichvuinnhatnguyen.vn/san-pham/${form.value.slug || slugify(form.value.name)}`
 }
 
 async function loadCategories() {

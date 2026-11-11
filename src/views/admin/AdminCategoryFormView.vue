@@ -308,7 +308,7 @@
               Xem trước kết quả trên Google Search (SERP Preview):
             </div>
             <div class="flex items-center gap-1.5 text-xs text-slate-700 truncate">
-              <span class="text-emerald-700 font-semibold font-mono">https://innhatnguyen.vn</span>
+              <span class="text-emerald-700 font-semibold font-mono">https://dichvuinnhatnguyen.vn</span>
               <span class="text-slate-400">› danh-muc ›</span>
               <span class="text-slate-600 font-mono">{{ form.slug || 'slug-danh-muc' }}</span>
             </div>

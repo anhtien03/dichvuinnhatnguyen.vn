@@ -122,7 +122,7 @@ class PostController extends Controller
         if ($post->is_published && SiteSetting::get('google_indexing_auto_publish', true)) {
             try {
                 $indexingService = app(GoogleIndexingService::class);
-                $indexingService->publishUrl('https://innhatnguyen.vn/tin-tuc/' . $post->slug, 'URL_UPDATED');
+                $indexingService->publishUrl('https://dichvuinnhatnguyen.vn/tin-tuc/' . $post->slug, 'URL_UPDATED');
             } catch (\Throwable $e) {}
         }
 
@@ -184,7 +184,7 @@ class PostController extends Controller
         if ($post->is_published && SiteSetting::get('google_indexing_auto_publish', true)) {
             try {
                 $indexingService = app(GoogleIndexingService::class);
-                $indexingService->publishUrl('https://innhatnguyen.vn/tin-tuc/' . $post->slug, 'URL_UPDATED');
+                $indexingService->publishUrl('https://dichvuinnhatnguyen.vn/tin-tuc/' . $post->slug, 'URL_UPDATED');
             } catch (\Throwable $e) {}
         }
 
@@ -225,7 +225,7 @@ class PostController extends Controller
         if (SiteSetting::get('google_indexing_auto_publish', true)) {
             try {
                 $indexingService = app(GoogleIndexingService::class);
-                $indexingService->publishUrl('https://innhatnguyen.vn/tin-tuc/' . $deletedSlug, 'URL_DELETED');
+                $indexingService->publishUrl('https://dichvuinnhatnguyen.vn/tin-tuc/' . $deletedSlug, 'URL_DELETED');
             } catch (\Throwable $e) {}
         }
 
@@ -261,7 +261,7 @@ class PostController extends Controller
             try {
                 $indexingService = app(GoogleIndexingService::class);
                 $action = $post->is_published ? 'URL_UPDATED' : 'URL_DELETED';
-                $indexingService->publishUrl('https://innhatnguyen.vn/tin-tuc/' . $post->slug, $action);
+                $indexingService->publishUrl('https://dichvuinnhatnguyen.vn/tin-tuc/' . $post->slug, $action);
             } catch (\Throwable $e) {}
         }
 

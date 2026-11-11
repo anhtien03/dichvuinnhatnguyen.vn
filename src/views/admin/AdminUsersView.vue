@@ -263,7 +263,7 @@
                 v-model="userForm.email"
                 type="email"
                 required
-                placeholder="sales@innhatnguyen.vn"
+                placeholder="sales@dichvuinnhatnguyen.vn"
                 class="w-full px-3.5 py-2.5 rounded-xl border focus:outline-none"
                 :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white focus:border-brand-gold' : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-brand-blue'"
               />

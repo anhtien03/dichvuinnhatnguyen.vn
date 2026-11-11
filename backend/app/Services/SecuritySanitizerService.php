@@ -8,6 +8,8 @@ class SecuritySanitizerService
      * Domain of the website to distinguish internal vs external links
      */
     protected static array $internalDomains = [
+        'dichvuinnhatnguyen.vn',
+        'www.dichvuinnhatnguyen.vn',
         'innhatnguyen.vn',
         'www.innhatnguyen.vn',
         'localhost',

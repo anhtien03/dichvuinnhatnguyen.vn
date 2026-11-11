@@ -782,7 +782,7 @@ function applyProductSEO(prod) {
       '@type': 'Product',
       name: prod.name,
       description: prod.meta_description || prod.description || 'Sản phẩm in ấn chất lượng cao tại Xưởng In Nhật Nguyên',
-      image: prod.image ? (prod.image.startsWith('http') ? prod.image : `https://innhatnguyen.vn${prod.image}`) : 'https://innhatnguyen.vn/logo.png',
+      image: prod.image ? (prod.image.startsWith('http') ? prod.image : `https://dichvuinnhatnguyen.vn${prod.image}`) : 'https://dichvuinnhatnguyen.vn/logo.png',
       sku: `NN-${prod.id || prod.slug || 'IN-AN'}`,
       mpn: `NN-${prod.id || 'PRODUCT'}`,
       brand: {

@@ -127,7 +127,7 @@ async function fetchPost() {
       setMetaTags({
         title: post.value.meta_title || `${post.value.title} - Cẩm Nang In Ấn`,
         description: post.value.meta_description || post.value.excerpt || 'Cẩm nang hướng dẫn kỹ thuật xuất file in và chọn chất liệu giấy tại Xưởng In Nhật Nguyên.',
-        image: post.value.thumbnail || 'https://innhatnguyen.vn/logo.png',
+        image: post.value.thumbnail || 'https://dichvuinnhatnguyen.vn/logo.png',
         url: window.location.href,
         type: 'article',
         schema: {
