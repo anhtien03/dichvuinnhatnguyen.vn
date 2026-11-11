@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="space-y-6">
     <!-- Top Bar: Back & Action Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -240,15 +240,33 @@
           ></textarea>
         </div>
 
-        <!-- 3. Cấu hình SEO & Google SERP Snippet Preview -->
+        <!-- 3. Cấu hình Rank Math SEO Pro -->
+        <RankMathSeoBox
+          :title="form.title"
+          :meta-title="form.meta_title"
+          :meta-description="form.meta_description"
+          :slug="form.slug"
+          :content="form.content"
+          :image="form.thumbnail"
+          :initial-keyword="postFocusKeyword"
+          url-prefix="tin-tuc"
+          type="post"
+          :default-excerpt="form.excerpt"
+          @update:focusKeyword="postFocusKeyword = $event"
+          @update:metaTitle="form.meta_title = $event"
+          @update:metaDescription="form.meta_description = $event"
+          @update:slug="form.slug = $event"
+        />
+
+        <!-- Tùy chỉnh thẻ Meta Tags chi tiết -->
         <div
-          class="p-6 rounded-2xl border space-y-5 shadow-sm"
+          class="p-5 rounded-2xl border space-y-4 shadow-sm"
           :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200'"
         >
-          <div class="flex items-center gap-2 border-b pb-3" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
+          <div class="flex items-center justify-between border-b pb-3" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
             <Globe class="w-4 h-4 text-brand-gold" />
-            <h3 class="text-sm font-bold" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
-              Cấu Hình SEO Google
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Tùy Chỉnh Meta Tags Thủ Công:
             </h3>
           </div>
 
@@ -258,16 +276,16 @@
               <label class="text-xs font-bold" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
                 Tiêu Đề SEO (Meta Title)
               </label>
-              <span class="text-[10px] font-mono" :class="form.meta_title?.length > 60 ? 'text-amber-400 font-bold' : 'text-slate-400'">
-                {{ form.meta_title?.length || 0 }} / 60 ký tự
+              <span class="text-[10px] font-mono" :class="form.meta_title?.length > 65 ? 'text-amber-400 font-bold' : 'text-slate-400'">
+                {{ form.meta_title?.length || 0 }} / 65 ký tự
               </span>
             </div>
             <input
               v-model="form.meta_title"
               type="text"
               :placeholder="form.title || 'Tiêu đề hiển thị trên kết quả tìm kiếm Google'"
-              class="w-full rounded-xl px-4 py-2.5 border text-xs transition-colors focus:outline-none focus:border-brand-gold"
-              :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white placeholder-slate-500' : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'"
+              class="w-full rounded-xl px-4 py-2 text-xs transition-colors focus:outline-none focus:border-brand-gold border"
+              :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white placeholder-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'"
             />
           </div>
 
@@ -285,29 +303,9 @@
               v-model="form.meta_description"
               rows="3"
               :placeholder="form.excerpt || 'Đoạn trích mô tả tóm tắt hiển thị bên dưới tiêu đề trên Google (khoảng 120-160 ký tự)...'"
-              class="w-full rounded-xl px-4 py-2.5 border text-xs leading-relaxed transition-colors focus:outline-none focus:border-brand-gold"
-              :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white placeholder-slate-500' : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'"
+              class="w-full rounded-xl px-4 py-2 text-xs leading-relaxed transition-colors focus:outline-none focus:border-brand-gold border"
+              :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white placeholder-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'"
             ></textarea>
-          </div>
-
-          <!-- Google SERP Snippet Preview -->
-          <div class="pt-2">
-            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
-              Xem trước kết quả tìm kiếm Google:
-            </span>
-            <div class="p-4 rounded-xl border bg-white text-slate-900 shadow-xs space-y-1">
-              <div class="flex items-center gap-2 text-xs text-slate-600">
-                <span class="w-4 h-4 rounded-full bg-brand-gold/30 text-[9px] font-bold flex items-center justify-center text-slate-900">N</span>
-                <span class="font-medium text-slate-700">dichvuinnhatnguyen.vn</span>
-                <span class="text-slate-400">&rsaquo; tin-tuc &rsaquo; {{ form.slug || 'bai-viet' }}</span>
-              </div>
-              <div class="text-[#1a0dab] font-semibold text-base hover:underline cursor-pointer leading-snug line-clamp-1">
-                {{ form.meta_title || form.title || 'Tiêu đề bài viết - In Ấn Nhật Nguyên' }}
-              </div>
-              <p class="text-xs text-[#4d5156] line-clamp-2 leading-relaxed">
-                {{ form.meta_description || form.excerpt || 'Nội dung tóm tắt hiển thị trong kết quả tìm kiếm Google nhằm thúc đẩy người dùng click vào xem bài viết...' }}
-              </p>
-            </div>
           </div>
         </div>
       </div>
@@ -542,6 +540,7 @@ import {
 import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
 import MediaLibraryModal from '../../components/admin/MediaLibraryModal.vue'
+import RankMathSeoBox from '../../components/admin/RankMathSeoBox.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -553,6 +552,7 @@ const isUploading = ref(false)
 const isMediaModalOpen = ref(false)
 const mediaTarget = ref('thumbnail') // 'thumbnail' or 'content'
 const contentEditorRef = ref(null)
+const postFocusKeyword = ref('')
 
 const toastMessage = ref('')
 const toastType = ref('success')

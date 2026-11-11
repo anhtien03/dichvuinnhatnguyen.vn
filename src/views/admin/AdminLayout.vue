@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div :class="[isDarkMode ? 'dark bg-[#1A222C] text-[#DEE4EE]' : 'bg-[#F1F5F9] text-[#64748B]']" class="min-h-screen flex font-sans transition-colors duration-200">
     <!-- Mobile Sidebar Backdrop -->
     <div

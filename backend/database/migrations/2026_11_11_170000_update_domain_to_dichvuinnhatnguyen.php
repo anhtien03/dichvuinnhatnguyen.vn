@@ -31,3 +31,4 @@ return new class extends Migration
         DB::statement("UPDATE categories SET canonical_url = REPLACE(canonical_url, 'https://dichvuinnhatnguyen.vn', 'https://innhatnguyen.vn') WHERE canonical_url LIKE '%dichvuinnhatnguyen.vn%'");
     }
 };
+

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="max-w-7xl mx-auto py-2 sm:py-4 space-y-6">
     <!-- Top Bar Navigation -->
     <div class="flex items-center justify-between gap-4">
@@ -355,78 +355,91 @@
               </div>
             </div>
 
-            <!-- PHẦN 2: CẤU HÌNH SEO GOOGLE -->
+            <!-- PHẦN 2: CẤU HÌNH RANK MATH SEO PRO -->
             <div class="space-y-4 pt-4 border-t" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
-              <div class="flex items-center justify-between">
-                <h2 class="text-xs font-black uppercase tracking-wider text-brand-gold flex items-center gap-2">
-                  <Globe class="w-4 h-4" />
-                  <span>2. Cấu Hình Tối Ưu SEO Google</span>
-                </h2>
-                <button
-                  type="button"
-                  @click="autoFillSEO"
-                  class="text-[11px] font-bold text-amber-500 hover:text-amber-400 cursor-pointer"
-                >
-                  ⚡ Gợi ý nội dung SEO tự động
-                </button>
-              </div>
+              <RankMathSeoBox
+                :title="form.name"
+                :meta-title="form.meta_title"
+                :meta-description="form.meta_description"
+                :slug="form.slug"
+                :content="form.description"
+                :image="previewImage"
+                :initial-keyword="form.meta_keywords"
+                url-prefix="san-pham"
+                type="product"
+                :default-excerpt="form.meta_description || form.description"
+                @update:focusKeyword="form.meta_keywords = $event"
+                @update:metaTitle="form.meta_title = $event"
+                @update:metaDescription="form.meta_description = $event"
+                @update:slug="form.slug = $event"
+              />
 
-              <!-- Meta Title -->
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <label class="font-bold" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
-                    Tiêu Đề SEO (Meta Title)
-                  </label>
-                  <span
-                    class="text-[11px] font-mono font-semibold"
-                    :class="metaTitleLengthClass"
+              <!-- Tùy chỉnh thẻ Meta Tags chi tiết -->
+              <div class="p-4 rounded-2xl border space-y-3" :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Tùy chỉnh thẻ Meta Tags thủ công:
+                  </h4>
+                  <button
+                    type="button"
+                    @click="autoFillSEO"
+                    class="text-[11px] font-bold text-amber-500 hover:text-amber-400 cursor-pointer"
                   >
-                    {{ form.meta_title ? form.meta_title.length : 0 }} / 65 ký tự
-                  </span>
+                    ⚡ Điền mẫu chuẩn xưởng
+                  </button>
                 </div>
-                <input
-                  v-model="form.meta_title"
-                  type="text"
-                  placeholder="VD: In Hộp Trà Đông Trùng Hạ Thảo Giá Gốc Tại Xưởng TPHCM | Nhật Nguyên"
-                  class="w-full rounded-xl px-4 py-2.5 text-sm border focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all"
-                  :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
-                />
-              </div>
 
-              <!-- Meta Description -->
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <label class="font-bold" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
-                    Thẻ Mô Tả Tìm Kiếm (Meta Description)
+                <!-- Meta Title -->
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <label class="font-bold text-xs" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
+                      Tiêu Đề SEO (Meta Title)
+                    </label>
+                    <span class="text-[11px] font-mono font-semibold" :class="metaTitleLengthClass">
+                      {{ form.meta_title ? form.meta_title.length : 0 }} / 65 ký tự
+                    </span>
+                  </div>
+                  <input
+                    v-model="form.meta_title"
+                    type="text"
+                    placeholder="VD: In Bao Thư Nhỏ Giá Rẻ Tận Xưởng 2026 | In Nhật Nguyên"
+                    class="w-full rounded-xl px-4 py-2 text-xs border focus:outline-none focus:ring-1 focus:ring-brand-gold transition-all"
+                    :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
+                  />
+                </div>
+
+                <!-- Meta Description -->
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <label class="font-bold text-xs" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
+                      Thẻ Mô Tả (Meta Description)
+                    </label>
+                    <span class="text-[11px] font-mono font-semibold" :class="metaDescLengthClass">
+                      {{ form.meta_description ? form.meta_description.length : 0 }} / 160 ký tự
+                    </span>
+                  </div>
+                  <textarea
+                    v-model="form.meta_description"
+                    rows="3"
+                    placeholder="VD: Xưởng In Nhật Nguyên chuyên in bao thư nhỏ chất lượng cao, chuẩn màu Offset 98%, lấy nhanh 4h - 24h, giá gốc tận xưởng không qua trung gian."
+                    class="w-full rounded-xl px-4 py-2 text-xs border focus:outline-none focus:ring-1 focus:ring-brand-gold transition-all leading-relaxed"
+                    :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
+                  ></textarea>
+                </div>
+
+                <!-- Canonical URL -->
+                <div>
+                  <label class="block font-bold text-xs mb-1.5" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
+                    Đường Dẫn Chuẩn (Canonical URL)
                   </label>
-                  <span
-                    class="text-[11px] font-mono font-semibold"
-                    :class="metaDescLengthClass"
-                  >
-                    {{ form.meta_description ? form.meta_description.length : 0 }} / 160 ký tự
-                  </span>
+                  <input
+                    v-model="form.canonical_url"
+                    type="text"
+                    :placeholder="previewFullUrl"
+                    class="w-full rounded-xl px-4 py-2 text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-brand-gold transition-all"
+                    :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
+                  />
                 </div>
-                <textarea
-                  v-model="form.meta_description"
-                  rows="3"
-                  placeholder="VD: Xưởng in Nhật Nguyên chuyên in hộp trà đông trùng hạ thảo, ép kim, cán màng cao cấp, giá gốc trực tiếp không qua trung gian. Miễn phí kiểm tra file in, giao hàng nhanh."
-                  class="w-full rounded-xl px-4 py-2.5 text-sm border focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all"
-                  :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
-                ></textarea>
-              </div>
-
-              <!-- Canonical URL -->
-              <div>
-                <label class="block font-bold mb-1.5" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
-                  Đường Dẫn Chuẩn (Canonical URL)
-                </label>
-                <input
-                  v-model="form.canonical_url"
-                  type="text"
-                  :placeholder="previewFullUrl"
-                  class="w-full rounded-xl px-4 py-2.5 text-xs font-mono border focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all"
-                  :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
-                />
               </div>
             </div>
 
@@ -652,6 +665,7 @@ import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
 import { slugify } from '../../composables/useSEO'
 import MediaLibraryModal from '../../components/admin/MediaLibraryModal.vue'
+import RankMathSeoBox from '../../components/admin/RankMathSeoBox.vue'
 
 const route = useRoute()
 const router = useRouter()
