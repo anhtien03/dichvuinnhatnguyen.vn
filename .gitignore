@@ -22,8 +22,9 @@ yarn-debug.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Deploy files
-*.zip
+# Documentation & Agent rules (Do not push to git)
+*.md
+.gemini/
 
 # REA / Reverse engineering temp files & outputs
 .rea/
