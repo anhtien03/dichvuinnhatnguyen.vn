@@ -57,8 +57,14 @@
         <router-link to="/" class="hover:text-brand-blue shrink-0">Trang chủ</router-link>
         <span class="text-slate-300">/</span>
         <router-link to="/san-pham" class="hover:text-brand-blue shrink-0">Sản phẩm</router-link>
+        <template v-if="product.category?.parent">
+          <span class="text-slate-300">/</span>
+          <router-link :to="'/danh-muc/' + product.category.parent.slug" class="hover:text-brand-blue shrink-0">
+            {{ product.category.parent.name }}
+          </router-link>
+        </template>
         <span class="text-slate-300">/</span>
-        <router-link :to="'/danh-muc/' + product.categoryId" class="hover:text-brand-blue shrink-0">
+        <router-link :to="'/danh-muc/' + product.categoryId" class="hover:text-brand-blue shrink-0 font-semibold">
           {{ product.categoryName }}
         </router-link>
         <span class="text-slate-300">/</span>

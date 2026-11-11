@@ -128,7 +128,7 @@
               <!-- Danh Mục -->
               <div>
                 <label class="block font-bold mb-1.5" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
-                  Thuộc Danh Mục <span class="text-red-500">*</span>
+                  Thuộc Danh Mục Cha <span class="text-red-500">*</span>
                 </label>
                 <select
                   v-model="form.category_id"
@@ -136,9 +136,9 @@
                   class="w-full rounded-xl px-4 py-2.5 text-sm border focus:outline-none focus:ring-2 focus:ring-brand-gold cursor-pointer transition-all"
                   :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
                 >
-                  <option value="">-- Chọn danh mục in ấn --</option>
+                  <option value="">-- Chọn danh mục in ấn (VD: In thẻ & danh thiếp) --</option>
                   <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                    {{ cat.name }}
+                    {{ cat.parent ? `📂 [${cat.parent.name}] › ${cat.name}` : `⭐ ${cat.name} (Nhóm ngành lớn)` }}
                   </option>
                 </select>
               </div>

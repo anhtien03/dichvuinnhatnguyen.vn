@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="space-y-6">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -82,13 +82,27 @@
                   </div>
 
                   <div>
-                    <router-link
-                      :to="'/he-thong-admin/categories/' + cat.id + '/edit'"
-                      class="font-bold text-sm hover:text-brand-gold transition-colors block"
-                      :class="isDarkMode ? 'text-white' : 'text-slate-900'"
-                    >
-                      {{ cat.name }}
-                    </router-link>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <router-link
+                        :to="'/he-thong-admin/categories/' + cat.id + '/edit'"
+                        class="font-bold text-sm hover:text-brand-gold transition-colors block"
+                        :class="isDarkMode ? 'text-white' : 'text-slate-900'"
+                      >
+                        {{ cat.name }}
+                      </router-link>
+                      <span
+                        v-if="cat.parent"
+                        class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                      >
+                        ↳ Thuộc: {{ cat.parent.name }}
+                      </span>
+                      <span
+                        v-else
+                        class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-brand-gold/15 text-brand-gold border border-brand-gold/25"
+                      >
+                        Nhóm ngành lớn (Tab)
+                      </span>
+                    </div>
                     <div v-if="cat.meta_title" class="text-[10px] text-emerald-400 font-mono mt-0.5">
                       ✓ Đã cấu hình SEO
                     </div>

@@ -13,11 +13,15 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with('category')->orderBy('sort_order', 'asc')->orderBy('id', 'desc');
+        $query = Product::with('category.parent')->orderBy('sort_order', 'asc')->orderBy('id', 'desc');
 
         if ($request->has('category') && !empty($request->category)) {
-            $query->whereHas('category', function ($q) use ($request) {
-                $q->where('slug', $request->category);
+            $catSlug = $request->category;
+            $query->whereHas('category', function ($q) use ($catSlug) {
+                $q->where('slug', $catSlug)
+                  ->orWhereHas('parent', function ($pq) use ($catSlug) {
+                      $pq->where('slug', $catSlug);
+                  });
             });
         }
 
@@ -47,7 +51,7 @@ class ProductController extends Controller
 
     public function show($slugOrId)
     {
-        $product = Product::with('category')
+        $product = Product::with('category.parent')
             ->where('slug', $slugOrId)
             ->orWhere('id', $slugOrId)
             ->firstOrFail();

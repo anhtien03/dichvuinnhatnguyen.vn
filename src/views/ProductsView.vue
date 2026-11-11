@@ -18,6 +18,15 @@
             Sản phẩm in ấn
           </router-link>
           <template v-if="activeCategory !== 'all' && currentCategory">
+            <template v-if="currentCategory.parent">
+              <span>/</span>
+              <router-link
+                :to="'/danh-muc/' + currentCategory.parent.slug"
+                class="hover:text-brand-blue transition-colors font-semibold"
+              >
+                {{ currentCategory.parent.name }}
+              </router-link>
+            </template>
             <span>/</span>
             <span class="text-brand-blue font-bold">{{ currentCategory.name }}</span>
           </template>
@@ -61,7 +70,7 @@
       <!-- 2. Filters & Search Toolbar -->
       <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs space-y-4">
         
-        <!-- Category Pill Buttons (Horizontal Scrollable) -->
+        <!-- Category Pill Buttons (Cấp 1: Nhóm Ngành Lớn) -->
         <div class="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none">
           <button
             type="button"
@@ -85,13 +94,13 @@
           </button>
 
           <button
-            v-for="cat in categories"
+            v-for="cat in rootCategories"
             :key="cat.id"
             type="button"
             @click="selectCategory(cat.slug)"
             :class="[
               'px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer',
-              activeCategory === cat.slug
+              activeRootCategory?.slug === cat.slug
                 ? 'bg-brand-blue text-white shadow-md'
                 : 'bg-slate-100/90 text-slate-700 hover:bg-slate-200/80 hover:text-slate-900'
             ]"
@@ -100,11 +109,49 @@
             <span
               :class="[
                 'text-[10px] px-1.5 py-0.5 rounded-full font-bold',
-                activeCategory === cat.slug ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
+                activeRootCategory?.slug === cat.slug ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
               ]"
             >
               {{ getCategoryProductCount(cat.slug) }}
             </span>
+          </button>
+        </div>
+
+        <!-- Sub-category Pill Buttons (Cấp 2: Danh Mục Cha thuộc Nhóm Ngành đang chọn) -->
+        <div
+          v-if="subCategoriesForActiveRoot.length > 0"
+          class="flex items-center gap-2 overflow-x-auto pt-2 border-t border-slate-100 pb-1 scrollbar-none"
+        >
+          <span class="text-[11px] font-bold text-slate-400 whitespace-nowrap shrink-0">
+            Danh mục {{ activeRootCategory?.name }}:
+          </span>
+          <button
+            v-if="activeRootCategory"
+            type="button"
+            @click="selectCategory(activeRootCategory.slug)"
+            :class="[
+              'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer border',
+              activeCategory === activeRootCategory.slug
+                ? 'bg-brand-gold text-slate-950 border-brand-gold shadow-xs'
+                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+            ]"
+          >
+            Tất cả ({{ getCategoryProductCount(activeRootCategory.slug) }})
+          </button>
+          <button
+            v-for="sub in subCategoriesForActiveRoot"
+            :key="sub.id"
+            type="button"
+            @click="selectCategory(sub.slug)"
+            :class="[
+              'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer border flex items-center gap-1.5',
+              activeCategory === sub.slug
+                ? 'bg-brand-gold text-slate-950 border-brand-gold shadow-xs'
+                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:border-brand-blue/40'
+            ]"
+          >
+            <span>{{ sub.name }}</span>
+            <span class="text-[10px] opacity-75">({{ getCategoryProductCount(sub.slug) }})</span>
           </button>
         </div>
 
@@ -172,6 +219,50 @@
               <ArrowUpDown class="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- 2.5. Lưới Thẻ Danh Mục Cha (Cấp 2) khi đang ở trang Tất cả hoặc Nhóm Ngành Lớn -->
+      <div v-if="displayedSubCategories.length > 0 && !currentCategory?.parent_id" class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+            <span class="w-2 h-5 rounded-full bg-brand-gold inline-block"></span>
+            <span>Danh Mục Ấn Phẩm Chính (Chọn danh mục để xem các gói quy cách con)</span>
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <router-link
+            v-for="sub in displayedSubCategories"
+            :key="sub.id"
+            :to="'/danh-muc/' + sub.slug"
+            class="group bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-xl hover:border-brand-blue/40 transition-all flex items-center gap-4 p-3.5"
+          >
+            <div class="w-24 h-20 rounded-xl bg-slate-100 overflow-hidden shrink-0 relative">
+              <img
+                :src="sub.image || '/logo.png'"
+                :alt="sub.name"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span v-if="sub.badge" class="px-2 py-0.5 rounded bg-brand-gold/20 text-slate-900 font-black text-[10px]">
+                  {{ sub.badge }}
+                </span>
+                <span class="text-[10px] font-bold text-brand-blue">
+                  {{ getCategoryProductCount(sub.slug) }} gói quy cách
+                </span>
+              </div>
+              <h3 class="text-sm sm:text-base font-black text-slate-900 group-hover:text-brand-blue truncate mt-0.5">
+                {{ sub.name }}
+              </h3>
+              <p v-if="sub.description" class="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                {{ sub.description }}
+              </p>
+            </div>
+            <ArrowRight class="w-4 h-4 text-slate-400 group-hover:text-brand-blue group-hover:translate-x-1 transition-all shrink-0 mr-1" />
+          </router-link>
         </div>
       </div>
 
@@ -350,6 +441,30 @@ const currentCategory = computed(() => {
   return categories.value.find(c => c.slug === activeCategory.value)
 })
 
+const rootCategories = computed(() => {
+  return categories.value.filter(c => !c.parent_id && c.is_active !== false)
+})
+
+const activeRootCategory = computed(() => {
+  if (activeCategory.value === 'all' || !currentCategory.value) return null
+  if (!currentCategory.value.parent_id) return currentCategory.value
+  return categories.value.find(c => Number(c.id) === Number(currentCategory.value.parent_id)) || null
+})
+
+const subCategoriesForActiveRoot = computed(() => {
+  if (!activeRootCategory.value) return []
+  return categories.value.filter(
+    c => Number(c.parent_id) === Number(activeRootCategory.value.id) && c.is_active !== false
+  )
+})
+
+const displayedSubCategories = computed(() => {
+  if (activeCategory.value === 'all') {
+    return categories.value.filter(c => c.parent_id && c.is_active !== false)
+  }
+  return subCategoriesForActiveRoot.value
+})
+
 const currentCategoryTitle = computed(() => {
   if (activeCategory.value === 'all') return 'Tất Cả Sản Phẩm & Dịch Vụ In Ấn'
   return currentCategory.value ? currentCategory.value.name : 'Danh Mục Sản Phẩm'
@@ -362,15 +477,31 @@ const currentCategoryDescription = computed(() => {
   return currentCategory.value ? (currentCategory.value.meta_description || currentCategory.value.description) : 'Các ấn phẩm chất lượng cao tại xưởng in Nhật Nguyên.'
 })
 
+function isProductInCategoryOrChild(p, targetSlug) {
+  if (targetSlug === 'all') return true
+  const directSlug = p.categoryId || p.category?.slug
+  if (directSlug === targetSlug) return true
+
+  // Kiểm tra nếu targetSlug là Nhóm Ngành Lớn (Cấp 1), khớp luôn các ấn phẩm thuộc Danh Mục Cha (Cấp 2) của nhóm đó
+  const parentSlug = p.category?.parent?.slug
+  if (parentSlug === targetSlug) return true
+
+  const targetCat = categories.value.find(c => c.slug === targetSlug)
+  const prodCat = categories.value.find(c => c.slug === directSlug || Number(c.id) === Number(p.category_id))
+  if (targetCat && prodCat && Number(prodCat.parent_id) === Number(targetCat.id)) {
+    return true
+  }
+  return false
+}
+
 function getCategoryProductCount(slug) {
-  return products.value.filter(p => (p.categoryId === slug || p.category?.slug === slug)).length
+  return products.value.filter(p => isProductInCategoryOrChild(p, slug)).length
 }
 
 const filteredAndSortedProducts = computed(() => {
   let list = products.value.filter(p => {
-    // Category match
-    const pCat = p.categoryId || p.category?.slug
-    const matchCat = activeCategory.value === 'all' || pCat === activeCategory.value
+    // Category match (hỗ trợ cả Nhóm ngành Cấp 1 và Danh mục cha Cấp 2)
+    const matchCat = isProductInCategoryOrChild(p, activeCategory.value)
 
     // Search keyword match (name or description)
     const q = searchKeyword.value.toLowerCase().trim()

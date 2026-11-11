@@ -11,7 +11,15 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::withCount('products')
+        $categories = Category::with([
+                'parent:id,name,slug',
+                'children' => function ($q) {
+                    $q->withCount('products')
+                      ->orderBy('sort_order', 'asc')
+                      ->orderBy('id', 'asc');
+                },
+            ])
+            ->withCount(['products', 'children'])
             ->orderBy('sort_order', 'asc')
             ->orderBy('id', 'asc')
             ->get();
@@ -24,7 +32,15 @@ class CategoryController extends Controller
 
     public function show($slugOrId)
     {
-        $category = Category::withCount('products')
+        $category = Category::with([
+                'parent:id,name,slug',
+                'children' => function ($q) {
+                    $q->withCount('products')
+                      ->orderBy('sort_order', 'asc')
+                      ->orderBy('id', 'asc');
+                },
+            ])
+            ->withCount(['products', 'children'])
             ->where('slug', $slugOrId)
             ->orWhere('id', $slugOrId)
             ->firstOrFail();
@@ -38,6 +54,7 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'parent_id' => 'nullable|exists:categories,id',
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:categories,slug',
             'description' => 'nullable|string',
@@ -61,7 +78,7 @@ class CategoryController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Thêm danh mục thành công',
-            'data' => $category,
+            'data' => $category->load('parent:id,name,slug'),
         ], 201);
     }
 
@@ -70,6 +87,7 @@ class CategoryController extends Controller
         $category = Category::findOrFail($id);
 
         $validated = $request->validate([
+            'parent_id' => 'nullable|exists:categories,id',
             'name' => 'sometimes|required|string|max:255',
             'slug' => 'sometimes|required|string|unique:categories,slug,' . $category->id,
             'description' => 'nullable|string',
@@ -84,12 +102,16 @@ class CategoryController extends Controller
             'is_active' => 'boolean',
         ]);
 
+        if (array_key_exists('parent_id', $validated) && (int) $validated['parent_id'] === (int) $category->id) {
+            $validated['parent_id'] = null;
+        }
+
         $category->update($validated);
 
         return response()->json([
             'success' => true,
             'message' => 'Cập nhật danh mục thành công',
-            'data' => $category,
+            'data' => $category->load('parent:id,name,slug'),
         ]);
     }
 

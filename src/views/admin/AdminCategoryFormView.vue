@@ -92,10 +92,34 @@
               @input="handleNameInput"
               type="text"
               required
-              placeholder="Ví dụ: In Hộp Giấy & Bao Bì"
+              placeholder="Ví dụ: In thẻ & danh thiếp, In Hộp Giấy..."
               class="w-full rounded-xl px-4 py-2.5 border text-sm font-bold transition-colors focus:outline-none focus:border-brand-gold"
               :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white placeholder-slate-500' : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'"
             />
+          </div>
+
+          <!-- Thuộc Nhóm Ngành Lớn (Parent Category - Cấp 1) -->
+          <div>
+            <label class="block font-bold text-xs mb-1.5" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
+              Phân Cấp Danh Mục (Thuộc Nhóm Ngành Lớn nào?)
+            </label>
+            <select
+              v-model="form.parent_id"
+              class="w-full rounded-xl px-4 py-2.5 border text-xs sm:text-sm font-bold transition-colors focus:outline-none focus:border-brand-gold cursor-pointer"
+              :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-900'"
+            >
+              <option :value="null">⭐ Là Nhóm Ngành Lớn (Cấp 1 - Hiển thị trên thanh Tab ngang Trang chủ)</option>
+              <option
+                v-for="pCat in parentCategoryOptions"
+                :key="pCat.id"
+                :value="pCat.id"
+              >
+                ↳ Danh Mục Cha thuộc nhóm: {{ pCat.name }}
+              </option>
+            </select>
+            <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+              💡 <strong>Hướng dẫn 3 cấp:</strong> Chọn <strong>Nhóm Ngành Lớn</strong> (ví dụ: <em>Ấn Phẩm Văn Phòng</em>) nếu đây là <strong>Danh Mục Cha</strong> (ví dụ: <em>In thẻ &amp; danh thiếp, In bao thư...</em>) để hiển thị thành thẻ hình ảnh trong tab đó. Sau đó vào mục <strong>Ấn phẩm</strong> để tạo các gói con (<em>Danh thiếp chuẩn, Danh thiếp giá rẻ, Danh thiếp ép kim...</em>) liên kết vào danh mục này.
+            </p>
           </div>
 
           <!-- Đường Dẫn SEO (Slug) -->
@@ -459,8 +483,14 @@ const toastMessage = ref('')
 const toastType = ref('success')
 const isMediaModalOpen = ref(false)
 const categoryDetail = ref(null)
+const allCategories = ref([])
+
+const parentCategoryOptions = computed(() => {
+  return allCategories.value.filter(c => !c.parent_id && String(c.id) !== String(categoryId.value))
+})
 
 const form = reactive({
+  parent_id: null,
   name: '',
   slug: '',
   image: '',
@@ -532,6 +562,13 @@ async function handleDirectUpload(e) {
 
 // Load category for edit
 async function fetchCategory() {
+  try {
+    const listRes = await api.getCategories().catch(() => null)
+    if (listRes?.data) {
+      allCategories.value = listRes.data
+    }
+  } catch (e) {}
+
   if (!isEditMode.value) return
 
   try {
@@ -539,6 +576,7 @@ async function fetchCategory() {
     const cat = res.data || res
     categoryDetail.value = cat
 
+    form.parent_id = cat.parent_id ?? null
     form.name = cat.name || ''
     form.slug = cat.slug || ''
     form.image = cat.image || ''
@@ -564,6 +602,7 @@ async function saveCategory() {
   try {
     isSaving.value = true
     const payload = {
+      parent_id: form.parent_id || null,
       name: form.name.trim(),
       slug: form.slug?.trim() || slugify(form.name),
       image: form.image?.trim() || null,
