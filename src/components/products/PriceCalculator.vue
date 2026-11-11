@@ -226,7 +226,7 @@
           >
             <span>{{ s.label }}</span>
             <span v-if="s.extra > 0" class="text-[10px] text-amber-600 font-bold shrink-0 ml-2">
-              +{{ formatCurrency(s.extra) }}
+              +{{ formatCurrency(s.extra) }}/{{ product.unit || 'cái' }}
             </span>
           </button>
         </div>
@@ -252,7 +252,7 @@
           >
             <span>{{ m.label }}</span>
             <span v-if="m.extra > 0" class="text-[10px] text-amber-600 font-bold shrink-0 ml-2">
-              +{{ formatCurrency(m.extra) }}
+              +{{ formatCurrency(m.extra) }}/{{ product.unit || 'cái' }}
             </span>
           </button>
         </div>
@@ -278,7 +278,7 @@
           >
             <span>{{ f.label }}</span>
             <span v-if="f.extra > 0" class="text-[10px] text-amber-600 font-bold shrink-0 ml-2">
-              +{{ formatCurrency(f.extra) }}
+              +{{ formatCurrency(f.extra) }}/{{ product.unit || 'cái' }}
             </span>
           </button>
         </div>

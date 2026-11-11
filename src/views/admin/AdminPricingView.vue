@@ -627,7 +627,7 @@
                   <tr class="border-b text-slate-400 text-[10px] uppercase font-bold" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
                     <th class="py-2 px-2">Tên Quy Cách Gia Công</th>
                     <th class="py-2 px-2 w-36">Mã (Value)</th>
-                    <th class="py-2 px-2 w-36 text-right">Phụ Phí Thêm (₫)</th>
+                    <th class="py-2 px-2 w-44 text-right">Phụ Phí Thêm / 1 {{ selectedProduct.unit || 'cái' }} (₫)</th>
                     <th class="py-2 px-2 w-12 text-center">Xóa</th>
                   </tr>
                 </thead>
@@ -1180,8 +1180,9 @@ const simulatedCalculation = computed(() => {
   const pricePerUnit = Number(q.pricePerUnit) || 0
   const extra = (Number(sz.extra) || 0) + (Number(mat.extra) || 0) + (Number(fin.extra) || 0)
 
-  const total = (count * pricePerUnit) + extra
-  const unitPrice = Math.round(total / count)
+  // Phụ phí cộng thêm trên mỗi đơn vị sản phẩm (cái/hộp/tờ) rồi nhân với số lượng
+  const unitPrice = Math.max(0, pricePerUnit + extra)
+  const total = Math.max(0, unitPrice * count)
 
   return { total, unitPrice }
 })
