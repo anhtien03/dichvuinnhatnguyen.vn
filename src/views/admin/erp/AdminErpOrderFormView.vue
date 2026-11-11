@@ -13,7 +13,7 @@
         </router-link>
         <div class="flex items-center gap-3">
           <h1 class="text-xl sm:text-2xl font-black tracking-tight" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
-            {{ isEditing ? `Chỉnh Sửa Đơn Hàng: ${editingCode}` : 'Tạo Đơn Hàng In Ấn Mới' }}
+            {{ isEditing ? `Chỉnh Sửa Đơn Hàng: ${editingCode}` : `Tạo Đơn Hàng In Ấn Mới${editingCode ? ': ' + editingCode : ''}` }}
           </h1>
           <span
             class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border"
@@ -173,13 +173,27 @@
             </label>
             <input
               v-model="orderForm.order_date"
+              @change="refreshNextOrderCode"
               type="date"
               class="w-full text-xs rounded-xl px-3 py-2.5 border font-semibold transition-all focus:outline-none focus:ring-1 focus:ring-brand-gold"
               :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
             />
           </div>
 
-          <div class="sm:col-span-9">
+          <div class="sm:col-span-3">
+            <label class="block text-xs font-bold mb-1 flex items-center gap-1.5" :class="isDarkMode ? 'text-slate-300' : 'text-slate-700'">
+              <span>Mã Đơn Hàng (Tự động theo ngày)</span>
+            </label>
+            <div
+              class="w-full text-xs rounded-xl px-3 py-2.5 border font-mono font-black tracking-wide flex items-center justify-between"
+              :class="isDarkMode ? 'bg-amber-500/10 border-amber-500/30 text-brand-gold' : 'bg-amber-50 border-amber-200 text-amber-800'"
+            >
+              <span>{{ editingCode || 'Đang cấp mã...' }}</span>
+              <span class="text-[10px] font-semibold opacity-75">Auto</span>
+            </div>
+          </div>
+
+          <div class="sm:col-span-6">
             <label class="block text-xs font-bold mb-1" :class="isDarkMode ? 'text-slate-300' : 'text-slate-700'">
               Ghi Chú Tiến Độ / Lưu Ý Khách Hàng
             </label>
@@ -1014,11 +1028,13 @@ async function submitOrder() {
     }
 
     if (isEditing.value) {
-      await api.updateErpOrder(editingId.value, payload)
-      alert('✅ Cập nhật đơn hàng thành công!')
+      const res = await api.updateErpOrder(editingId.value, payload)
+      const finalCode = res?.data?.code || editingCode.value
+      alert(`✅ Cập nhật đơn hàng thành công (${finalCode})!`)
     } else {
-      await api.createErpOrder(payload)
-      alert('✅ Tạo đơn hàng in ấn mới thành công!')
+      const res = await api.createErpOrder(payload)
+      const finalCode = res?.data?.code || editingCode.value
+      alert(`✅ Tạo đơn hàng in ấn mới thành công (${finalCode})!`)
     }
 
     router.push('/he-thong-admin/orders')
@@ -1086,6 +1102,29 @@ async function loadOrderData(id) {
   }
 }
 
+async function refreshNextOrderCode() {
+  const dateVal = orderForm.order_date || new Date().toISOString().substring(0, 10)
+  try {
+    const params = { order_date: dateVal }
+    if (isEditing.value && editingId.value) {
+      params.exclude_id = editingId.value
+    }
+    const res = await api.getErpNextCode(params)
+    if (res?.code) {
+      editingCode.value = res.code
+      return
+    }
+  } catch (err) {
+    console.error('Failed to generate next order code', err)
+  }
+
+  // Fallback format NN-ddmmyyyy-001
+  const parts = dateVal.split('-')
+  if (parts.length === 3) {
+    editingCode.value = `NN-${parts[2]}${parts[1]}${parts[0]}-001`
+  }
+}
+
 async function loadSuppliers() {
   try {
     const res = await api.getErpSuppliers()
@@ -1103,7 +1142,9 @@ onMounted(() => {
   // If edit mode
   if (route.params.id) {
     loadOrderData(route.params.id)
-  } else if (route.query.from_quote) {
+  } else {
+    refreshNextOrderCode()
+    if (route.query.from_quote) {
     // Transfer from Web Quote Request
     const raw = sessionStorage.getItem('pending_order_from_quote')
     if (raw) {
@@ -1138,6 +1179,7 @@ onMounted(() => {
           }
         ]
       } catch (err) {}
+      }
     }
   }
 })

@@ -66,24 +66,52 @@ class ErpOrderController extends Controller
         ]);
     }
 
-    public function generateNextCode()
+    private function buildNextOrderCode(string $dateStr, ?int $excludeId = null): string
     {
-        $dateStr = date('dmY'); // e.g. 07112026
         $prefix = "NN-{$dateStr}-";
 
-        $latestOrder = ErpOrder::where('code', 'like', "{$prefix}%")
-            ->orderBy('id', 'desc')
-            ->first();
+        $codes = ErpOrder::where('code', 'like', "{$prefix}%")
+            ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+            ->lockForUpdate()
+            ->pluck('code');
 
-        if ($latestOrder && preg_match('/-(\d+)$/', $latestOrder->code, $matches)) {
-            $nextNum = str_pad((int)$matches[1] + 1, 3, '0', STR_PAD_LEFT);
-        } else {
-            $nextNum = '001';
+        $maxNum = 0;
+        foreach ($codes as $code) {
+            if (preg_match('/-(\d+)$/', $code, $matches)) {
+                $num = (int) $matches[1];
+                if ($num > $maxNum) {
+                    $maxNum = $num;
+                }
+            }
+        }
+
+        $nextNum = str_pad($maxNum + 1, 3, '0', STR_PAD_LEFT);
+        return $prefix . $nextNum;
+    }
+
+    public function generateNextCode(Request $request)
+    {
+        $targetDate = $request->filled('order_date')
+            ? \Carbon\Carbon::parse($request->input('order_date'))
+            : now();
+        $dateStr = $targetDate->format('dmY'); // e.g. 07112026
+        $prefix = "NN-{$dateStr}-";
+        $excludeId = $request->filled('exclude_id') ? (int) $request->input('exclude_id') : null;
+
+        // If editing an existing order and the selected date matches its current code date prefix, keep its current code
+        if ($excludeId) {
+            $existingOrder = ErpOrder::find($excludeId);
+            if ($existingOrder && str_starts_with($existingOrder->code, $prefix)) {
+                return response()->json([
+                    'status' => 'success',
+                    'code' => $existingOrder->code
+                ]);
+            }
         }
 
         return response()->json([
             'status' => 'success',
-            'code' => $prefix . $nextNum
+            'code' => $this->buildNextOrderCode($dateStr, $excludeId)
         ]);
     }
 
@@ -142,14 +170,12 @@ class ErpOrderController extends Controller
                 ]
             );
 
-            // Generate unique code
-            $dateStr = date('dmY');
-            $prefix = "NN-{$dateStr}-";
-            $latestOrder = ErpOrder::where('code', 'like', "{$prefix}%")->lockForUpdate()->latest('id')->first();
-            $nextNum = ($latestOrder && preg_match('/-(\d+)$/', $latestOrder->code, $m))
-                ? str_pad((int)$m[1] + 1, 3, '0', STR_PAD_LEFT)
-                : '001';
-            $orderCode = $prefix . $nextNum;
+            // Generate unique code based on order_date (or today if not provided)
+            $orderDateObj = !empty($validated['order_date'])
+                ? \Carbon\Carbon::parse($validated['order_date'])
+                : now();
+            $dateStr = $orderDateObj->format('dmY');
+            $orderCode = $this->buildNextOrderCode($dateStr);
 
             // Calculate totals from items
             $subtotal = 0;
@@ -396,7 +422,15 @@ class ErpOrderController extends Controller
             if (isset($validated['invoice_date'])) $order->invoice_date = $validated['invoice_date'];
             if (isset($validated['invoice_status'])) $order->invoice_status = $validated['invoice_status'];
             if (!empty($validated['order_date'])) {
-                $order->created_at = \Carbon\Carbon::parse($validated['order_date']);
+                $parsedDate = \Carbon\Carbon::parse($validated['order_date']);
+                $newDateStr = $parsedDate->format('dmY');
+                $expectedPrefix = "NN-{$newDateStr}-";
+
+                if (!str_starts_with($order->code, $expectedPrefix)) {
+                    $order->code = $this->buildNextOrderCode($newDateStr, $order->id);
+                }
+
+                $order->created_at = $parsedDate->setTimeFrom($order->created_at ?? now());
             }
 
             $order->save();

@@ -185,7 +185,10 @@ export const api = {
     const query = new URLSearchParams(params).toString()
     return apiRequest(`/admin/erp/orders${query ? '?' + query : ''}`)
   },
-  getErpNextCode: () => apiRequest('/admin/erp/orders/next-code'),
+  getErpNextCode: (params = {}) => {
+    const query = new URLSearchParams(params).toString()
+    return apiRequest(`/admin/erp/orders/next-code${query ? '?' + query : ''}`)
+  },
   getErpOrder: (id) => apiRequest(`/admin/erp/orders/${id}`),
   createErpOrder: (data) => apiRequest('/admin/erp/orders', { method: 'POST', body: data }),
   updateErpOrder: (id, data) => apiRequest(`/admin/erp/orders/${id}`, { method: 'PUT', body: data }),
