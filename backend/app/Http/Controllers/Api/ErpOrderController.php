@@ -97,6 +97,7 @@ class ErpOrderController extends Controller
             'customer_tax_code' => 'nullable|string',
             'printer_name' => 'nullable|string',
             'followers' => 'nullable|string',
+            'order_date' => 'nullable|date',
             'notes' => 'nullable|string',
 
             // Financial & shipping
@@ -212,7 +213,7 @@ class ErpOrderController extends Controller
                 $paymentStatus = 'partial';
             }
 
-            $order = ErpOrder::create([
+            $orderData = [
                 'code' => $orderCode,
                 'customer_id' => $customer->id,
                 'customer_name' => $validated['customer_name'],
@@ -241,7 +242,13 @@ class ErpOrderController extends Controller
                 'invoice_status' => (!empty($validated['invoice_number']) ? 'issued' : (($validated['is_vat_required'] ?? false) ? 'pending' : 'none')),
                 'notes' => $validated['notes'] ?? null,
                 'created_by' => auth()->id(),
-            ]);
+            ];
+
+            if (!empty($validated['order_date'])) {
+                $orderData['created_at'] = \Carbon\Carbon::parse($validated['order_date']);
+            }
+
+            $order = ErpOrder::create($orderData);
 
             foreach ($itemsData as $row) {
                 $order->items()->create($row);
@@ -290,6 +297,7 @@ class ErpOrderController extends Controller
             'customer_tax_code' => 'nullable|string',
             'printer_name' => 'nullable|string',
             'followers' => 'nullable|string',
+            'order_date' => 'nullable|date',
             'notes' => 'nullable|string',
             'production_stage' => 'nullable|string',
             'is_vat_required' => 'nullable|boolean',
@@ -387,6 +395,9 @@ class ErpOrderController extends Controller
             if (isset($validated['invoice_number'])) $order->invoice_number = $validated['invoice_number'];
             if (isset($validated['invoice_date'])) $order->invoice_date = $validated['invoice_date'];
             if (isset($validated['invoice_status'])) $order->invoice_status = $validated['invoice_status'];
+            if (!empty($validated['order_date'])) {
+                $order->created_at = \Carbon\Carbon::parse($validated['order_date']);
+            }
 
             $order->save();
 

@@ -166,7 +166,20 @@
             />
           </div>
 
-          <div class="sm:col-span-12">
+          <div class="sm:col-span-3">
+            <label class="block text-xs font-bold mb-1 flex items-center gap-1.5" :class="isDarkMode ? 'text-slate-300' : 'text-slate-700'">
+              <Calendar class="w-3.5 h-3.5 text-brand-gold" />
+              <span>Ngày Ra Đơn</span>
+            </label>
+            <input
+              v-model="orderForm.order_date"
+              type="date"
+              class="w-full text-xs rounded-xl px-3 py-2.5 border font-semibold transition-all focus:outline-none focus:ring-1 focus:ring-brand-gold"
+              :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+            />
+          </div>
+
+          <div class="sm:col-span-9">
             <label class="block text-xs font-bold mb-1" :class="isDarkMode ? 'text-slate-300' : 'text-slate-700'">
               Ghi Chú Tiến Độ / Lưu Ý Khách Hàng
             </label>
@@ -296,10 +309,11 @@
               <div class="sm:col-span-2">
                 <label class="block text-[11px] font-bold text-amber-500 mb-1">Đơn Giá Bán (₫)</label>
                 <input
-                  v-model.number="item.unit_price"
-                  @input="onUnitPriceChange(item)"
-                  type="number"
-                  min="0"
+                  :value="formatInput(item.unit_price)"
+                  @input="handleMoneyInput($event, item, 'unit_price', onUnitPriceChange)"
+                  type="text"
+                  inputmode="numeric"
+                  placeholder="0"
                   class="w-full text-xs rounded-lg px-3 py-2 border text-right font-bold text-amber-400"
                   :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200'"
                 />
@@ -308,10 +322,10 @@
               <div class="sm:col-span-2">
                 <label class="block text-[11px] font-bold text-emerald-500 mb-1">Hoặc Tiền Trọn Gói</label>
                 <input
-                  v-model.number="item.line_total"
-                  @input="onLineTotalChange(item)"
-                  type="number"
-                  min="0"
+                  :value="formatInput(item.line_total)"
+                  @input="handleMoneyInput($event, item, 'line_total', onLineTotalChange)"
+                  type="text"
+                  inputmode="numeric"
                   placeholder="Trọn gói"
                   class="w-full text-xs rounded-lg px-3 py-2 border text-right font-bold text-emerald-400"
                   :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200'"
@@ -339,10 +353,11 @@
               <div class="sm:col-span-2">
                 <label class="block text-[11px] font-bold text-slate-400 mb-1">Đơn Giá Vốn Xưởng</label>
                 <input
-                  v-model.number="item.cost_price"
-                  @input="onCostPriceChange(item)"
-                  type="number"
-                  min="0"
+                  :value="formatInput(item.cost_price)"
+                  @input="handleMoneyInput($event, item, 'cost_price', onCostPriceChange)"
+                  type="text"
+                  inputmode="numeric"
+                  placeholder="0"
                   class="w-full text-xs rounded-lg px-3 py-2 border text-right"
                   :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
                 />
@@ -351,10 +366,10 @@
               <div class="sm:col-span-2">
                 <label class="block text-[11px] font-bold text-slate-400 mb-1">Tổng Vốn Xưởng (₫)</label>
                 <input
-                  v-model.number="item.cost_total"
-                  @input="onCostTotalChange(item)"
-                  type="number"
-                  min="0"
+                  :value="formatInput(item.cost_total)"
+                  @input="handleMoneyInput($event, item, 'cost_total', onCostTotalChange)"
+                  type="text"
+                  inputmode="numeric"
                   placeholder="Trọn gói"
                   class="w-full text-xs rounded-lg px-3 py-2 border text-right font-semibold text-slate-300"
                   :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200'"
@@ -408,9 +423,10 @@
           <div class="sm:col-span-3">
             <label class="block text-xs font-bold text-slate-400 mb-1">Giảm Giá / Chiết Khấu (₫)</label>
             <input
-              v-model.number="orderForm.discount"
-              type="number"
-              min="0"
+              :value="formatInput(orderForm.discount)"
+              @input="handleFormMoneyInput($event, 'discount')"
+              type="text"
+              inputmode="numeric"
               placeholder="0"
               class="w-full text-xs rounded-xl px-3 py-2.5 border text-right font-bold text-amber-400"
               :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'"
@@ -458,9 +474,10 @@
           <div class="sm:col-span-3">
             <label class="block text-xs font-bold text-slate-400 mb-1">Phí Ship Thu Của Khách (₫)</label>
             <input
-              v-model.number="orderForm.shipping_fee_customer"
-              type="number"
-              min="0"
+              :value="formatInput(orderForm.shipping_fee_customer)"
+              @input="handleFormMoneyInput($event, 'shipping_fee_customer')"
+              type="text"
+              inputmode="numeric"
               placeholder="0"
               class="w-full text-xs rounded-xl px-3 py-2.5 border text-right font-medium"
               :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
@@ -471,9 +488,10 @@
           <div class="sm:col-span-3">
             <label class="block text-xs font-bold text-slate-400 mb-1">Phí Ship Trả Xưởng / Grab (₫)</label>
             <input
-              v-model.number="orderForm.shipping_fee_shop"
-              type="number"
-              min="0"
+              :value="formatInput(orderForm.shipping_fee_shop)"
+              @input="handleFormMoneyInput($event, 'shipping_fee_shop')"
+              type="text"
+              inputmode="numeric"
               placeholder="0"
               class="w-full text-xs rounded-xl px-3 py-2.5 border text-right font-medium"
               :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
@@ -484,9 +502,10 @@
           <div class="sm:col-span-4">
             <label class="block text-xs font-bold text-slate-400 mb-1">Phụ Thu Thêm (Thiết kế, Giao gấp...)</label>
             <input
-              v-model.number="orderForm.surcharge"
-              type="number"
-              min="0"
+              :value="formatInput(orderForm.surcharge)"
+              @input="handleFormMoneyInput($event, 'surcharge')"
+              type="text"
+              inputmode="numeric"
               placeholder="0"
               class="w-full text-xs rounded-xl px-3 py-2.5 border text-right font-medium"
               :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
@@ -513,9 +532,10 @@
           <div class="sm:col-span-4">
             <label class="block text-xs font-bold text-emerald-400 mb-1">Khách Đã Đặt Cọc Trước (₫)</label>
             <input
-              v-model.number="orderForm.paid_amount"
-              type="number"
-              min="0"
+              :value="formatInput(orderForm.paid_amount)"
+              @input="handleFormMoneyInput($event, 'paid_amount')"
+              type="text"
+              inputmode="numeric"
               placeholder="0"
               class="w-full text-xs rounded-xl px-3 py-2.5 border text-right font-bold text-emerald-400"
               :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'"
@@ -607,7 +627,8 @@ import {
   Sparkles,
   Calculator,
   UserCheck,
-  DollarSign
+  DollarSign,
+  Calendar
 } from 'lucide-vue-next'
 import { api } from '../../../services/api'
 import { useAdminTheme } from '../../../composables/useAdminTheme'
@@ -633,6 +654,7 @@ const orderForm = reactive({
   customer_address: '',
   customer_tax_code: '',
   printer_name: '',
+  order_date: new Date().toISOString().substring(0, 10),
   notes: '',
   discount: 0,
   vat_rate: 0,
@@ -775,6 +797,41 @@ function onCostTotalChange(item) {
   const cTotal = Number(item.cost_total) || 0
   if (qty > 0) {
     item.cost_price = Math.round(cTotal / qty)
+  }
+}
+
+// Money Input Formatting Helpers (e.g. 3.000.000)
+function formatInput(val) {
+  if (val === null || val === undefined || val === 0 || val === '') return ''
+  return new Intl.NumberFormat('vi-VN').format(Math.round(val))
+}
+
+function parseFormattedNumber(str) {
+  if (!str) return 0
+  const clean = String(str).replace(/[^\d]/g, '')
+  return clean ? parseInt(clean, 10) : 0
+}
+
+function handleMoneyInput(e, targetObj, fieldKey, callback) {
+  const raw = parseFormattedNumber(e.target.value)
+  targetObj[fieldKey] = raw
+  if (raw > 0) {
+    e.target.value = new Intl.NumberFormat('vi-VN').format(raw)
+  } else {
+    e.target.value = ''
+  }
+  if (callback && typeof callback === 'function') {
+    callback(targetObj)
+  }
+}
+
+function handleFormMoneyInput(e, fieldKey) {
+  const raw = parseFormattedNumber(e.target.value)
+  orderForm[fieldKey] = raw
+  if (raw > 0) {
+    e.target.value = new Intl.NumberFormat('vi-VN').format(raw)
+  } else {
+    e.target.value = ''
   }
 }
 
@@ -925,6 +982,7 @@ async function submitOrder() {
       customer_address: orderForm.customer_address,
       customer_tax_code: orderForm.customer_tax_code,
       printer_name: orderForm.printer_name,
+      order_date: orderForm.order_date,
       notes: orderForm.notes,
       discount: orderForm.discount || 0,
       vat_rate: orderForm.vat_rate || 0,
@@ -997,6 +1055,7 @@ async function loadOrderData(id) {
       orderForm.customer_address = order.customer_address || ''
       orderForm.customer_tax_code = order.customer_tax_code || ''
       orderForm.printer_name = order.printer_name || ''
+      orderForm.order_date = order.created_at ? order.created_at.substring(0, 10) : new Date().toISOString().substring(0, 10)
       orderForm.notes = order.notes || ''
       orderForm.discount = order.discount || 0
       orderForm.vat_rate = order.vat_rate || 0
