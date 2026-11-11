@@ -154,9 +154,9 @@
                       v-model.number="form.base_price"
                       type="number"
                       min="0"
-                      step="500"
+                      step="any"
                       required
-                      placeholder="5000"
+                      placeholder="200"
                       class="w-full rounded-xl px-4 py-2.5 text-sm font-mono border focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all"
                       :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
                     />
