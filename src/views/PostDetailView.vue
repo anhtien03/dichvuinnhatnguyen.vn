@@ -22,21 +22,30 @@
       <ArrowUp class="w-5 h-5 text-brand-gold" />
     </button>
 
-    <!-- Top Breadcrumb Bar -->
-    <div class="bg-slate-900/95 border-b border-slate-800 text-slate-300">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <nav class="flex items-center gap-2 text-xs font-medium overflow-x-auto pb-0.5 no-scrollbar">
-          <router-link to="/" class="hover:text-amber-400 flex items-center gap-1 shrink-0 text-slate-400">
-            <span>dichvuinnhatnguyen.vn</span>
+    <!-- Top Breadcrumb Bar (Clean & Modern Design) -->
+    <div class="bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
+        <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 overflow-x-auto pb-0.5 no-scrollbar">
+          <router-link
+            to="/"
+            class="flex items-center gap-1.5 hover:text-brand-blue font-semibold transition-colors shrink-0"
+          >
+            <Home class="w-3.5 h-3.5 text-slate-400" />
+            <span>Trang chủ</span>
           </router-link>
-          <span class="text-slate-600">/</span>
-          <router-link to="/tin-tuc" class="hover:text-amber-400 shrink-0 text-slate-400">
-            Kiến thức in ấn
+
+          <ChevronRight class="w-3.5 h-3.5 text-slate-300 shrink-0" />
+
+          <router-link
+            to="/tin-tuc"
+            class="hover:text-brand-blue font-semibold text-slate-600 transition-colors shrink-0"
+          >
+            Cẩm nang in ấn
           </router-link>
-          <span class="text-slate-600">/</span>
-          <span class="text-amber-400 shrink-0 font-semibold">{{ post?.category || 'Cẩm nang' }}</span>
-          <span class="text-slate-600">/</span>
-          <span class="text-slate-200 truncate max-w-sm font-semibold">
+
+          <ChevronRight class="w-3.5 h-3.5 text-slate-300 shrink-0" />
+
+          <span class="text-slate-900 font-bold truncate max-w-sm sm:max-w-md md:max-w-xl">
             {{ post?.title || 'Bài viết' }}
           </span>
         </nav>
@@ -617,7 +626,7 @@ import {
   Calendar, Loader2, ArrowLeft, ArrowUp, Clock, Share2, Copy, Check,
   Phone, MessageSquare, ChevronRight, Bookmark,
   ShieldCheck, Printer, ListTree, Sparkles, Tag, HelpCircle,
-  CheckCircle2, Layers
+  CheckCircle2, Layers, Home
 } from 'lucide-vue-next'
 import { api } from '../services/api'
 import { setMetaTags } from '../composables/useSEO'
