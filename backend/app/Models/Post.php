@@ -19,6 +19,7 @@ class Post extends Model
         'excerpt',
         'content',
         'thumbnail',
+        'banner_image',
         'category',
         'is_published',
         'published_at',

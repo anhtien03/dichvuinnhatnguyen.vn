@@ -81,7 +81,7 @@
       <!-- FULL-WIDTH PANORAMIC HERO BANNER (Tràn viền toàn cảnh kiểu Trần Gia) -->
       <section class="relative w-full h-[320px] sm:h-[420px] lg:h-[520px] bg-slate-900 overflow-hidden">
         <img
-          :src="post.thumbnail || '/banner-chinh.jpg'"
+          :src="post.banner_image || post.thumbnail || '/banner-chinh.jpg'"
           :alt="post.title"
           class="w-full h-full object-cover object-center filter brightness-[0.95]"
         />
@@ -92,7 +92,7 @@
         <div class="absolute bottom-20 sm:bottom-28 right-4 sm:right-8 z-10 pointer-events-none">
           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/80 text-white/90 text-[11px] font-medium backdrop-blur-md border border-white/15 shadow-xl">
             <span class="w-1.5 h-1.5 rounded-full bg-brand-gold animate-pulse"></span>
-            <span>{{ post.thumbnail ? 'Ảnh minh họa kỹ thuật' : 'Ảnh thực tế tại Xưởng In Nhật Nguyên' }}</span>
+            <span>{{ (post.banner_image || post.thumbnail) ? 'Ảnh minh họa kỹ thuật' : 'Ảnh thực tế tại Xưởng In Nhật Nguyên' }}</span>
           </span>
         </div>
       </section>
