@@ -1,4 +1,4 @@
-﻿// Central API client for In Ấn Nhật Nguyên
+// Central API client for In Ấn Nhật Nguyên
 
 const API_BASE = '/api/v1'
 
