@@ -228,32 +228,52 @@
                 </div>
               </div>
 
-              <!-- Mobile Table of Contents (Shown only on small screens) -->
-              <div v-if="tocItems.length > 0" class="lg:hidden rounded-2xl border border-slate-200 bg-slate-50/80 p-4 space-y-3">
-                <button
-                  @click="isMobileTocOpen = !isMobileTocOpen"
-                  class="w-full flex items-center justify-between font-bold text-sm text-slate-900"
-                >
-                  <div class="flex items-center gap-2 text-brand-blue">
-                    <ListTree class="w-4 h-4 text-brand-gold" />
-                    <span>Mục Lục Bài Viết ({{ tocItems.length }} mục)</span>
+              <!-- Prominent In-Article Table of Contents (Mục Lục Bài Viết - Hiển thị đẹp trên mọi màn hình) -->
+              <div v-if="tocItems.length > 0" class="rounded-2xl bg-gradient-to-br from-amber-50/70 via-slate-50 to-blue-50/40 border-2 border-amber-200/80 p-5 sm:p-6 shadow-xs space-y-4">
+                <div class="flex items-center justify-between border-b border-amber-200/60 pb-3">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-brand-gold text-slate-950 font-black flex items-center justify-center text-sm shadow-xs">
+                      <ListTree class="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 class="text-sm sm:text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
+                        <span>Mục Lục Bài Viết</span>
+                        <span class="text-[11px] font-bold text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded-full">
+                          {{ tocItems.length }} phần
+                        </span>
+                      </h3>
+                      <p class="text-[11px] text-slate-500">Nhấp vào từng mục để xem nhanh nội dung chi tiết</p>
+                    </div>
                   </div>
-                  <ChevronRight
-                    class="w-4 h-4 text-slate-400 transition-transform duration-200"
-                    :class="{ 'rotate-90': isMobileTocOpen }"
-                  />
-                </button>
 
-                <nav v-show="isMobileTocOpen" class="space-y-1.5 pt-2 border-t border-slate-200/60 text-xs">
+                  <button
+                    @click="isArticleTocOpen = !isArticleTocOpen"
+                    class="text-xs font-bold text-brand-blue hover:text-blue-800 flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-brand-blue shadow-2xs transition-all"
+                  >
+                    <span>{{ isArticleTocOpen ? 'Thu gọn' : 'Mở rộng' }}</span>
+                    <ChevronRight
+                      class="w-3.5 h-3.5 transition-transform duration-200"
+                      :class="{ 'rotate-90': isArticleTocOpen }"
+                    />
+                  </button>
+                </div>
+
+                <nav v-show="isArticleTocOpen" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 text-xs">
                   <a
                     v-for="(item, index) in tocItems"
                     :key="index"
                     :href="`#${item.id}`"
                     @click.prevent="scrollToSection(item.id)"
-                    class="block py-1.5 px-2 rounded-lg text-slate-700 hover:bg-white hover:text-brand-blue font-medium transition-colors"
-                    :class="{ 'text-brand-blue font-bold bg-white shadow-2xs': activeTocId === item.id }"
+                    class="flex items-start gap-2.5 p-3 rounded-xl bg-white hover:bg-amber-50/50 hover:text-brand-blue text-slate-800 font-semibold border border-slate-200/80 shadow-2xs hover:shadow-xs hover:border-amber-400 transition-all group"
+                    :class="{ 'border-brand-blue bg-blue-50/50 text-brand-blue font-bold': activeTocId === item.id }"
                   >
-                    {{ item.text }}
+                    <span
+                      class="w-5 h-5 rounded-full text-[11px] font-black flex items-center justify-center shrink-0 transition-colors"
+                      :class="activeTocId === item.id ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-600 group-hover:bg-brand-gold group-hover:text-slate-950'"
+                    >
+                      {{ index + 1 }}
+                    </span>
+                    <span class="line-clamp-2 leading-snug">{{ item.text }}</span>
                   </a>
                 </nav>
               </div>
@@ -636,6 +656,7 @@ const post = ref(null)
 const isLoading = ref(true)
 const isCopied = ref(false)
 const readingProgress = ref(0)
+const isArticleTocOpen = ref(true)
 const isMobileTocOpen = ref(false)
 const activeTocId = ref('')
 const userRating = ref(0)
@@ -688,7 +709,7 @@ function formatPlainTextToHtml(text) {
   if (!text) return ''
 
   // 1. Remove duplicate raw "MỤC LỤC\n1. ...\n2. ..." block if present, since our dynamic TOC handles it
-  let clean = text.replace(/MỤC LỤC\s*\n(\d+\.\s+[^\n]+\n*)+/gi, '')
+  let clean = text.replace(/MỤC LỤC\s*[\r\n]+((?:\d+\.[^\r\n]+[\r\n]+)+?)(?=\s*1\.\s+)/i, '')
 
   // 2. Split into lines
   const lines = clean.split('\n')
@@ -801,21 +822,21 @@ function slugify(text) {
     .slice(0, 40)
 }
 
-// Extract Table of Contents items and ensure headings have IDs
-const tocItems = ref([])
-
-const renderedContent = computed(() => {
+// Fully Reactive Parsing for Content & TOC
+const parsedData = computed(() => {
   let raw = post.value?.content || ''
-  if (!raw.trim()) return '<p>Bài viết đang cập nhật nội dung...</p>'
+  if (!raw.trim()) {
+    return { html: '<p>Bài viết đang cập nhật nội dung...</p>', toc: [] }
+  }
 
   const isHtml = /<[a-z][\s\S]*>/i.test(raw)
-  let html = isHtml ? raw : formatPlainTextToHtml(raw)
+  let textToFormat = isHtml ? raw : formatPlainTextToHtml(raw)
 
   // Parse headings into TOC
   const items = []
   let counter = 0
 
-  html = html.replace(/<h([23])([^>]*)>(.*?)<\/h\1>/gi, (match, level, attrs, text) => {
+  const finalHtml = textToFormat.replace(/<h([23])([^>]*)>(.*?)<\/h\1>/gi, (match, level, attrs, text) => {
     counter++
     const cleanText = text.replace(/<[^>]*>/g, '').trim()
     
@@ -838,9 +859,11 @@ const renderedContent = computed(() => {
     return `<h${level}${attrs}>${text}</h${level}>`
   })
 
-  tocItems.value = items
-  return html
+  return { html: finalHtml, toc: items }
 })
+
+const renderedContent = computed(() => parsedData.value.html)
+const tocItems = computed(() => parsedData.value.toc)
 
 function scrollToSection(id) {
   const el = document.getElementById(id)
