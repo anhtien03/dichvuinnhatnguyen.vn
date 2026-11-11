@@ -124,12 +124,36 @@
                 </li>
               </ul>
             </div>
+
+            <!-- Description in Left Card -->
+            <div v-if="product.description" class="pt-4 border-t border-slate-100 space-y-2">
+              <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                <FileText class="w-3.5 h-3.5 text-brand-gold" />
+                <span>Quy Cách & Mô Tả Xưởng:</span>
+              </h4>
+              <div class="text-xs text-slate-600 leading-relaxed whitespace-pre-line bg-slate-50 p-3.5 rounded-2xl border border-slate-100 font-medium">
+                {{ product.description }}
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- Right Column: Interactive Price Calculator Component -->
         <div class="lg:col-span-7">
           <PriceCalculator :product="product" />
+        </div>
+      </div>
+
+      <!-- Full-Width Detailed Description Section -->
+      <div v-if="product.description" class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm mb-12">
+        <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+          <FileText class="w-5 h-5 text-brand-gold" />
+          <h3 class="text-base sm:text-lg font-black text-slate-900">
+            Thông Tin Chi Tiết Ấn Phẩm {{ product.name }}
+          </h3>
+        </div>
+        <div class="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+          {{ product.description }}
         </div>
       </div>
 
@@ -169,7 +193,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { CheckCircle2, PhoneCall, FileCheck } from 'lucide-vue-next'
+import { CheckCircle2, PhoneCall, FileCheck, FileText } from 'lucide-vue-next'
 import { siteSettings } from '../data/siteSettings'
 import PriceCalculator from '../components/products/PriceCalculator.vue'
 import ProductCard from '../components/products/ProductCard.vue'
