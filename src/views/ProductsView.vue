@@ -1,6 +1,6 @@
 <template>
-  <div class="py-10 lg:py-16 bg-slate-50 min-h-screen">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+  <div class="py-6 lg:py-10 bg-slate-50 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       
       <!-- 1. Breadcrumb & Header Section -->
       <div class="space-y-4">
@@ -67,16 +67,16 @@
         </div>
       </div>
 
-      <!-- 2. Filters & Search Toolbar -->
-      <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs space-y-4">
+      <!-- 2. Filters & Search Toolbar (Gọn gàng 1 hàng Tab + Thanh tìm kiếm) -->
+      <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-xs space-y-3">
         
-        <!-- Category Pill Buttons (Cấp 1: Nhóm Ngành Lớn) -->
-        <div class="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none">
+        <!-- Category Pill Buttons (Chỉ hiển thị các Danh mục có sản phẩm để khách không bấm vào tab trống) -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           <button
             type="button"
             @click="selectCategory('all')"
             :class="[
-              'px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer',
+              'px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer',
               activeCategory === 'all'
                 ? 'bg-brand-blue text-white shadow-md'
                 : 'bg-slate-100/90 text-slate-700 hover:bg-slate-200/80 hover:text-slate-900'
@@ -94,13 +94,13 @@
           </button>
 
           <button
-            v-for="cat in rootCategories"
+            v-for="cat in visibleFilterCategories"
             :key="cat.id"
             type="button"
             @click="selectCategory(cat.slug)"
             :class="[
-              'px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer',
-              activeRootCategory?.slug === cat.slug
+              'px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer',
+              activeCategory === cat.slug
                 ? 'bg-brand-blue text-white shadow-md'
                 : 'bg-slate-100/90 text-slate-700 hover:bg-slate-200/80 hover:text-slate-900'
             ]"
@@ -109,49 +109,11 @@
             <span
               :class="[
                 'text-[10px] px-1.5 py-0.5 rounded-full font-bold',
-                activeRootCategory?.slug === cat.slug ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
+                activeCategory === cat.slug ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
               ]"
             >
               {{ getCategoryProductCount(cat.slug) }}
             </span>
-          </button>
-        </div>
-
-        <!-- Sub-category Pill Buttons (Cấp 2: Danh Mục Cha thuộc Nhóm Ngành đang chọn) -->
-        <div
-          v-if="subCategoriesForActiveRoot.length > 0"
-          class="flex items-center gap-2 overflow-x-auto pt-2 border-t border-slate-100 pb-1 scrollbar-none"
-        >
-          <span class="text-[11px] font-bold text-slate-400 whitespace-nowrap shrink-0">
-            Danh mục {{ activeRootCategory?.name }}:
-          </span>
-          <button
-            v-if="activeRootCategory"
-            type="button"
-            @click="selectCategory(activeRootCategory.slug)"
-            :class="[
-              'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer border',
-              activeCategory === activeRootCategory.slug
-                ? 'bg-brand-gold text-slate-950 border-brand-gold shadow-xs'
-                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-            ]"
-          >
-            Tất cả ({{ getCategoryProductCount(activeRootCategory.slug) }})
-          </button>
-          <button
-            v-for="sub in subCategoriesForActiveRoot"
-            :key="sub.id"
-            type="button"
-            @click="selectCategory(sub.slug)"
-            :class="[
-              'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer border flex items-center gap-1.5',
-              activeCategory === sub.slug
-                ? 'bg-brand-gold text-slate-950 border-brand-gold shadow-xs'
-                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:border-brand-blue/40'
-            ]"
-          >
-            <span>{{ sub.name }}</span>
-            <span class="text-[10px] opacity-75">({{ getCategoryProductCount(sub.slug) }})</span>
           </button>
         </div>
 
@@ -222,52 +184,8 @@
         </div>
       </div>
 
-      <!-- 2.5. Lưới Thẻ Danh Mục Cha (Cấp 2) khi đang ở trang Tất cả hoặc Nhóm Ngành Lớn -->
-      <div v-if="displayedSubCategories.length > 0 && !currentCategory?.parent_id" class="space-y-4">
-        <div class="flex items-center justify-between">
-          <h2 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
-            <span class="w-2 h-5 rounded-full bg-brand-gold inline-block"></span>
-            <span>Danh Mục Ấn Phẩm Chính (Chọn danh mục để xem các gói quy cách con)</span>
-          </h2>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <router-link
-            v-for="sub in displayedSubCategories"
-            :key="sub.id"
-            :to="'/danh-muc/' + sub.slug"
-            class="group bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-xl hover:border-brand-blue/40 transition-all flex items-center gap-4 p-3.5"
-          >
-            <div class="w-24 h-20 rounded-xl bg-slate-100 overflow-hidden shrink-0 relative">
-              <img
-                :src="sub.image || '/logo.png'"
-                :alt="sub.name"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-            </div>
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <span v-if="sub.badge" class="px-2 py-0.5 rounded bg-brand-gold/20 text-slate-900 font-black text-[10px]">
-                  {{ sub.badge }}
-                </span>
-                <span class="text-[10px] font-bold text-brand-blue">
-                  {{ getCategoryProductCount(sub.slug) }} gói quy cách
-                </span>
-              </div>
-              <h3 class="text-sm sm:text-base font-black text-slate-900 group-hover:text-brand-blue truncate mt-0.5">
-                {{ sub.name }}
-              </h3>
-              <p v-if="sub.description" class="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
-                {{ sub.description }}
-              </p>
-            </div>
-            <ArrowRight class="w-4 h-4 text-slate-400 group-hover:text-brand-blue group-hover:translate-x-1 transition-all shrink-0 mr-1" />
-          </router-link>
-        </div>
-      </div>
-
-      <!-- 3. Products Grid -->
-      <div v-if="filteredAndSortedProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+      <!-- 3. Products Grid (4 cột gọn đẹp - Bấm 1 click vào thẳng trang tính giá) -->
+      <div v-if="filteredAndSortedProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
         <ProductCard
           v-for="p in filteredAndSortedProducts"
           :key="p.id"
@@ -458,11 +376,9 @@ const subCategoriesForActiveRoot = computed(() => {
   )
 })
 
-const displayedSubCategories = computed(() => {
-  if (activeCategory.value === 'all') {
-    return categories.value.filter(c => c.parent_id && c.is_active !== false)
-  }
-  return subCategoriesForActiveRoot.value
+// Chỉ hiển thị các nút Danh mục thực sự có sản phẩm (> 0) trên thanh lọc để khách không bấm vào tab rỗng
+const visibleFilterCategories = computed(() => {
+  return categories.value.filter(c => c.is_active !== false && getCategoryProductCount(c.slug) > 0)
 })
 
 const currentCategoryTitle = computed(() => {
@@ -499,9 +415,11 @@ function getCategoryProductCount(slug) {
 }
 
 const filteredAndSortedProducts = computed(() => {
+  const targetHasProducts = activeCategory.value === 'all' || getCategoryProductCount(activeCategory.value) > 0
+
   let list = products.value.filter(p => {
-    // Category match (hỗ trợ cả Nhóm ngành Cấp 1 và Danh mục cha Cấp 2)
-    const matchCat = isProductInCategoryOrChild(p, activeCategory.value)
+    // Nếu danh mục khách vừa truy cập qua link chưa có sản phẩm nào, tự động hiển thị toàn bộ sản phẩm hiện có của xưởng để không bị mất khách vì trang trống
+    const matchCat = !targetHasProducts || isProductInCategoryOrChild(p, activeCategory.value)
 
     // Search keyword match (name or description)
     const q = searchKeyword.value.toLowerCase().trim()
@@ -567,7 +485,8 @@ async function loadData() {
       products.value = prodRes.data.map(p => ({
         ...p,
         basePrice: p.base_price,
-        categoryId: p.category?.slug || p.category_id
+        categoryId: p.category?.slug || p.category_id,
+        categoryName: p.category?.name || 'Ấn phẩm in'
       }))
     } else {
       products.value = []

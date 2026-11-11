@@ -144,19 +144,19 @@
 
                       <ul class="space-y-1.5 text-xs text-slate-700">
                         <li>
-                          <router-link to="/san-pham/in-danh-thiep-name-card-lay-lien" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
+                          <router-link to="/danh-muc/in-the-danh-thiep" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
                             <span class="w-1 h-1 rounded-full bg-slate-300 group-hover/link:bg-brand-blue transition-colors"></span>
                             <span>Danh thiếp - Namecard</span>
                           </router-link>
                         </li>
                         <li>
-                          <router-link to="/san-pham/in-kep-file-bia-ho-so-folder" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
+                          <router-link to="/san-pham?cat=an-pham-van-phong" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
                             <span class="w-1 h-1 rounded-full bg-slate-300 group-hover/link:bg-brand-blue transition-colors"></span>
                             <span>Kẹp file hồ sơ Folder A4</span>
                           </router-link>
                         </li>
                         <li>
-                          <router-link to="/san-pham/in-bao-thu-phong-bi-thuong-hieu" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
+                          <router-link to="/san-pham/bao-thu-nho" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
                             <span class="w-1 h-1 rounded-full bg-slate-300 group-hover/link:bg-brand-blue transition-colors"></span>
                             <span>Bao thư nhỏ & lớn A4</span>
                           </router-link>
@@ -190,31 +190,31 @@
 
                       <ul class="space-y-1.5 text-xs text-slate-700">
                         <li>
-                          <router-link to="/san-pham/in-to-roi-to-gap-gia-re-tphcm" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
+                          <router-link to="/san-pham?cat=tiep-thi-quang-cao" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
                             <span class="w-1 h-1 rounded-full bg-slate-300 group-hover/link:bg-brand-blue transition-colors"></span>
                             <span>Tờ rơi - Flyer - Brochure</span>
                           </router-link>
                         </li>
                         <li>
-                          <router-link to="/san-pham/in-catalogue-profile-cong-ty" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
+                          <router-link to="/san-pham?cat=tiep-thi-quang-cao" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
                             <span class="w-1 h-1 rounded-full bg-slate-300 group-hover/link:bg-brand-blue transition-colors"></span>
                             <span>Catalogue & Profile công ty</span>
                           </router-link>
                         </li>
                         <li>
-                          <router-link to="/san-pham/in-standee-bang-ron" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
+                          <router-link to="/san-pham?cat=su-kien-trien-lam" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
                             <span class="w-1 h-1 rounded-full bg-slate-300 group-hover/link:bg-brand-blue transition-colors"></span>
                             <span>Standee chân cuốn & chữ X</span>
                           </router-link>
                         </li>
                         <li>
-                          <router-link to="/san-pham/in-standee-bang-ron" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
+                          <router-link to="/san-pham?cat=su-kien-trien-lam" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
                             <span class="w-1 h-1 rounded-full bg-slate-300 group-hover/link:bg-brand-blue transition-colors"></span>
                             <span>Poster, Backdrop hội nghị</span>
                           </router-link>
                         </li>
                         <li>
-                          <router-link to="/san-pham/in-voucher-phieu-giam-gia-ve" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
+                          <router-link to="/san-pham?cat=tiep-thi-quang-cao" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
                             <span class="w-1 h-1 rounded-full bg-slate-300 group-hover/link:bg-brand-blue transition-colors"></span>
                             <span>Voucher & Phiếu quà tặng</span>
                           </router-link>
@@ -236,31 +236,31 @@
 
                       <ul class="space-y-1.5 text-xs text-slate-700">
                         <li>
-                          <router-link to="/san-pham/in-tui-giay-kraft-couche-gia-xuong" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
+                          <router-link to="/san-pham?cat=bao-bi-tui-giay" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
                             <span class="w-1 h-1 rounded-full bg-slate-300 group-hover/link:bg-brand-blue transition-colors"></span>
                             <span>Túi giấy shop & quà tặng</span>
                           </router-link>
                         </li>
                         <li>
-                          <router-link to="/san-pham/in-hop-giay-hop-cung-cao-cap" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
+                          <router-link to="/san-pham?cat=bao-bi-tui-giay" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
                             <span class="w-1 h-1 rounded-full bg-slate-300 group-hover/link:bg-brand-blue transition-colors"></span>
                             <span>Hộp giấy carton, hộp cứng</span>
                           </router-link>
                         </li>
                         <li>
-                          <router-link to="/san-pham/in-tem-nhan-decal-be-thanh-pham" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
+                          <router-link to="/san-pham?cat=tem-nhan-decal" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
                             <span class="w-1 h-1 rounded-full bg-slate-300 group-hover/link:bg-brand-blue transition-colors"></span>
                             <span>Tem nhãn decal bế demi</span>
                           </router-link>
                         </li>
                         <li>
-                          <router-link to="/san-pham/in-tem-nhan-decal-be-thanh-pham" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
+                          <router-link to="/san-pham?cat=tem-nhan-decal" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
                             <span class="w-1 h-1 rounded-full bg-slate-300 group-hover/link:bg-brand-blue transition-colors"></span>
                             <span>Tag treo - Nhãn mác quần áo</span>
                           </router-link>
                         </li>
                         <li>
-                          <router-link to="/san-pham/in-tem-bao-hanh-tem-be-niem-phong" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
+                          <router-link to="/san-pham?cat=tem-nhan-decal" class="hover:text-brand-blue hover:translate-x-1 transition-all flex items-center gap-1.5 py-0.5 font-medium group/link">
                             <span class="w-1 h-1 rounded-full bg-slate-300 group-hover/link:bg-brand-blue transition-colors"></span>
                             <span>Tem bảo hành vỡ niêm phong</span>
                           </router-link>
