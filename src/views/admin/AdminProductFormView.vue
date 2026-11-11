@@ -352,103 +352,413 @@
                   </div>
                 </div>
 
-                <!-- Formatting & Image Insertion Toolbar -->
-                <div class="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl border" :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-white border-slate-200'">
-                  <div class="flex flex-wrap items-center gap-1">
-                    <button
-                      type="button"
-                      @click="applyDescFormat('h2')"
-                      class="px-2.5 py-1 rounded-lg text-xs font-extrabold border transition-colors cursor-pointer hover:border-brand-gold"
+                <!-- WORD-STYLE RIBBON TOOLBAR -->
+                <div class="rounded-xl border divide-y" :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] divide-[#2E3A47]' : 'bg-white border-slate-200 divide-slate-100'">
+                  <!-- ROW 1: Undo/Redo, Kiểu đoạn, Phông chữ, Cỡ chữ (A+/A-), B/I/U/S, Màu chữ, Tô sáng nền, Xóa định dạng -->
+                  <div class="flex flex-wrap items-center gap-1.5 p-2">
+                    <!-- Undo / Redo -->
+                    <div class="flex items-center gap-0.5 pr-1.5 border-r" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
+                      <button
+                        type="button"
+                        @mousedown.prevent="execWordCmd('undo')"
+                        class="p-1.5 rounded-lg border transition-colors cursor-pointer hover:border-brand-gold"
+                        :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                        title="Hoàn tác (Ctrl+Z)"
+                      >
+                        <Undo2 class="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        @mousedown.prevent="execWordCmd('redo')"
+                        class="p-1.5 rounded-lg border transition-colors cursor-pointer hover:border-brand-gold"
+                        :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                        title="Làm lại (Ctrl+Y)"
+                      >
+                        <Redo2 class="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <!-- Kiểu đoạn văn (Heading / Paragraph) -->
+                    <select
+                      v-model="selectedHeading"
+                      @change="applyHeadingBlock"
+                      class="rounded-lg px-2 py-1 text-xs font-bold border focus:outline-none focus:border-brand-gold cursor-pointer"
                       :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
-                      title="Tiêu đề lớn H2"
+                      title="Kiểu đoạn văn / Tiêu đề"
                     >
-                      H2
-                    </button>
-                    <button
-                      type="button"
-                      @click="applyDescFormat('h3')"
-                      class="px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer hover:border-brand-gold"
+                      <option value="p">Đoạn văn thường</option>
+                      <option value="h1">Tiêu đề lớn (H1)</option>
+                      <option value="h2">Tiêu đề mục (H2)</option>
+                      <option value="h3">Tiêu đề phụ (H3)</option>
+                      <option value="h4">Tiêu đề nhỏ (H4)</option>
+                      <option value="blockquote">Trích dẫn (“ ”)</option>
+                    </select>
+
+                    <!-- Phông chữ (Font Family) -->
+                    <select
+                      v-model="selectedFontFamily"
+                      @change="applyFontFamily"
+                      class="rounded-lg px-2 py-1 text-xs font-semibold border focus:outline-none focus:border-brand-gold cursor-pointer max-w-[130px]"
                       :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
-                      title="Tiêu đề phụ H3"
+                      title="Chọn phông chữ (Font)"
                     >
-                      H3
-                    </button>
+                      <option value="">Phông mặc định</option>
+                      <option value="Arial, sans-serif">Arial</option>
+                      <option value="'Times New Roman', serif">Times New Roman</option>
+                      <option value="Tahoma, sans-serif">Tahoma</option>
+                      <option value="Verdana, sans-serif">Verdana</option>
+                      <option value="Georgia, serif">Georgia</option>
+                      <option value="'Courier New', monospace">Courier New</option>
+                    </select>
+
+                    <!-- Cỡ chữ (Font Size px + A+ / A-) -->
+                    <div class="flex items-center gap-1 pr-1.5 border-r" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
+                      <select
+                        v-model="selectedFontSize"
+                        @change="applyFontSizePx(selectedFontSize)"
+                        class="rounded-lg px-2 py-1 text-xs font-bold border focus:outline-none focus:border-brand-gold cursor-pointer"
+                        :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-brand-gold' : 'bg-slate-50 border-slate-200 text-slate-900'"
+                        title="Cỡ chữ (px)"
+                      >
+                        <option value="12px">12px</option>
+                        <option value="13px">13px</option>
+                        <option value="14px">14px (Chuẩn)</option>
+                        <option value="15px">15px</option>
+                        <option value="16px">16px</option>
+                        <option value="18px">18px (Lớn)</option>
+                        <option value="20px">20px</option>
+                        <option value="24px">24px (Tiêu đề)</option>
+                        <option value="28px">28px</option>
+                        <option value="32px">32px</option>
+                        <option value="36px">36px</option>
+                      </select>
+
+                      <button
+                        type="button"
+                        @mousedown.prevent="stepFontSize(1)"
+                        class="px-2 py-1 rounded-lg text-xs font-black border transition-colors cursor-pointer hover:border-brand-gold"
+                        :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+                        title="Tăng cỡ chữ (A+)"
+                      >
+                        A<sup class="text-[9px] text-brand-gold">+</sup>
+                      </button>
+                      <button
+                        type="button"
+                        @mousedown.prevent="stepFontSize(-1)"
+                        class="px-2 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer hover:border-brand-gold"
+                        :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                        title="Giảm cỡ chữ (A-)"
+                      >
+                        A<sup class="text-[9px]">-</sup>
+                      </button>
+                    </div>
+
+                    <!-- B / I / U / S -->
+                    <div class="flex items-center gap-1 pr-1.5 border-r" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
+                      <button
+                        type="button"
+                        @mousedown.prevent="applyDescFormat('bold')"
+                        class="w-7 h-7 rounded-lg text-xs font-black border transition-colors cursor-pointer hover:border-brand-gold flex items-center justify-center"
+                        :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+                        title="In đậm (Ctrl+B)"
+                      >
+                        B
+                      </button>
+                      <button
+                        type="button"
+                        @mousedown.prevent="applyDescFormat('italic')"
+                        class="w-7 h-7 rounded-lg text-xs italic font-serif font-bold border transition-colors cursor-pointer hover:border-brand-gold flex items-center justify-center"
+                        :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+                        title="In nghiêng (Ctrl+I)"
+                      >
+                        I
+                      </button>
+                      <button
+                        type="button"
+                        @mousedown.prevent="applyDescFormat('underline')"
+                        class="w-7 h-7 rounded-lg text-xs underline font-bold border transition-colors cursor-pointer hover:border-brand-gold flex items-center justify-center"
+                        :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+                        title="Gạch chân (Ctrl+U)"
+                      >
+                        U
+                      </button>
+                      <button
+                        type="button"
+                        @mousedown.prevent="execWordCmd('strikeThrough')"
+                        class="w-7 h-7 rounded-lg text-xs line-through font-bold border transition-colors cursor-pointer hover:border-brand-gold flex items-center justify-center"
+                        :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                        title="Gạch ngang chữ"
+                      >
+                        S
+                      </button>
+                    </div>
+
+                    <!-- Màu chữ (Text Color) & Tô nền (Highlight) -->
+                    <div class="flex items-center gap-1.5 pr-1.5 border-r" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
+                      <!-- Quick Text Colors -->
+                      <div class="flex items-center gap-1 px-1.5 py-0.5 rounded-lg border" :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'">
+                        <span class="text-[10px] font-black pr-0.5" :style="{ color: currentTextColor }">A</span>
+                        <button
+                          v-for="c in QUICK_TEXT_COLORS"
+                          :key="c.hex"
+                          type="button"
+                          @mousedown.prevent="applyTextColor(c.hex)"
+                          class="w-3.5 h-3.5 rounded-full border border-white/20 cursor-pointer hover:scale-125 transition-transform"
+                          :style="{ backgroundColor: c.hex }"
+                          :title="'Màu chữ: ' + c.label"
+                        ></button>
+                        <input
+                          type="color"
+                          v-model="currentTextColor"
+                          @input="applyTextColor(currentTextColor)"
+                          class="w-4 h-4 p-0 border-0 bg-transparent cursor-pointer"
+                          title="Chọn màu chữ tùy ý"
+                        />
+                      </div>
+
+                      <!-- Quick Highlight Colors -->
+                      <div class="flex items-center gap-1 px-1.5 py-0.5 rounded-lg border" :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'">
+                        <span class="text-[10px] font-bold px-1 rounded bg-yellow-300 text-slate-900" title="Tô nền chữ (Highlight)">ab</span>
+                        <button
+                          v-for="hc in QUICK_HIGHLIGHT_COLORS"
+                          :key="hc.hex"
+                          type="button"
+                          @mousedown.prevent="applyHighlightColor(hc.hex)"
+                          class="w-3.5 h-3.5 rounded border border-slate-300 cursor-pointer hover:scale-125 transition-transform"
+                          :style="{ backgroundColor: hc.hex }"
+                          :title="'Tô nền: ' + hc.label"
+                        ></button>
+                        <button
+                          type="button"
+                          @mousedown.prevent="applyHighlightColor('transparent')"
+                          class="text-[10px] text-slate-400 hover:text-red-400 px-0.5 cursor-pointer"
+                          title="Xóa màu nền tô sáng"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Xóa định dạng (Clear Formatting) -->
                     <button
                       type="button"
-                      @click="applyDescFormat('bold')"
-                      class="px-2.5 py-1 rounded-lg text-xs font-black border transition-colors cursor-pointer hover:border-brand-gold"
-                      :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
-                      title="In đậm"
-                    >
-                      B
-                    </button>
-                    <button
-                      type="button"
-                      @click="applyDescFormat('italic')"
-                      class="px-2.5 py-1 rounded-lg text-xs italic font-serif font-bold border transition-colors cursor-pointer hover:border-brand-gold"
-                      :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
-                      title="In nghiêng"
-                    >
-                      I
-                    </button>
-                    <button
-                      type="button"
-                      @click="applyDescFormat('underline')"
-                      class="px-2.5 py-1 rounded-lg text-xs underline font-bold border transition-colors cursor-pointer hover:border-brand-gold"
-                      :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
-                      title="Gạch chân"
-                    >
-                      U
-                    </button>
-                    <button
-                      type="button"
-                      @click="applyDescFormat('ul')"
-                      class="px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer hover:border-brand-gold"
-                      :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
-                      title="Danh sách chấm đầu dòng"
-                    >
-                      • Danh sách
-                    </button>
-                    <button
-                      type="button"
-                      @click="applyDescFormat('tip')"
-                      class="px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer text-amber-500 hover:border-amber-500"
+                      @mousedown.prevent="clearSelectedFormatting"
+                      class="p-1.5 rounded-lg border transition-colors cursor-pointer hover:border-red-400 text-slate-400 hover:text-red-400"
                       :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'"
-                      title="Chèn hộp lưu ý kỹ thuật"
+                      title="Xóa mọi định dạng vùng đang chọn (Đưa về chữ chuẩn)"
                     >
-                      💡 Lưu ý
+                      <Eraser class="w-3.5 h-3.5" />
                     </button>
                   </div>
 
-                  <!-- Image Insert Buttons -->
-                  <div class="flex flex-wrap items-center gap-1.5">
-                    <button
-                      type="button"
-                      @click="openMediaForDescription"
-                      class="px-2.5 py-1.5 rounded-lg bg-brand-gold/15 hover:bg-brand-gold/25 text-amber-500 border border-brand-gold/30 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors"
-                    >
-                      <Images class="w-3.5 h-3.5" />
-                      <span>Chèn Ảnh Thư Viện</span>
-                    </button>
+                  <!-- ROW 2: Căn lề (Trái/Giữa/Phải/Đều), Danh sách (Chấm/Số), Thụt lề, Bảng, Link, Lưu ý & Chèn Ảnh -->
+                  <div class="flex flex-wrap items-center justify-between gap-2 p-2">
+                    <div class="flex flex-wrap items-center gap-1">
+                      <!-- Alignment: Left, Center, Right, Justify -->
+                      <div class="flex items-center gap-0.5 pr-1.5 border-r" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
+                        <button
+                          type="button"
+                          @mousedown.prevent="execWordCmd('justifyLeft')"
+                          class="p-1.5 rounded-lg border transition-colors cursor-pointer hover:border-brand-gold"
+                          :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                          title="Căn lề trái"
+                        >
+                          <AlignLeft class="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          @mousedown.prevent="execWordCmd('justifyCenter')"
+                          class="p-1.5 rounded-lg border transition-colors cursor-pointer hover:border-brand-gold"
+                          :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                          title="Căn giữa"
+                        >
+                          <AlignCenter class="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          @mousedown.prevent="execWordCmd('justifyRight')"
+                          class="p-1.5 rounded-lg border transition-colors cursor-pointer hover:border-brand-gold"
+                          :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                          title="Căn lề phải"
+                        >
+                          <AlignRight class="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          @mousedown.prevent="execWordCmd('justifyFull')"
+                          class="p-1.5 rounded-lg border transition-colors cursor-pointer hover:border-brand-gold"
+                          :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                          title="Căn đều 2 bên (Justify)"
+                        >
+                          <AlignJustify class="w-3.5 h-3.5" />
+                        </button>
+                      </div>
 
+                      <!-- Lists & Indent -->
+                      <div class="flex items-center gap-0.5 pr-1.5 border-r" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
+                        <button
+                          type="button"
+                          @mousedown.prevent="applyDescFormat('ul')"
+                          class="p-1.5 rounded-lg border transition-colors cursor-pointer hover:border-brand-gold"
+                          :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                          title="Danh sách dấu chấm tròn (Bullets)"
+                        >
+                          <List class="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          @mousedown.prevent="applyDescFormat('ol')"
+                          class="p-1.5 rounded-lg border transition-colors cursor-pointer hover:border-brand-gold"
+                          :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                          title="Danh sách đánh số (1, 2, 3...)"
+                        >
+                          <ListOrdered class="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          @mousedown.prevent="execWordCmd('outdent')"
+                          class="p-1.5 rounded-lg border transition-colors cursor-pointer hover:border-brand-gold"
+                          :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                          title="Giảm thụt lề"
+                        >
+                          <Outdent class="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          @mousedown.prevent="execWordCmd('indent')"
+                          class="p-1.5 rounded-lg border transition-colors cursor-pointer hover:border-brand-gold"
+                          :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                          title="Tăng thụt lề đầu dòng"
+                        >
+                          <Indent class="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      <!-- Bảng biểu, Liên kết, Đường kẻ ngang, Lưu ý -->
+                      <div class="flex flex-wrap items-center gap-1">
+                        <button
+                          type="button"
+                          @click="insertSampleTable"
+                          class="px-2 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer hover:border-brand-gold flex items-center gap-1"
+                          :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                          title="Chèn bảng thông số kỹ thuật / bảng giá"
+                        >
+                          <Table class="w-3.5 h-3.5 text-brand-gold" />
+                          <span>Bảng</span>
+                        </button>
+                        <button
+                          type="button"
+                          @click="insertHyperlink"
+                          class="px-2 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer hover:border-brand-gold flex items-center gap-1"
+                          :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                          title="Chèn liên kết (Link)"
+                        >
+                          <Link2 class="w-3.5 h-3.5 text-blue-400" />
+                          <span>Link</span>
+                        </button>
+                        <button
+                          type="button"
+                          @mousedown.prevent="execWordCmd('insertHorizontalRule')"
+                          class="px-2 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer hover:border-brand-gold flex items-center gap-1"
+                          :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                          title="Chèn đường kẻ ngang phân cách"
+                        >
+                          <Minus class="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          @click="applyDescFormat('tip')"
+                          class="px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer text-amber-500 hover:border-amber-500"
+                          :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'"
+                          title="Chèn hộp lưu ý kỹ thuật"
+                        >
+                          💡 Lưu ý
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Image Insert Buttons -->
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      <button
+                        type="button"
+                        @click="openMediaForDescription"
+                        class="px-2.5 py-1.5 rounded-lg bg-brand-gold/15 hover:bg-brand-gold/25 text-amber-500 border border-brand-gold/30 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+                      >
+                        <Images class="w-3.5 h-3.5" />
+                        <span>Chèn Ảnh Thư Viện</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        @click="triggerDescImageUpload"
+                        :disabled="isUploadingDescImage"
+                        class="px-2.5 py-1.5 rounded-lg bg-brand-gold hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50"
+                      >
+                        <Loader2 v-if="isUploadingDescImage" class="w-3.5 h-3.5 animate-spin" />
+                        <UploadCloud v-else class="w-3.5 h-3.5" />
+                        <span>{{ isUploadingDescImage ? 'Đang tải...' : 'Thêm Ảnh Từ Máy' }}</span>
+                      </button>
+                      <input
+                        ref="descFileInputRef"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        class="hidden"
+                        @change="handleDescImageUpload"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- CONTEXTUAL IMAGE TOOLBAR (Hiện ra khi click vào 1 ảnh trong bài mô tả) -->
+                  <div
+                    v-if="selectedImageEl"
+                    class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-amber-500/10 text-xs"
+                  >
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      <span class="font-bold text-amber-400">🖼 Tùy chỉnh ảnh đang chọn:</span>
+                      <button
+                        v-for="w in ['25%', '50%', '75%', '100%']"
+                        :key="w"
+                        type="button"
+                        @click="resizeSelectedImage(w)"
+                        class="px-2 py-0.5 rounded border font-bold cursor-pointer hover:border-brand-gold"
+                        :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
+                      >
+                        Rộng {{ w }}
+                      </button>
+                      <span class="text-slate-500">|</span>
+                      <button
+                        type="button"
+                        @click="alignSelectedImage('left')"
+                        class="px-2 py-0.5 rounded border font-semibold cursor-pointer hover:border-brand-gold"
+                        :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-white border-slate-200 text-slate-700'"
+                      >
+                        Căn trái
+                      </button>
+                      <button
+                        type="button"
+                        @click="alignSelectedImage('center')"
+                        class="px-2 py-0.5 rounded border font-semibold cursor-pointer hover:border-brand-gold"
+                        :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-white border-slate-200 text-slate-700'"
+                      >
+                        Căn giữa
+                      </button>
+                      <button
+                        type="button"
+                        @click="alignSelectedImage('right')"
+                        class="px-2 py-0.5 rounded border font-semibold cursor-pointer hover:border-brand-gold"
+                        :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-white border-slate-200 text-slate-700'"
+                      >
+                        Căn phải
+                      </button>
+                    </div>
                     <button
                       type="button"
-                      @click="triggerDescImageUpload"
-                      :disabled="isUploadingDescImage"
-                      class="px-2.5 py-1.5 rounded-lg bg-brand-gold hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50"
+                      @click="removeSelectedImage"
+                      class="px-2.5 py-0.5 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 font-bold cursor-pointer"
                     >
-                      <Loader2 v-if="isUploadingDescImage" class="w-3.5 h-3.5 animate-spin" />
-                      <UploadCloud v-else class="w-3.5 h-3.5" />
-                      <span>{{ isUploadingDescImage ? 'Đang tải...' : 'Thêm Ảnh Từ Máy' }}</span>
+                      Xóa ảnh này
                     </button>
-                    <input
-                      ref="descFileInputRef"
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      class="hidden"
-                      @change="handleDescImageUpload"
-                    />
                   </div>
                 </div>
 
@@ -459,7 +769,10 @@
                   contenteditable="true"
                   @input="onVisualEditorInput"
                   @blur="onVisualEditorInput"
-                  class="w-full min-h-[260px] max-h-[560px] overflow-y-auto rounded-xl p-4 text-sm border focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all leading-relaxed desc-visual-editor"
+                  @mouseup="onEditorSelectionChange"
+                  @keyup="onEditorSelectionChange"
+                  @click="onEditorClick"
+                  class="w-full min-h-[300px] max-h-[620px] overflow-y-auto rounded-xl p-4 sm:p-5 text-sm border focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all leading-relaxed desc-visual-editor"
                   :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-slate-100' : 'bg-white border-slate-200 text-slate-800'"
                   data-placeholder="Nhập nội dung mô tả chi tiết ấn phẩm, ưu điểm chất liệu, quy cách gia công và bấm 'Thêm Ảnh Từ Máy' hoặc 'Chèn Ảnh Thư Viện' để minh họa..."
                 ></div>
@@ -803,7 +1116,21 @@ import {
   Eye,
   Sparkles,
   Images,
-  UploadCloud
+  UploadCloud,
+  Undo2,
+  Redo2,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  List,
+  ListOrdered,
+  Outdent,
+  Indent,
+  Table,
+  Link2,
+  Minus,
+  Eraser
 } from 'lucide-vue-next'
 import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
@@ -826,12 +1153,244 @@ const isMediaModalOpen = ref(false)
 const mediaTarget = ref('image') // 'image' | 'description'
 const quickFileInputRef = ref(null)
 
-// Rich Description Editor State
+// Rich Description Editor State (Word-style)
 const descEditorMode = ref('visual') // 'visual' | 'html'
 const visualEditorRef = ref(null)
 const descTextareaRef = ref(null)
 const descFileInputRef = ref(null)
 const isUploadingDescImage = ref(false)
+
+const selectedHeading = ref('p')
+const selectedFontFamily = ref('')
+const selectedFontSize = ref('14px')
+const currentTextColor = ref('#F59E0B')
+const selectedImageEl = ref(null)
+let savedSelectionRange = null
+
+const FONT_SIZE_STEPS = ['12px', '13px', '14px', '15px', '16px', '18px', '20px', '24px', '28px', '32px', '36px']
+
+const QUICK_TEXT_COLORS = [
+  { label: 'Mặc định / Đen', hex: '#0F172A' },
+  { label: 'Trắng sáng', hex: '#F8FAFC' },
+  { label: 'Xanh Thương Hiệu', hex: '#1E3A8A' },
+  { label: 'Đỏ Nhấn Mạnh', hex: '#DC2626' },
+  { label: 'Vàng Cam Xưởng', hex: '#D97706' },
+  { label: 'Xanh Lá', hex: '#059669' }
+]
+
+const QUICK_HIGHLIGHT_COLORS = [
+  { label: 'Vàng Dạ Quang', hex: '#FEF08A' },
+  { label: 'Xanh Nhạt', hex: '#DBEAFE' },
+  { label: 'Xanh Lá Nhạt', hex: '#D1FAE5' },
+  { label: 'Hồng Nhạt', hex: '#FCE7F3' }
+]
+
+function onEditorSelectionChange() {
+  if (!visualEditorRef.value) return
+  const sel = window.getSelection()
+  if (sel && sel.rangeCount > 0) {
+    const range = sel.getRangeAt(0)
+    if (visualEditorRef.value.contains(range.commonAncestorContainer)) {
+      savedSelectionRange = range.cloneRange()
+    }
+  }
+}
+
+function restoreEditorSelection() {
+  if (!visualEditorRef.value) return
+  visualEditorRef.value.focus()
+  if (savedSelectionRange) {
+    const sel = window.getSelection()
+    if (sel) {
+      sel.removeAllRanges()
+      sel.addRange(savedSelectionRange)
+    }
+  }
+}
+
+function onEditorClick(e) {
+  onEditorSelectionChange()
+  if (e.target && e.target.tagName === 'IMG') {
+    selectedImageEl.value = e.target
+  } else {
+    selectedImageEl.value = null
+  }
+}
+
+function resizeSelectedImage(widthPercent) {
+  if (!selectedImageEl.value) return
+  selectedImageEl.value.style.width = widthPercent
+  selectedImageEl.value.style.maxWidth = '100%'
+  selectedImageEl.value.style.height = 'auto'
+  onVisualEditorInput()
+}
+
+function alignSelectedImage(align) {
+  if (!selectedImageEl.value) return
+  const figure = selectedImageEl.value.closest('figure')
+  if (figure) {
+    figure.style.textAlign = align
+  }
+  if (align === 'left') {
+    selectedImageEl.value.style.marginLeft = '0'
+    selectedImageEl.value.style.marginRight = 'auto'
+  } else if (align === 'right') {
+    selectedImageEl.value.style.marginLeft = 'auto'
+    selectedImageEl.value.style.marginRight = '0'
+  } else {
+    selectedImageEl.value.style.marginLeft = 'auto'
+    selectedImageEl.value.style.marginRight = 'auto'
+  }
+  onVisualEditorInput()
+}
+
+function removeSelectedImage() {
+  if (!selectedImageEl.value) return
+  const figure = selectedImageEl.value.closest('figure')
+  if (figure && visualEditorRef.value?.contains(figure)) {
+    figure.remove()
+  } else {
+    selectedImageEl.value.remove()
+  }
+  selectedImageEl.value = null
+  onVisualEditorInput()
+}
+
+function execWordCmd(cmd, val = null) {
+  if (descEditorMode.value !== 'visual') {
+    switchEditorMode('visual')
+  }
+  restoreEditorSelection()
+  document.execCommand(cmd, false, val)
+  onEditorSelectionChange()
+  onVisualEditorInput()
+}
+
+function applyHeadingBlock() {
+  const tag = selectedHeading.value || 'p'
+  if (descEditorMode.value !== 'visual') {
+    switchEditorMode('visual')
+  }
+  restoreEditorSelection()
+  document.execCommand('formatBlock', false, `<${tag}>`)
+  onEditorSelectionChange()
+  onVisualEditorInput()
+}
+
+function applyFontFamily() {
+  const font = selectedFontFamily.value
+  if (descEditorMode.value !== 'visual') {
+    switchEditorMode('visual')
+  }
+  restoreEditorSelection()
+  if (font) {
+    document.execCommand('fontName', false, font)
+  } else {
+    document.execCommand('removeFormat', false, null)
+  }
+  onEditorSelectionChange()
+  onVisualEditorInput()
+}
+
+function applyFontSizePx(sizePx) {
+  if (!sizePx) return
+  selectedFontSize.value = sizePx
+  if (descEditorMode.value !== 'visual') {
+    switchEditorMode('visual')
+  }
+  restoreEditorSelection()
+  const sel = window.getSelection()
+  const hasSelection = sel && sel.toString().length > 0 && visualEditorRef.value?.contains(sel.anchorNode)
+
+  if (hasSelection) {
+    document.execCommand('fontSize', false, '7')
+    const fonts = visualEditorRef.value.querySelectorAll('font[size="7"]')
+    fonts.forEach(fontEl => {
+      const span = document.createElement('span')
+      span.style.fontSize = sizePx
+      span.innerHTML = fontEl.innerHTML
+      fontEl.parentNode.replaceChild(span, fontEl)
+    })
+  } else {
+    document.execCommand('insertHTML', false, `<span style="font-size: ${sizePx};">Chữ cỡ ${sizePx}</span> `)
+  }
+  onEditorSelectionChange()
+  onVisualEditorInput()
+}
+
+function stepFontSize(direction) {
+  const idx = FONT_SIZE_STEPS.indexOf(selectedFontSize.value)
+  const currentIdx = idx >= 0 ? idx : 2
+  const nextIdx = Math.min(FONT_SIZE_STEPS.length - 1, Math.max(0, currentIdx + direction))
+  applyFontSizePx(FONT_SIZE_STEPS[nextIdx])
+}
+
+function applyTextColor(hexColor) {
+  currentTextColor.value = hexColor
+  execWordCmd('foreColor', hexColor)
+}
+
+function applyHighlightColor(hexColor) {
+  if (descEditorMode.value !== 'visual') {
+    switchEditorMode('visual')
+  }
+  restoreEditorSelection()
+  if (!document.execCommand('hiliteColor', false, hexColor)) {
+    document.execCommand('backColor', false, hexColor)
+  }
+  onEditorSelectionChange()
+  onVisualEditorInput()
+}
+
+function clearSelectedFormatting() {
+  if (descEditorMode.value !== 'visual') {
+    switchEditorMode('visual')
+  }
+  restoreEditorSelection()
+  document.execCommand('removeFormat', false, null)
+  document.execCommand('formatBlock', false, '<p>')
+  onEditorSelectionChange()
+  onVisualEditorInput()
+}
+
+function insertSampleTable() {
+  const tableHtml = `
+    <table style="width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px;">
+      <thead>
+        <tr style="background-color: #f1f5f9; color: #0f172a; font-weight: 700;">
+          <th style="border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left;">Hạng mục / Quy cách</th>
+          <th style="border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left;">Thông số tiêu chuẩn</th>
+          <th style="border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left;">Ghi chú</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="border: 1px solid #cbd5e1; padding: 8px 12px;">Chất liệu giấy</td>
+          <td style="border: 1px solid #cbd5e1; padding: 8px 12px;">Couche / Decal / Fort cao cấp</td>
+          <td style="border: 1px solid #cbd5e1; padding: 8px 12px;">Tùy chọn định lượng</td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #cbd5e1; padding: 8px 12px;">Công nghệ in</td>
+          <td style="border: 1px solid #cbd5e1; padding: 8px 12px;">In Offset / Kỹ thuật số 4 màu CMYK</td>
+          <td style="border: 1px solid #cbd5e1; padding: 8px 12px;">Sắc nét 98%</td>
+        </tr>
+      </tbody>
+    </table><p></p>`
+  insertHtmlIntoDescription(tableHtml)
+}
+
+function insertHyperlink() {
+  restoreEditorSelection()
+  const url = prompt('Nhập đường dẫn liên kết (URL):', 'https://dichvuinnhatnguyen.vn')
+  if (!url) return
+  const sel = window.getSelection()
+  if (sel && sel.toString().trim().length > 0) {
+    document.execCommand('createLink', false, url)
+    onVisualEditorInput()
+  } else {
+    insertHtmlIntoDescription(`<a href="${url}" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: 600;">${url}</a> `)
+  }
+}
 
 function stripHtml(html) {
   if (!html) return ''
@@ -873,13 +1432,14 @@ function switchEditorMode(mode) {
 
 function insertHtmlIntoDescription(htmlSnippet) {
   if (descEditorMode.value === 'visual' && visualEditorRef.value) {
-    visualEditorRef.value.focus()
+    restoreEditorSelection()
     const sel = window.getSelection()
     if (sel && sel.rangeCount > 0 && visualEditorRef.value.contains(sel.anchorNode)) {
       document.execCommand('insertHTML', false, htmlSnippet)
     } else {
       visualEditorRef.value.innerHTML += htmlSnippet
     }
+    onEditorSelectionChange()
     onVisualEditorInput()
   } else {
     form.value.description = (form.value.description || '') + '\n' + htmlSnippet
@@ -889,27 +1449,43 @@ function insertHtmlIntoDescription(htmlSnippet) {
 
 function applyDescFormat(type) {
   if (descEditorMode.value === 'visual' && visualEditorRef.value) {
-    visualEditorRef.value.focus()
+    restoreEditorSelection()
     const sel = window.getSelection()
     const hasSelection = sel && sel.toString().trim().length > 0 && visualEditorRef.value.contains(sel.anchorNode)
 
-    if (type === 'bold' && hasSelection) {
+    if (type === 'bold') {
       document.execCommand('bold', false, null)
+      onEditorSelectionChange()
       onVisualEditorInput()
       return
     }
-    if (type === 'italic' && hasSelection) {
+    if (type === 'italic') {
       document.execCommand('italic', false, null)
+      onEditorSelectionChange()
       onVisualEditorInput()
       return
     }
-    if (type === 'underline' && hasSelection) {
+    if (type === 'underline') {
       document.execCommand('underline', false, null)
+      onEditorSelectionChange()
       onVisualEditorInput()
       return
     }
-    if (type === 'ul' && hasSelection) {
+    if (type === 'ul') {
       document.execCommand('insertUnorderedList', false, null)
+      onEditorSelectionChange()
+      onVisualEditorInput()
+      return
+    }
+    if (type === 'ol') {
+      document.execCommand('insertOrderedList', false, null)
+      onEditorSelectionChange()
+      onVisualEditorInput()
+      return
+    }
+    if ((type === 'h2' || type === 'h3') && hasSelection) {
+      document.execCommand('formatBlock', false, `<${type}>`)
+      onEditorSelectionChange()
       onVisualEditorInput()
       return
     }
@@ -923,17 +1499,11 @@ function applyDescFormat(type) {
     case 'h3':
       snippet = '<h3>Tiêu đề mục phụ</h3><p>Nội dung chi tiết...</p>'
       break
-    case 'bold':
-      snippet = '<strong>chữ in đậm</strong> '
-      break
-    case 'italic':
-      snippet = '<em>chữ in nghiêng</em> '
-      break
-    case 'underline':
-      snippet = '<u>chữ gạch chân</u> '
-      break
     case 'ul':
       snippet = '<ul><li>Ưu điểm / quy cách thứ nhất</li><li>Ưu điểm / quy cách thứ hai</li></ul>'
+      break
+    case 'ol':
+      snippet = '<ol><li>Bước 1 / Quy cách 1</li><li>Bước 2 / Quy cách 2</li></ol>'
       break
     case 'tip':
       snippet = '<div class="p-4 rounded-xl border border-amber-300 bg-amber-50 text-slate-800 my-4 text-xs font-medium">💡 <strong>Lưu ý từ Xưởng In Nhật Nguyên:</strong> Hỗ trợ thiết kế & kiểm tra file chuẩn màu CMYK miễn phí trước khi in.</div><p></p>'
@@ -1200,18 +1770,32 @@ onMounted(async () => {
   pointer-events: none;
 }
 
+.desc-visual-editor :deep(h1) {
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin-top: 1.1rem;
+  margin-bottom: 0.6rem;
+}
+
 .desc-visual-editor :deep(h2) {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 800;
   margin-top: 1rem;
   margin-bottom: 0.5rem;
 }
 
 .desc-visual-editor :deep(h3) {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   margin-top: 0.75rem;
   margin-bottom: 0.4rem;
+}
+
+.desc-visual-editor :deep(h4) {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-top: 0.6rem;
+  margin-bottom: 0.35rem;
 }
 
 .desc-visual-editor :deep(p) {
@@ -1224,8 +1808,41 @@ onMounted(async () => {
   margin-bottom: 0.75rem;
 }
 
+.desc-visual-editor :deep(ol) {
+  list-style-type: decimal;
+  padding-left: 1.4rem;
+  margin-bottom: 0.75rem;
+}
+
 .desc-visual-editor :deep(li) {
   margin-bottom: 0.25rem;
+}
+
+.desc-visual-editor :deep(blockquote) {
+  border-left: 4px solid #f59e0b;
+  padding: 0.65rem 1rem;
+  margin: 0.85rem 0;
+  font-style: italic;
+  background: rgba(245, 158, 11, 0.08);
+  border-radius: 0 0.75rem 0.75rem 0;
+}
+
+.desc-visual-editor :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.85rem 0;
+}
+
+.desc-visual-editor :deep(th),
+.desc-visual-editor :deep(td) {
+  border: 1px solid #475569;
+  padding: 0.5rem 0.75rem;
+}
+
+.desc-visual-editor :deep(hr) {
+  border: none;
+  border-top: 1px solid #475569;
+  margin: 1rem 0;
 }
 
 .desc-visual-editor :deep(img) {
@@ -1234,6 +1851,7 @@ onMounted(async () => {
   border-radius: 0.85rem;
   margin: 0.75rem auto;
   display: block;
+  cursor: pointer;
 }
 </style>
 

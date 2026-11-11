@@ -914,6 +914,14 @@ const relatedProducts = computed(() => {
   scrollbar-width: none;
 }
 
+.product-rich-description :deep(h1) {
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin-top: 1.35rem;
+  margin-bottom: 0.65rem;
+}
+
 .product-rich-description :deep(h2) {
   font-size: 1.25rem;
   font-weight: 800;
@@ -930,6 +938,14 @@ const relatedProducts = computed(() => {
   margin-bottom: 0.5rem;
 }
 
+.product-rich-description :deep(h4) {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+
 .product-rich-description :deep(p) {
   margin-bottom: 0.75rem;
   line-height: 1.75;
@@ -941,8 +957,35 @@ const relatedProducts = computed(() => {
   margin-bottom: 0.85rem;
 }
 
+.product-rich-description :deep(ol) {
+  list-style-type: decimal;
+  padding-left: 1.4rem;
+  margin-bottom: 0.85rem;
+}
+
 .product-rich-description :deep(li) {
   margin-bottom: 0.35rem;
+}
+
+.product-rich-description :deep(blockquote) {
+  border-left: 4px solid #f59e0b;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  background: #fffbeb;
+  border-radius: 0 0.75rem 0.75rem 0;
+}
+
+.product-rich-description :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.product-rich-description :deep(th),
+.product-rich-description :deep(td) {
+  border: 1px solid #cbd5e1;
+  padding: 0.55rem 0.8rem;
 }
 
 .product-rich-description :deep(img) {
