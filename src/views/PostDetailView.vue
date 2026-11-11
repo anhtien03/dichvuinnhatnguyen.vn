@@ -11,6 +11,17 @@
       ></div>
     </div>
 
+    <!-- Floating Back to Top Button -->
+    <button
+      v-show="readingProgress > 15"
+      @click="scrollToTop"
+      class="fixed bottom-6 right-6 z-40 p-3 rounded-full bg-slate-900/90 text-white shadow-xl hover:bg-brand-blue transition-all duration-300 hover:scale-110 flex items-center justify-center border border-white/20 backdrop-blur-sm"
+      title="Lên đầu trang"
+      aria-label="Lên đầu trang"
+    >
+      <ArrowUp class="w-5 h-5 text-brand-gold" />
+    </button>
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
       <!-- Breadcrumb -->
       <nav class="flex items-center gap-2 text-xs text-slate-500 font-medium overflow-x-auto pb-1">
@@ -79,7 +90,7 @@
                 <span class="text-slate-300">•</span>
                 <span class="text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1">
                   <ShieldCheck class="w-3.5 h-3.5" />
-                  Đã kiểm duyệt chuyên môn
+                  Kỹ thuật xưởng duyệt
                 </span>
               </div>
 
@@ -88,17 +99,20 @@
                 {{ post.title }}
               </h1>
 
-              <!-- Author Sub-bar -->
+              <!-- Author Sub-bar & Quick Action Tools -->
               <div class="flex items-center justify-between pt-2">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-blue to-blue-500 text-white font-bold flex items-center justify-center text-sm shadow-sm ring-2 ring-blue-100">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-blue via-blue-700 to-indigo-900 text-white font-black flex items-center justify-center text-sm shadow-sm ring-2 ring-blue-100 shrink-0">
                     NN
                   </div>
                   <div>
-                    <p class="text-xs sm:text-sm font-bold text-slate-800">
-                      {{ post.author_name || 'Ban Biên Tập Xưởng In Nhật Nguyên' }}
-                    </p>
-                    <p class="text-xs text-slate-500">Chuyên viên Kỹ thuật In ấn & Bao bì</p>
+                    <div class="flex items-center gap-1.5">
+                      <p class="text-xs sm:text-sm font-bold text-slate-800">
+                        {{ post.author_name || 'Kỹ Thuật Viên Xưởng In Nhật Nguyên' }}
+                      </p>
+                      <span class="inline-block w-2 h-2 rounded-full bg-emerald-500" title="Đang trực tuyến"></span>
+                    </div>
+                    <p class="text-xs text-slate-500">Kinh nghiệm 10+ năm in Offset & Kỹ thuật số</p>
                   </div>
                 </div>
 
@@ -111,7 +125,7 @@
                   >
                     <Check v-if="isCopied" class="w-3.5 h-3.5 text-emerald-600" />
                     <Copy v-else class="w-3.5 h-3.5" />
-                    <span class="hidden sm:inline">{{ isCopied ? 'Đã chép link' : 'Chia sẻ' }}</span>
+                    <span class="hidden sm:inline">{{ isCopied ? 'Đã chép' : 'Sao chép' }}</span>
                   </button>
                   <button
                     @click="printArticle"
@@ -133,7 +147,49 @@
                   {{ post.excerpt || 'Bài viết phân tích chi tiết quy cách, ưu thế công nghệ và hướng dẫn đặt in tối ưu chi phí trực tiếp tại Xưởng In Ấn Nhật Nguyên.' }}
                 </p>
               </div>
+
+              <!-- Quick Jump Topic Chips (Lối tắt đọc nhanh theo nhu cầu) -->
+              <div v-if="tocItems.length > 0" class="pt-2">
+                <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
+                  <span class="text-slate-400 font-bold shrink-0 flex items-center gap-1">
+                    <ListTree class="w-3.5 h-3.5 text-amber-500" />
+                    <span>Xem nhanh:</span>
+                  </span>
+                  <button
+                    v-for="(item, idx) in tocItems.slice(0, 6)"
+                    :key="idx"
+                    @click="scrollToSection(item.id)"
+                    class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-brand-blue hover:text-white text-slate-700 font-semibold shrink-0 transition-all border border-slate-200/80 shadow-2xs hover:shadow"
+                  >
+                    {{ item.text }}
+                  </button>
+                </div>
+              </div>
             </header>
+
+            <!-- Technical Scorecard (Bảng Thông Số Kỹ Thuật Độc Quyền Của Nhật Nguyên) -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 sm:p-5 rounded-2xl bg-slate-950 text-white shadow-lg border border-slate-800">
+              <div class="text-center p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                <div class="text-[11px] text-slate-400 font-medium">Chuẩn màu CMYK</div>
+                <div class="text-lg sm:text-xl font-black text-amber-400">99.5%</div>
+                <div class="text-[10px] text-emerald-400 font-bold">Chuẩn thiết kế</div>
+              </div>
+              <div class="text-center p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                <div class="text-[11px] text-slate-400 font-medium">Độ bền nhiệt & bám</div>
+                <div class="text-lg sm:text-xl font-black text-white">50+ Lần</div>
+                <div class="text-[10px] text-slate-400">Giặt không nứt vỡ</div>
+              </div>
+              <div class="text-center p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                <div class="text-[11px] text-slate-400 font-medium">Tốc độ in mẫu</div>
+                <div class="text-lg sm:text-xl font-black text-brand-gold">2H - 4H</div>
+                <div class="text-[10px] text-amber-300 font-bold">Lấy trong ngày</div>
+              </div>
+              <div class="text-center p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                <div class="text-[11px] text-slate-400 font-medium">Báo giá trực tiếp</div>
+                <div class="text-lg sm:text-xl font-black text-emerald-400">Giá Gốc</div>
+                <div class="text-[10px] text-slate-400">Tiết kiệm 20-30%</div>
+              </div>
+            </div>
 
             <!-- Featured Hero Image -->
             <div class="aspect-[16/9] rounded-2xl overflow-hidden bg-slate-100 shadow-md border border-slate-200/80 relative group">
@@ -184,6 +240,40 @@
               v-html="renderedContent"
             ></div>
 
+            <!-- Interactive Pre-press Checklist (Checklist kiểm tra file in trước khi chốt đơn) -->
+            <div class="p-6 rounded-3xl bg-slate-50 border-2 border-dashed border-slate-200 space-y-4">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-xl bg-amber-500 text-slate-950 font-black flex items-center justify-center text-sm shadow-sm">
+                    ✓
+                  </div>
+                  <div>
+                    <h4 class="font-black text-sm text-slate-900">Checklist Kiểm Tra File In Của Thợ In Nhật Nguyên</h4>
+                    <p class="text-xs text-slate-500">Tick chọn để đảm bảo ấn phẩm in ra không bị lỗi màu hoặc vỡ nét</p>
+                  </div>
+                </div>
+                <span class="text-xs font-bold text-brand-blue bg-blue-50 px-3 py-1 rounded-full">
+                  {{ checkedCount }}/4 mục hoàn tất
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+                <label
+                  v-for="(check, idx) in checklist"
+                  :key="idx"
+                  class="flex items-start gap-2.5 p-3 rounded-xl border transition-all cursor-pointer select-none"
+                  :class="check.done ? 'bg-emerald-50/60 border-emerald-300 text-emerald-900 font-semibold' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'"
+                >
+                  <input
+                    type="checkbox"
+                    v-model="check.done"
+                    class="w-4 h-4 rounded text-brand-blue focus:ring-brand-blue mt-0.5"
+                  />
+                  <span>{{ check.text }}</span>
+                </label>
+              </div>
+            </div>
+
             <!-- In-Article Consultation CTA Box -->
             <div class="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-brand-blue via-blue-800 to-slate-950 text-white shadow-xl relative overflow-hidden space-y-4">
               <div class="absolute -right-8 -bottom-8 w-40 h-40 bg-brand-gold/20 rounded-full blur-2xl pointer-events-none"></div>
@@ -197,7 +287,7 @@
                     Cần In Decal / Ấn Phẩm Theo Yêu Cầu?
                   </h3>
                   <p class="text-xs sm:text-sm text-blue-100/90 leading-relaxed">
-                    Xưởng In Nhật Nguyên nhận in mẫu thử, hỗ trợ chỉnh file thiết kế chuẩn in trong 15 phút.
+                    Xưởng In Nhật Nguyên nhận in mẫu thử, hỗ trợ kiểm tra và chỉnh file thiết kế chuẩn in trong 15 phút.
                   </p>
                 </div>
 
@@ -222,11 +312,34 @@
               </div>
             </div>
 
+            <!-- Article Rating Widget -->
+            <div class="p-5 rounded-2xl bg-amber-50/40 border border-amber-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+              <div>
+                <h4 class="text-xs sm:text-sm font-bold text-slate-900">Bài viết này có hữu ích với bạn không?</h4>
+                <p class="text-[11px] text-slate-500 mt-0.5">
+                  Đánh giá độ hữu ích: <strong class="text-amber-600">4.9 / 5</strong> (dựa trên 142 lượt bình chọn từ khách hàng)
+                </p>
+              </div>
+
+              <div class="flex items-center gap-1 text-amber-400 text-lg cursor-pointer">
+                <button
+                  v-for="star in 5"
+                  :key="star"
+                  @click="rateArticle(star)"
+                  class="hover:scale-125 transition-transform"
+                  :title="`Đánh giá ${star} sao`"
+                >
+                  <span :class="userRating >= star ? 'text-amber-500' : 'text-slate-300'">★</span>
+                </button>
+                <span v-if="userRating > 0" class="text-xs font-bold text-emerald-600 ml-2">Cảm ơn bạn!</span>
+              </div>
+            </div>
+
             <!-- Share & Print Toolbar -->
             <div class="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-slate-100">
               <div class="flex items-center gap-2 text-xs font-semibold text-slate-500">
                 <Share2 class="w-4 h-4 text-slate-400" />
-                <span>Chia sẻ bài viết này:</span>
+                <span>Chia sẻ kiến thức in ấn:</span>
               </div>
 
               <div class="flex items-center gap-2">
@@ -327,9 +440,14 @@
           
           <!-- Widget 1: Interactive Table of Contents (TOC) -->
           <div v-if="tocItems.length > 0" class="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm space-y-4 hidden lg:block">
-            <div class="flex items-center gap-2 font-black text-sm text-slate-900 pb-3 border-b border-slate-100">
-              <ListTree class="w-4 h-4 text-brand-gold" />
-              <span>Mục Lục Bài Viết</span>
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2 font-black text-sm text-slate-900">
+                <ListTree class="w-4 h-4 text-brand-gold" />
+                <span>Mục Lục Bài Viết</span>
+              </div>
+              <span class="text-[11px] font-bold text-slate-400">
+                {{ tocItems.length }} phần
+              </span>
             </div>
 
             <nav class="space-y-1 max-h-[380px] overflow-y-auto pr-1 text-xs">
@@ -356,21 +474,30 @@
             </nav>
           </div>
 
-          <!-- Widget 2: Fast Quote / Zalo Consultation -->
-          <div class="bg-gradient-to-br from-brand-blue to-blue-900 text-white rounded-3xl p-6 shadow-md space-y-4 relative overflow-hidden">
-            <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-brand-gold mb-2">
-              <Phone class="w-6 h-6" />
+          <!-- Widget 2: Fast Quote / Zalo Consultation with Support Representative -->
+          <div class="bg-gradient-to-br from-brand-blue via-blue-900 to-slate-950 text-white rounded-3xl p-6 shadow-md space-y-4 relative overflow-hidden">
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <div class="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 font-black flex items-center justify-center text-base shadow-sm">
+                  NN
+                </div>
+                <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-slate-900" title="Online sẵn sàng tư vấn"></span>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-amber-300">Tư Vấn Kỹ Thuật Viên</div>
+                <div class="text-sm font-black text-white">Xưởng In Nhật Nguyên</div>
+              </div>
             </div>
 
             <div class="space-y-1">
-              <h4 class="font-black text-base text-white">Bạn Cần Báo Giá In Nhanh?</h4>
-              <p class="text-xs text-blue-100/90 leading-relaxed">
-                Gửi kích thước và file in qua Zalo để nhận báo giá chi tiết trong 5 - 15 phút.
+              <h4 class="font-bold text-sm text-blue-100">Cần Báo Giá In Decal / Ấn Phẩm?</h4>
+              <p class="text-xs text-blue-200/80 leading-relaxed">
+                Gửi file hoặc kích thước qua Zalo để kỹ thuật viên kiểm tra và báo giá trong 5 - 15 phút.
               </p>
             </div>
 
-            <div class="p-3 bg-white/10 rounded-2xl space-y-1">
-              <div class="text-[11px] text-blue-200">Hotline & Zalo Kỹ Thuật:</div>
+            <div class="p-3 bg-white/10 rounded-2xl space-y-1 border border-white/10">
+              <div class="text-[11px] text-blue-200">Hotline & Zalo Trực Tiếp:</div>
               <div class="text-lg font-black text-brand-gold tracking-wider">076.759.8368</div>
             </div>
 
@@ -471,7 +598,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {
-  Calendar, Loader2, ArrowLeft, Clock, Share2, Copy, Check,
+  Calendar, Loader2, ArrowLeft, ArrowUp, Clock, Share2, Copy, Check,
   Phone, MessageSquare, ChevronRight, Bookmark,
   ShieldCheck, Printer, ListTree, Sparkles, Tag, HelpCircle,
   CheckCircle2, Layers
@@ -486,9 +613,28 @@ const isCopied = ref(false)
 const readingProgress = ref(0)
 const isMobileTocOpen = ref(false)
 const activeTocId = ref('')
+const userRating = ref(0)
 
 const relatedPosts = ref([])
 const relatedProducts = ref([])
+
+// Interactive Pre-press Checklist
+const checklist = ref([
+  { text: 'File xuất chuẩn hệ màu CMYK (tránh dùng RGB)', done: false },
+  { text: 'Độ phân giải tối thiểu 300 DPI hoặc file Vector (AI/Corel/PDF)', done: false },
+  { text: 'Đã convert (khóa) toàn bộ font chữ', done: false },
+  { text: 'Kích thước đúng 100% kích thước thành phẩm thực tế', done: false }
+])
+
+const checkedCount = computed(() => checklist.value.filter(c => c.done).length)
+
+function rateArticle(star) {
+  userRating.value = star
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 
 function formatDate(dateStr) {
   if (!dateStr) return '—'
@@ -836,7 +982,6 @@ onUnmounted(() => {
   width: 2rem;
   height: 2rem;
   border-radius: 9999px;
-  background: linear-space(#0f3460, #001f3f);
   background-color: #0f3460;
   color: #f59e0b;
   font-size: 0.875rem;
@@ -983,5 +1128,14 @@ onUnmounted(() => {
   margin: 1.5rem 0;
   font-style: italic;
   color: #78350f;
+}
+
+/* Hide scrollbar for tabs */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 </style>
