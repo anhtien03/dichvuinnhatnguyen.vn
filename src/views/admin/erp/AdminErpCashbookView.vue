@@ -268,7 +268,9 @@
               >
                 <option value="cash">Tiền mặt</option>
                 <option value="bank_acb">ACB (51189927 - CTY IN ẤN NHẬT NGUYÊN)</option>
-                <option value="bank_mb">MB Bank (679838699 - NGUYEN TRUONG HUNG)</option>
+                <option value="bank_mb">MB Bank (679838699 - HUYNH THANH TRUC)</option>
+                <option value="bank_minh_nguyen">TK MINH NGUYEN</option>
+                <option value="bank_truong_hung">TK TRUONG HUNG</option>
               </select>
             </div>
           </div>
@@ -466,7 +468,9 @@ function getCategoryLabel(cat) {
 function getPaymentMethodLabel(m) {
   switch (m) {
     case 'bank_acb': return 'ACB (51189927)'
-    case 'bank_mb': return 'MB Bank (679838699)'
+    case 'bank_mb': return 'MB Bank (679838699 - Huỳnh Thanh Trúc)'
+    case 'bank_minh_nguyen': return 'TK Minh Nguyên'
+    case 'bank_truong_hung': return 'TK Trường Hưng'
     default: return 'Tiền mặt'
   }
 }

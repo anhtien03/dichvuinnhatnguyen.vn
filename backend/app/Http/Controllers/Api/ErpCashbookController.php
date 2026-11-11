@@ -63,7 +63,7 @@ class ErpCashbookController extends Controller
             'type' => 'required|string|in:receipt,payment',
             'category' => 'required|string',
             'amount' => 'required|numeric|min:1',
-            'payment_method' => 'required|string|in:cash,bank_acb,bank_mb,other',
+            'payment_method' => 'required|string|in:cash,bank_acb,bank_mb,bank_minh_nguyen,bank_truong_hung,other',
             'order_id' => 'nullable|integer',
             'funding_owner' => 'nullable|string|in:company,truong_hung,minh_nguyen',
             'payer_recipient' => 'nullable|string',
@@ -119,7 +119,7 @@ class ErpCashbookController extends Controller
         $validated = $request->validate([
             'category' => 'sometimes|required|string',
             'amount' => 'sometimes|required|numeric|min:1',
-            'payment_method' => 'sometimes|required|string|in:cash,bank_acb,bank_mb,other',
+            'payment_method' => 'sometimes|required|string|in:cash,bank_acb,bank_mb,bank_minh_nguyen,bank_truong_hung,other',
             'order_id' => 'nullable|integer',
             'funding_owner' => 'nullable|string|in:company,truong_hung,minh_nguyen',
             'payer_recipient' => 'nullable|string',

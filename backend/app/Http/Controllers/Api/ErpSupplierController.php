@@ -132,7 +132,7 @@ class ErpSupplierController extends Controller
 
         $validated = $request->validate([
             'amount' => 'required|numeric|min:1',
-            'payment_method' => 'nullable|string|in:bank_acb,bank_mb,cash,other',
+            'payment_method' => 'nullable|string|in:bank_acb,bank_mb,bank_minh_nguyen,bank_truong_hung,cash,other',
             'funding_owner' => 'nullable|string|in:company,truong_hung,minh_nguyen',
             'note' => 'nullable|string',
             'paid_at' => 'nullable|date',

@@ -425,7 +425,7 @@ class ErpOrderController extends Controller
 
         $validated = $request->validate([
             'amount' => 'required|numeric|min:1',
-            'payment_method' => 'nullable|string|in:bank_acb,bank_mb,cash,other',
+            'payment_method' => 'nullable|string|in:bank_acb,bank_mb,bank_minh_nguyen,bank_truong_hung,cash,other',
             'funding_owner' => 'nullable|string|in:company,truong_hung,minh_nguyen',
             'note' => 'nullable|string',
             'paid_at' => 'nullable|date',
@@ -489,7 +489,7 @@ class ErpOrderController extends Controller
         $amount = max(0, $order->total_amount - $order->paid_amount);
         $accountNo = $bank === 'mb' ? '679838699' : '51189927';
         $bankBin = $bank === 'mb' ? '970422' : '970416'; // MB: 970422, ACB: 970416
-        $accountName = $bank === 'mb' ? 'NGUYEN TRUONG HUNG' : 'CONG TY TNHH THIET KE IN AN NHAT NGUYEN';
+        $accountName = $bank === 'mb' ? 'HUYNH THANH TRUC' : 'CONG TY TNHH THIET KE IN AN NHAT NGUYEN';
         $memo = rawurlencode($order->code);
 
         $qrUrl = "https://img.vietqr.io/image/{$bankBin}-{$accountNo}-compact2.png?amount={$amount}&addInfo={$memo}&accountName=" . rawurlencode($accountName);

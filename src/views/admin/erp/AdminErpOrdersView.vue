@@ -688,7 +688,9 @@
                   :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-white border-slate-200'"
                 >
                   <option value="bank_acb">ACB (51189927 - CTY IN ẤN NHẬT NGUYÊN)</option>
-                  <option value="bank_mb">MB Bank (679838699 - NGUYEN TRUONG HUNG)</option>
+                  <option value="bank_mb">MB Bank (679838699 - HUYNH THANH TRUC)</option>
+                  <option value="bank_minh_nguyen">TK MINH NGUYEN</option>
+                  <option value="bank_truong_hung">TK TRUONG HUNG</option>
                   <option value="cash">Tiền mặt tại xưởng</option>
                 </select>
               </div>
@@ -869,7 +871,9 @@
                 :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'"
               >
                 <option value="bank_acb">ACB (51189927 - CTY IN ẤN NHẬT NGUYÊN)</option>
-                <option value="bank_mb">MB Bank (679838699 - NGUYEN TRUONG HUNG)</option>
+                <option value="bank_mb">MB Bank (679838699 - HUYNH THANH TRUC)</option>
+                <option value="bank_minh_nguyen">TK MINH NGUYEN</option>
+                <option value="bank_truong_hung">TK TRUONG HUNG</option>
                 <option value="cash">Tiền mặt tại cửa hàng</option>
               </select>
             </div>
