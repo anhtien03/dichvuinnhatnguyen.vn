@@ -119,7 +119,21 @@ onMounted(async () => {
   try {
     const res = await api.getProducts()
     if (res?.data?.length) {
-      popularProducts.value = res.data.filter(p => p.is_popular).slice(0, 5)
+      const allProds = res.data
+      let popular = allProds.filter(p => p.is_popular)
+      if (popular.length === 0) {
+        // Fallback 1: các ấn phẩm có tag hoặc thuộc danh mục có badge "Bán chạy" / "Phổ biến"
+        popular = allProds.filter(p => {
+          const tag = (p.tag || '').toLowerCase()
+          const catBadge = (p.category?.badge || '').toLowerCase()
+          return tag.includes('bán chạy') || tag.includes('phổ biến') || catBadge.includes('bán chạy') || catBadge.includes('phổ biến')
+        })
+      }
+      if (popular.length === 0) {
+        // Fallback 2: hiển thị các ấn phẩm đầu tiên để khối Ấn Phẩm Bán Chạy không bị ẩn mất
+        popular = allProds
+      }
+      popularProducts.value = popular.slice(0, 5)
     }
   } catch (err) {
     popularProducts.value = []

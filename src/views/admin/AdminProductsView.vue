@@ -172,20 +172,34 @@
                 </div>
               </td>
 
-              <!-- Cột 5: Trạng thái hiển thị -->
+              <!-- Cột 5: Trạng thái hiển thị & Bán chạy -->
               <td class="py-3 px-4">
-                <button
-                  type="button"
-                  @click="toggleActiveStatus(prod)"
-                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border cursor-pointer transition-colors"
-                  :class="prod.is_active
-                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
-                    : 'bg-slate-500/10 text-slate-400 border-slate-500/20 hover:bg-slate-500/20'"
-                  :title="prod.is_active ? 'Bấm để ẩn khỏi website' : 'Bấm để hiển thị trên website'"
-                >
-                  <span class="w-1.5 h-1.5 rounded-full" :class="prod.is_active ? 'bg-emerald-400' : 'bg-slate-400'"></span>
-                  <span>{{ prod.is_active ? 'Đang hiển thị' : 'Đang ẩn' }}</span>
-                </button>
+                <div class="flex flex-col items-start gap-1.5">
+                  <button
+                    type="button"
+                    @click="toggleActiveStatus(prod)"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border cursor-pointer transition-colors"
+                    :class="prod.is_active
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
+                      : 'bg-slate-500/10 text-slate-400 border-slate-500/20 hover:bg-slate-500/20'"
+                    :title="prod.is_active ? 'Bấm để ẩn khỏi website' : 'Bấm để hiển thị trên website'"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full" :class="prod.is_active ? 'bg-emerald-400' : 'bg-slate-400'"></span>
+                    <span>{{ prod.is_active ? 'Đang hiển thị' : 'Đang ẩn' }}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    @click="togglePopularStatus(prod)"
+                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-colors"
+                    :class="prod.is_popular
+                      ? 'bg-amber-500/15 text-amber-400 border-amber-500/30 hover:bg-amber-500/25'
+                      : 'bg-slate-500/5 text-slate-400 border-slate-500/20 hover:text-amber-400 hover:border-amber-500/30'"
+                    title="Bấm để bật/tắt hiển thị ở mục Ấn Phẩm Bán Chạy ngoài trang chủ"
+                  >
+                    <span>{{ prod.is_popular ? '★ Bán chạy (Đang bật)' : '☆ Đặt làm Bán chạy' }}</span>
+                  </button>
+                </div>
               </td>
 
               <!-- Cột 6: Hành động [Sửa] [Xóa] -->
@@ -334,13 +348,27 @@ async function toggleActiveStatus(product) {
   try {
     const newStatus = !product.is_active
     await api.updateAdminProduct(product.id, {
-      ...product,
       is_active: newStatus
     })
     product.is_active = newStatus
     alertMessage.value = `Đã ${newStatus ? 'hiển thị' : 'ẩn'} ấn phẩm "${product.name}".`
   } catch (err) {
     alert('Lỗi cập nhật trạng thái: ' + err.message)
+  }
+}
+
+async function togglePopularStatus(product) {
+  try {
+    const newPopular = !product.is_popular
+    await api.updateAdminProduct(product.id, {
+      is_popular: newPopular
+    })
+    product.is_popular = newPopular
+    alertMessage.value = newPopular
+      ? `★ Đã thêm "${product.name}" vào mục Ấn Phẩm Bán Chạy ngoài Trang chủ!`
+      : `Đã gỡ "${product.name}" khỏi mục Ấn Phẩm Bán Chạy.`
+  } catch (err) {
+    alert('Lỗi cập nhật trạng thái bán chạy: ' + err.message)
   }
 }
 

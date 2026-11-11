@@ -36,6 +36,11 @@ return new class extends Migration
                 ->whereNull('parent_id')
                 ->update(['parent_id' => $vanPhongId]);
         }
+
+        // Nếu trên hệ thống chưa có sản phẩm nào bật is_popular, tự động bật cho các sản phẩm đang hoạt động
+        if (DB::table('products')->where('is_popular', true)->count() === 0) {
+            DB::table('products')->where('is_active', true)->update(['is_popular' => true]);
+        }
     }
 
     public function down(): void
