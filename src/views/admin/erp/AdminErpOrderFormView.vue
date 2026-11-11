@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="space-y-6 max-w-7xl mx-auto py-2">
     <!-- Top Action Bar & Breadcrumbs -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">

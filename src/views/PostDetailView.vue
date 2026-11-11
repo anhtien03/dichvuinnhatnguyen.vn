@@ -1123,10 +1123,28 @@ onUnmounted(() => {
 /* Images & Media in Article */
 .post-content img {
   max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
   border-radius: 1.25rem;
   margin: 1.75rem auto;
-  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.08);
   border: 1px solid #f1f5f9;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.post-content figure {
+  margin: 2rem auto;
+  max-width: 100%;
+  text-align: center;
+}
+
+.post-content figcaption {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  font-style: italic;
 }
 
 /* Blockquotes */
