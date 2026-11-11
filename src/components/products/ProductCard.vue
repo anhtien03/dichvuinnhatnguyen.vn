@@ -42,7 +42,7 @@
 
         <!-- Short description -->
         <p class="text-xs text-slate-500 mt-1.5 line-clamp-2 leading-relaxed">
-          {{ product.description }}
+          {{ stripHtml(product.description) }}
         </p>
       </div>
 
@@ -105,6 +105,11 @@ defineProps({
 
 function formatCurrency(val) {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
+}
+
+function stripHtml(html) {
+  if (!html) return ''
+  return String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 }
 </script>
 

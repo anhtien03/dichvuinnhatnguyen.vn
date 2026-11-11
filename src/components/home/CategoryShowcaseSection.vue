@@ -76,7 +76,7 @@
                 {{ prod.name }}
               </h4>
               <p v-if="prod.description" class="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                {{ prod.description }}
+                {{ stripHtml(prod.description) }}
               </p>
             </div>
 
@@ -108,6 +108,11 @@ const activeCategorySlug = ref('all')
 function formatCurrency(val) {
   if (!val) return 'Liên hệ'
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
+}
+
+function stripHtml(html) {
+  if (!html) return ''
+  return String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
 const hasProducts = computed(() => products.value.length > 0)

@@ -363,11 +363,12 @@
           </h2>
         </div>
 
-        <!-- Nội dung mô tả thực tế từ xưởng -->
+        <!-- Nội dung mô tả thực tế từ xưởng (Hỗ trợ Rich HTML & Hình ảnh minh họa) -->
         <div class="prose max-w-none text-slate-700 text-sm leading-relaxed mb-8">
-          <div class="whitespace-pre-line bg-slate-50 p-5 rounded-2xl border border-slate-100 font-medium">
-            {{ product.description || 'Sản phẩm in ấn chất lượng cao trực tiếp tại Xưởng In Nhật Nguyên với trang thiết bị hiện đại, chuẩn màu và sắc nét.' }}
-          </div>
+          <div
+            class="product-rich-description bg-slate-50/70 p-5 sm:p-6 rounded-2xl border border-slate-100"
+            v-html="formattedDescription"
+          ></div>
         </div>
 
         <!-- Hướng dẫn chuẩn bị file in chuẩn xưởng -->
@@ -774,11 +775,32 @@ function formatCurrency(val) {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0)
 }
 
+function stripHtml(html) {
+  if (!html) return ''
+  return String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+const formattedDescription = computed(() => {
+  const raw = product.value?.description
+  if (!raw || !String(raw).trim()) {
+    return '<p>Sản phẩm in ấn chất lượng cao trực tiếp tại Xưởng In Nhật Nguyên với trang thiết bị hiện đại, chuẩn màu và sắc nét.</p>'
+  }
+  const str = String(raw).trim()
+  if (/<[a-z][\s\S]*>/i.test(str)) {
+    return str
+  }
+  return str
+    .split(/\n{2,}/)
+    .map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`)
+    .join('')
+})
+
 function applyProductSEO(prod) {
   if (!prod) return
+  const plainDesc = stripHtml(prod.description)
   setMetaTags({
     title: prod.meta_title || `${prod.name} - Giá Gốc Xưởng In Nhật Nguyên`,
-    description: prod.meta_description || prod.description || 'Xưởng in Offset & Kỹ thuật số Nhật Nguyên — Chuyên sản xuất ấn phẩm bao bì, hộp giấy, túi giấy chất lượng cao, giá gốc trực tiếp.',
+    description: prod.meta_description || plainDesc || 'Xưởng in Offset & Kỹ thuật số Nhật Nguyên — Chuyên sản xuất ấn phẩm bao bì, hộp giấy, túi giấy chất lượng cao, giá gốc trực tiếp.',
     keywords: prod.meta_keywords || `${prod.name}, in bao bi, xuong in nhat nguyen, in gia goc`,
     image: prod.image,
     url: prod.canonical_url || window.location.href,
@@ -787,7 +809,7 @@ function applyProductSEO(prod) {
       '@context': 'https://schema.org',
       '@type': 'Product',
       name: prod.name,
-      description: prod.meta_description || prod.description || 'Sản phẩm in ấn chất lượng cao tại Xưởng In Nhật Nguyên',
+      description: prod.meta_description || plainDesc || 'Sản phẩm in ấn chất lượng cao tại Xưởng In Nhật Nguyên',
       image: prod.image ? (prod.image.startsWith('http') ? prod.image : `https://dichvuinnhatnguyen.vn${prod.image}`) : 'https://dichvuinnhatnguyen.vn/logo.png',
       sku: `NN-${prod.id || prod.slug || 'IN-AN'}`,
       mpn: `NN-${prod.id || 'PRODUCT'}`,
@@ -890,5 +912,44 @@ const relatedProducts = computed(() => {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.product-rich-description :deep(h2) {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: 1.25rem;
+  margin-bottom: 0.6rem;
+}
+
+.product-rich-description :deep(h3) {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.product-rich-description :deep(p) {
+  margin-bottom: 0.75rem;
+  line-height: 1.75;
+}
+
+.product-rich-description :deep(ul) {
+  list-style-type: disc;
+  padding-left: 1.4rem;
+  margin-bottom: 0.85rem;
+}
+
+.product-rich-description :deep(li) {
+  margin-bottom: 0.35rem;
+}
+
+.product-rich-description :deep(img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  margin: 1rem auto;
+  display: block;
 }
 </style>

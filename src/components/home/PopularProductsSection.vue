@@ -64,7 +64,7 @@
                   {{ item.name }}
                 </h3>
                 <p v-if="item.description" class="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                  {{ item.description }}
+                  {{ stripHtml(item.description) }}
                 </p>
               </div>
 
@@ -113,6 +113,11 @@ const popularProducts = ref([])
 function formatCurrency(val) {
   if (!val) return 'Liên hệ'
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
+}
+
+function stripHtml(html) {
+  if (!html) return ''
+  return String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
 onMounted(async () => {

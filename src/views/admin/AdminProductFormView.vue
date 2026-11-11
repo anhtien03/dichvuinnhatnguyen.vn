@@ -231,7 +231,7 @@
                   </label>
                   <button
                     type="button"
-                    @click="isMediaModalOpen = true"
+                    @click="openMediaForThumbnail"
                     class="text-xs font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1 cursor-pointer"
                   >
                     <Images class="w-3.5 h-3.5" />
@@ -242,7 +242,7 @@
                 <div class="flex flex-col sm:flex-row items-start gap-3">
                   <!-- Thumbnail preview box -->
                   <div
-                    @click="isMediaModalOpen = true"
+                    @click="openMediaForThumbnail"
                     class="w-24 h-24 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center shrink-0 overflow-hidden cursor-pointer group transition-all"
                     :class="[
                       form.image
@@ -269,7 +269,7 @@
                     <div class="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
-                        @click="isMediaModalOpen = true"
+                        @click="openMediaForThumbnail"
                         class="px-3 py-1.5 rounded-xl bg-brand-gold text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-amber-400 cursor-pointer"
                       >
                         <Images class="w-3.5 h-3.5" />
@@ -319,17 +319,161 @@
                 </div>
               </div>
 
-              <!-- Mô Tả Chi Tiết -->
-              <div>
-                <label class="block font-bold mb-1.5" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
-                  Mô Tả Chi Tiết Ấn Phẩm
-                </label>
+              <!-- Mô Tả Chi Tiết Ấn Phẩm (Rich Text & Image Editor) -->
+              <div class="rounded-2xl border p-4 space-y-3" :class="isDarkMode ? 'bg-[#1C2434]/80 border-[#2E3A47]' : 'bg-slate-50/70 border-slate-200'">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-2.5 border-b" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
+                  <div>
+                    <label class="block font-bold text-xs sm:text-sm" :class="isDarkMode ? 'text-slate-200' : 'text-slate-800'">
+                      Mô Tả Chi Tiết Ấn Phẩm & Hình Ảnh Minh Họa
+                    </label>
+                    <span class="text-[11px] text-slate-400">
+                      Soạn thảo trực quan, định dạng tiêu đề, in đậm, danh sách và chèn nhiều ảnh thực tế vào bài mô tả sản phẩm.
+                    </span>
+                  </div>
+
+                  <!-- Mode Toggle: Trực quan vs Mã HTML -->
+                  <div class="flex items-center gap-1 bg-slate-500/10 p-1 rounded-xl self-start sm:self-auto">
+                    <button
+                      type="button"
+                      @click="switchEditorMode('visual')"
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
+                      :class="descEditorMode === 'visual' ? 'bg-brand-gold text-slate-950 shadow-xs' : 'text-slate-400 hover:text-white'"
+                    >
+                      👁 Soạn Trực Quan
+                    </button>
+                    <button
+                      type="button"
+                      @click="switchEditorMode('html')"
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
+                      :class="descEditorMode === 'html' ? 'bg-brand-gold text-slate-950 shadow-xs' : 'text-slate-400 hover:text-white'"
+                    >
+                      &lt;/&gt; Mã HTML
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Formatting & Image Insertion Toolbar -->
+                <div class="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl border" :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-white border-slate-200'">
+                  <div class="flex flex-wrap items-center gap-1">
+                    <button
+                      type="button"
+                      @click="applyDescFormat('h2')"
+                      class="px-2.5 py-1 rounded-lg text-xs font-extrabold border transition-colors cursor-pointer hover:border-brand-gold"
+                      :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+                      title="Tiêu đề lớn H2"
+                    >
+                      H2
+                    </button>
+                    <button
+                      type="button"
+                      @click="applyDescFormat('h3')"
+                      class="px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer hover:border-brand-gold"
+                      :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+                      title="Tiêu đề phụ H3"
+                    >
+                      H3
+                    </button>
+                    <button
+                      type="button"
+                      @click="applyDescFormat('bold')"
+                      class="px-2.5 py-1 rounded-lg text-xs font-black border transition-colors cursor-pointer hover:border-brand-gold"
+                      :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+                      title="In đậm"
+                    >
+                      B
+                    </button>
+                    <button
+                      type="button"
+                      @click="applyDescFormat('italic')"
+                      class="px-2.5 py-1 rounded-lg text-xs italic font-serif font-bold border transition-colors cursor-pointer hover:border-brand-gold"
+                      :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+                      title="In nghiêng"
+                    >
+                      I
+                    </button>
+                    <button
+                      type="button"
+                      @click="applyDescFormat('underline')"
+                      class="px-2.5 py-1 rounded-lg text-xs underline font-bold border transition-colors cursor-pointer hover:border-brand-gold"
+                      :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+                      title="Gạch chân"
+                    >
+                      U
+                    </button>
+                    <button
+                      type="button"
+                      @click="applyDescFormat('ul')"
+                      class="px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer hover:border-brand-gold"
+                      :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+                      title="Danh sách chấm đầu dòng"
+                    >
+                      • Danh sách
+                    </button>
+                    <button
+                      type="button"
+                      @click="applyDescFormat('tip')"
+                      class="px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer text-amber-500 hover:border-amber-500"
+                      :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'"
+                      title="Chèn hộp lưu ý kỹ thuật"
+                    >
+                      💡 Lưu ý
+                    </button>
+                  </div>
+
+                  <!-- Image Insert Buttons -->
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      @click="openMediaForDescription"
+                      class="px-2.5 py-1.5 rounded-lg bg-brand-gold/15 hover:bg-brand-gold/25 text-amber-500 border border-brand-gold/30 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+                    >
+                      <Images class="w-3.5 h-3.5" />
+                      <span>Chèn Ảnh Thư Viện</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      @click="triggerDescImageUpload"
+                      :disabled="isUploadingDescImage"
+                      class="px-2.5 py-1.5 rounded-lg bg-brand-gold hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50"
+                    >
+                      <Loader2 v-if="isUploadingDescImage" class="w-3.5 h-3.5 animate-spin" />
+                      <UploadCloud v-else class="w-3.5 h-3.5" />
+                      <span>{{ isUploadingDescImage ? 'Đang tải...' : 'Thêm Ảnh Từ Máy' }}</span>
+                    </button>
+                    <input
+                      ref="descFileInputRef"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      class="hidden"
+                      @change="handleDescImageUpload"
+                    />
+                  </div>
+                </div>
+
+                <!-- VISUAL WYSIWYG EDITOR -->
+                <div
+                  v-show="descEditorMode === 'visual'"
+                  ref="visualEditorRef"
+                  contenteditable="true"
+                  @input="onVisualEditorInput"
+                  @blur="onVisualEditorInput"
+                  class="w-full min-h-[260px] max-h-[560px] overflow-y-auto rounded-xl p-4 text-sm border focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all leading-relaxed desc-visual-editor"
+                  :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-slate-100' : 'bg-white border-slate-200 text-slate-800'"
+                  data-placeholder="Nhập nội dung mô tả chi tiết ấn phẩm, ưu điểm chất liệu, quy cách gia công và bấm 'Thêm Ảnh Từ Máy' hoặc 'Chèn Ảnh Thư Viện' để minh họa..."
+                ></div>
+
+                <!-- RAW HTML CODE EDITOR -->
                 <textarea
+                  v-show="descEditorMode === 'html'"
+                  ref="descTextareaRef"
                   v-model="form.description"
-                  rows="3"
+                  @input="syncVisualFromModel"
+                  rows="12"
                   placeholder="Mô tả công nghệ in (Offset / Kỹ thuật số), các loại chất liệu giấy, quy cách gia công cán màng, ép kim..."
-                  class="w-full rounded-xl px-4 py-3 text-sm border focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all leading-relaxed"
-                  :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+                  class="w-full rounded-xl px-4 py-3 text-xs font-mono border focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all leading-relaxed"
+                  :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
                 ></textarea>
               </div>
 
@@ -616,7 +760,7 @@
 
               <!-- Google Snippet Description -->
               <p class="text-xs text-[#4d5156] leading-relaxed line-clamp-3">
-                {{ form.meta_description || form.description || 'Xưởng in Offset & Kỹ thuật số Nhật Nguyên — Chuyên sản xuất ấn phẩm bao bì, hộp giấy, túi giấy chất lượng cao, giá gốc trực tiếp.' }}
+                {{ form.meta_description || stripHtml(form.description) || 'Xưởng in Offset & Kỹ thuật số Nhật Nguyên — Chuyên sản xuất ấn phẩm bao bì, hộp giấy, túi giấy chất lượng cao, giá gốc trực tiếp.' }}
               </p>
             </div>
           </div>
@@ -636,7 +780,7 @@
     <!-- Media Library Modal (Chuẩn WordPress / Shopify) -->
     <MediaLibraryModal
       v-if="isMediaModalOpen"
-      :current-url="form.image"
+      :current-url="mediaTarget === 'image' ? form.image : ''"
       @select="onMediaSelected"
       @close="isMediaModalOpen = false"
     />
@@ -644,7 +788,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeft,
@@ -679,7 +823,165 @@ const successMessage = ref('')
 const previewTab = ref('card') // 'card' | 'serp'
 
 const isMediaModalOpen = ref(false)
+const mediaTarget = ref('image') // 'image' | 'description'
 const quickFileInputRef = ref(null)
+
+// Rich Description Editor State
+const descEditorMode = ref('visual') // 'visual' | 'html'
+const visualEditorRef = ref(null)
+const descTextareaRef = ref(null)
+const descFileInputRef = ref(null)
+const isUploadingDescImage = ref(false)
+
+function stripHtml(html) {
+  if (!html) return ''
+  return String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+function normalizeDescriptionHtml(raw) {
+  if (!raw) return ''
+  const str = String(raw).trim()
+  if (/<[a-z][\s\S]*>/i.test(str)) {
+    return str
+  }
+  return str
+    .split(/\n{2,}/)
+    .map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`)
+    .join('')
+}
+
+function syncVisualFromModel() {
+  if (visualEditorRef.value) {
+    visualEditorRef.value.innerHTML = normalizeDescriptionHtml(form.value.description)
+  }
+}
+
+function onVisualEditorInput() {
+  if (visualEditorRef.value) {
+    form.value.description = visualEditorRef.value.innerHTML
+  }
+}
+
+function switchEditorMode(mode) {
+  if (mode === 'html' && descEditorMode.value === 'visual') {
+    onVisualEditorInput()
+  } else if (mode === 'visual' && descEditorMode.value === 'html') {
+    syncVisualFromModel()
+  }
+  descEditorMode.value = mode
+}
+
+function insertHtmlIntoDescription(htmlSnippet) {
+  if (descEditorMode.value === 'visual' && visualEditorRef.value) {
+    visualEditorRef.value.focus()
+    const sel = window.getSelection()
+    if (sel && sel.rangeCount > 0 && visualEditorRef.value.contains(sel.anchorNode)) {
+      document.execCommand('insertHTML', false, htmlSnippet)
+    } else {
+      visualEditorRef.value.innerHTML += htmlSnippet
+    }
+    onVisualEditorInput()
+  } else {
+    form.value.description = (form.value.description || '') + '\n' + htmlSnippet
+    syncVisualFromModel()
+  }
+}
+
+function applyDescFormat(type) {
+  if (descEditorMode.value === 'visual' && visualEditorRef.value) {
+    visualEditorRef.value.focus()
+    const sel = window.getSelection()
+    const hasSelection = sel && sel.toString().trim().length > 0 && visualEditorRef.value.contains(sel.anchorNode)
+
+    if (type === 'bold' && hasSelection) {
+      document.execCommand('bold', false, null)
+      onVisualEditorInput()
+      return
+    }
+    if (type === 'italic' && hasSelection) {
+      document.execCommand('italic', false, null)
+      onVisualEditorInput()
+      return
+    }
+    if (type === 'underline' && hasSelection) {
+      document.execCommand('underline', false, null)
+      onVisualEditorInput()
+      return
+    }
+    if (type === 'ul' && hasSelection) {
+      document.execCommand('insertUnorderedList', false, null)
+      onVisualEditorInput()
+      return
+    }
+  }
+
+  let snippet = ''
+  switch (type) {
+    case 'h2':
+      snippet = '<h2>Tiêu đề mục chính</h2><p>Nội dung chi tiết...</p>'
+      break
+    case 'h3':
+      snippet = '<h3>Tiêu đề mục phụ</h3><p>Nội dung chi tiết...</p>'
+      break
+    case 'bold':
+      snippet = '<strong>chữ in đậm</strong> '
+      break
+    case 'italic':
+      snippet = '<em>chữ in nghiêng</em> '
+      break
+    case 'underline':
+      snippet = '<u>chữ gạch chân</u> '
+      break
+    case 'ul':
+      snippet = '<ul><li>Ưu điểm / quy cách thứ nhất</li><li>Ưu điểm / quy cách thứ hai</li></ul>'
+      break
+    case 'tip':
+      snippet = '<div class="p-4 rounded-xl border border-amber-300 bg-amber-50 text-slate-800 my-4 text-xs font-medium">💡 <strong>Lưu ý từ Xưởng In Nhật Nguyên:</strong> Hỗ trợ thiết kế & kiểm tra file chuẩn màu CMYK miễn phí trước khi in.</div><p></p>'
+      break
+  }
+
+  if (snippet) {
+    insertHtmlIntoDescription(snippet)
+  }
+}
+
+function openMediaForThumbnail() {
+  mediaTarget.value = 'image'
+  isMediaModalOpen.value = true
+}
+
+function openMediaForDescription() {
+  mediaTarget.value = 'description'
+  isMediaModalOpen.value = true
+}
+
+function triggerDescImageUpload() {
+  descFileInputRef.value?.click()
+}
+
+async function handleDescImageUpload(e) {
+  const files = Array.from(e.target.files || [])
+  if (!files.length) return
+
+  isUploadingDescImage.value = true
+  try {
+    for (const file of files) {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'products')
+      const res = await api.uploadAdminMedia(formData)
+      if (res.data?.url) {
+        const imgHtml = `<figure class="my-5 text-center"><img src="${res.data.url}" alt="${form.value.name || 'Hình ảnh thực tế ấn phẩm'}" class="rounded-2xl max-w-full h-auto mx-auto shadow-md" /><figcaption class="text-xs text-slate-500 mt-2 italic">${form.value.name || 'Mẫu in thực tế tại Xưởng In Nhật Nguyên'}</figcaption></figure><p></p>`
+        insertHtmlIntoDescription(imgHtml)
+      }
+    }
+  } catch (err) {
+    alert('Lỗi tải ảnh mô tả: ' + (err.data?.message || err.message))
+  } finally {
+    isUploadingDescImage.value = false
+    if (descFileInputRef.value) descFileInputRef.value.value = ''
+  }
+}
 
 const form = ref({
   name: '',
@@ -748,8 +1050,16 @@ function autoGenerateSlug() {
   form.value.slug = slugify(form.value.name)
 }
 
-function onMediaSelected(url) {
-  form.value.image = url
+function onMediaSelected(mediaItem) {
+  const url = typeof mediaItem === 'string' ? mediaItem : (mediaItem?.url || '')
+  if (!url) return
+
+  if (mediaTarget.value === 'description') {
+    const imgHtml = `<figure class="my-5 text-center"><img src="${url}" alt="${form.value.name || 'Hình ảnh thực tế ấn phẩm'}" class="rounded-2xl max-w-full h-auto mx-auto shadow-md" /><figcaption class="text-xs text-slate-500 mt-2 italic">${form.value.name || 'Mẫu in thực tế tại Xưởng In Nhật Nguyên'}</figcaption></figure><p></p>`
+    insertHtmlIntoDescription(imgHtml)
+  } else {
+    form.value.image = url
+  }
   isMediaModalOpen.value = false
 }
 
@@ -816,6 +1126,8 @@ async function loadProductDetail(id) {
         meta_description: p.meta_description || '',
         canonical_url: p.canonical_url || ''
       }
+      await nextTick()
+      syncVisualFromModel()
     }
   } catch (err) {
     errorMessage.value = 'Không thể tải thông tin ấn phẩm cần sửa.'
@@ -829,6 +1141,9 @@ function handleCancel() {
 async function handleSubmit() {
   errorMessage.value = ''
   successMessage.value = ''
+  if (descEditorMode.value === 'visual') {
+    onVisualEditorInput()
+  }
   isSaving.value = true
 
   try {
@@ -872,8 +1187,54 @@ onMounted(async () => {
   await loadCategories()
   if (isEditMode.value) {
     await loadProductDetail(route.params.id)
+  } else {
+    syncVisualFromModel()
   }
 })
 </script>
+
+<style scoped>
+.desc-visual-editor:empty:before {
+  content: attr(data-placeholder);
+  color: #64748b;
+  pointer-events: none;
+}
+
+.desc-visual-editor :deep(h2) {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.desc-visual-editor :deep(h3) {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-top: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.desc-visual-editor :deep(p) {
+  margin-bottom: 0.65rem;
+}
+
+.desc-visual-editor :deep(ul) {
+  list-style-type: disc;
+  padding-left: 1.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.desc-visual-editor :deep(li) {
+  margin-bottom: 0.25rem;
+}
+
+.desc-visual-editor :deep(img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.85rem;
+  margin: 0.75rem auto;
+  display: block;
+}
+</style>
 
 
