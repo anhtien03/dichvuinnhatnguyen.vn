@@ -129,7 +129,7 @@
             <div v-if="product.description" class="pt-4 border-t border-slate-100 space-y-2">
               <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
                 <FileText class="w-3.5 h-3.5 text-brand-gold" />
-                <span>Quy Cách & Mô Tả Xưởng:</span>
+                <span>Quy Cách & Mô Tả:</span>
               </h4>
               <div class="text-xs text-slate-600 leading-relaxed whitespace-pre-line bg-slate-50 p-3.5 rounded-2xl border border-slate-100 font-medium">
                 {{ product.description }}
