@@ -1,5 +1,5 @@
 <template>
-  <div class="py-8 lg:py-14 bg-slate-50 min-h-screen relative">
+  <div class="bg-slate-50 min-h-screen relative pb-16">
     <!-- Reading Progress Bar (Fixed on top) -->
     <div
       class="fixed top-0 left-0 right-0 h-1 bg-slate-200 z-50 pointer-events-none"
@@ -22,573 +22,589 @@
       <ArrowUp class="w-5 h-5 text-brand-gold" />
     </button>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-      <!-- Breadcrumb -->
-      <nav class="flex items-center gap-2 text-xs text-slate-500 font-medium overflow-x-auto pb-1">
-        <router-link to="/" class="hover:text-brand-blue flex items-center gap-1 shrink-0">
-          <span>Trang chủ</span>
-        </router-link>
-        <span class="text-slate-400">&rsaquo;</span>
-        <router-link to="/tin-tuc" class="hover:text-brand-blue shrink-0">
-          Cẩm nang in ấn
-        </router-link>
-        <span class="text-slate-400">&rsaquo;</span>
-        <span class="text-slate-900 truncate max-w-xs font-semibold">
-          {{ post?.title || 'Bài viết' }}
-        </span>
-      </nav>
-
-      <!-- Loading State -->
-      <div v-if="isLoading" class="py-24 text-center space-y-4">
-        <Loader2 class="w-10 h-10 animate-spin mx-auto text-brand-gold" />
-        <p class="text-sm font-medium text-slate-500">Đang tải nội dung bài viết chuyên sâu...</p>
+    <!-- Top Breadcrumb Bar -->
+    <div class="bg-slate-900/95 border-b border-slate-800 text-slate-300">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <nav class="flex items-center gap-2 text-xs font-medium overflow-x-auto pb-0.5 no-scrollbar">
+          <router-link to="/" class="hover:text-amber-400 flex items-center gap-1 shrink-0 text-slate-400">
+            <span>dichvuinnhatnguyen.vn</span>
+          </router-link>
+          <span class="text-slate-600">/</span>
+          <router-link to="/tin-tuc" class="hover:text-amber-400 shrink-0 text-slate-400">
+            Kiến thức in ấn
+          </router-link>
+          <span class="text-slate-600">/</span>
+          <span class="text-amber-400 shrink-0 font-semibold">{{ post?.category || 'Cẩm nang' }}</span>
+          <span class="text-slate-600">/</span>
+          <span class="text-slate-200 truncate max-w-sm font-semibold">
+            {{ post?.title || 'Bài viết' }}
+          </span>
+        </nav>
       </div>
+    </div>
 
-      <!-- Post Not Found -->
-      <div v-else-if="!post" class="text-center py-20 bg-white rounded-3xl p-8 border border-slate-200 shadow-sm max-w-2xl mx-auto">
-        <div class="w-16 h-16 rounded-2xl bg-amber-50 text-amber-500 mx-auto flex items-center justify-center mb-4">
-          <HelpCircle class="w-8 h-8" />
+    <!-- Loading State -->
+    <div v-if="isLoading" class="py-32 text-center space-y-4">
+      <Loader2 class="w-12 h-12 animate-spin mx-auto text-brand-gold" />
+      <p class="text-sm font-medium text-slate-500">Đang tải nội dung bài viết chuyên sâu...</p>
+    </div>
+
+    <!-- Post Not Found -->
+    <div v-else-if="!post" class="max-w-2xl mx-auto my-16 text-center py-20 bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
+      <div class="w-16 h-16 rounded-2xl bg-amber-50 text-amber-500 mx-auto flex items-center justify-center mb-4">
+        <HelpCircle class="w-8 h-8" />
+      </div>
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mb-2">Không tìm thấy bài viết</h2>
+      <p class="text-sm text-slate-500 mb-6 max-w-md mx-auto">
+        Bài viết có thể đã được cập nhật đường dẫn mới hoặc tạm thời không khả dụng.
+      </p>
+      <router-link
+        to="/tin-tuc"
+        class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-brand-blue text-white font-bold text-sm shadow-md hover:bg-blue-700 transition-all"
+      >
+        <ArrowLeft class="w-4 h-4" />
+        <span>Quay về danh sách cẩm nang</span>
+      </router-link>
+    </div>
+
+    <!-- MAIN CONTENT WITH HERO PANORAMA -->
+    <div v-else>
+      <!-- FULL-WIDTH PANORAMIC HERO BANNER (Tràn viền toàn cảnh kiểu Trần Gia) -->
+      <section class="relative w-full h-[320px] sm:h-[420px] lg:h-[520px] bg-slate-900 overflow-hidden">
+        <img
+          :src="post.thumbnail || '/banner-chinh.jpg'"
+          :alt="post.title"
+          class="w-full h-full object-cover object-center filter brightness-[0.95]"
+        />
+        <!-- Subtle gradient overlay at bottom for smooth overlap -->
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/30 pointer-events-none"></div>
+
+        <!-- AI Illustration / Workshop Badge (Góc phải dưới giống Trần Gia) -->
+        <div class="absolute bottom-20 sm:bottom-28 right-4 sm:right-8 z-10 pointer-events-none">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/80 text-white/90 text-[11px] font-medium backdrop-blur-md border border-white/15 shadow-xl">
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-gold animate-pulse"></span>
+            <span>{{ post.thumbnail ? 'Ảnh minh họa kỹ thuật' : 'Ảnh thực tế tại Xưởng In Nhật Nguyên' }}</span>
+          </span>
         </div>
-        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mb-2">Không tìm thấy bài viết</h2>
-        <p class="text-sm text-slate-500 mb-6 max-w-md mx-auto">
-          Bài viết có thể đã được cập nhật đường dẫn mới hoặc tạm thời không khả dụng.
-        </p>
-        <router-link
-          to="/tin-tuc"
-          class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-brand-blue text-white font-bold text-sm shadow-md hover:bg-blue-700 transition-all"
-        >
-          <ArrowLeft class="w-4 h-4" />
-          <span>Quay về danh sách cẩm nang</span>
-        </router-link>
-      </div>
+      </section>
 
-      <!-- Article Main 2-Column Grid -->
-      <div v-else class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <!-- OVERLAPPING ARTICLE CONTAINER (Thẻ nổi đè lên trên ảnh Hero) -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 sm:-mt-24 lg:-mt-28 relative z-20 space-y-8">
         
-        <!-- LEFT COLUMN: Main Content (8 cols) -->
-        <main class="lg:col-span-8 space-y-8 min-w-0">
-          <article class="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/90 shadow-sm space-y-8">
-            
-            <!-- Article Header Info -->
-            <header class="space-y-4 border-b border-slate-100 pb-6">
-              <!-- Meta Badges -->
-              <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
-                <span class="px-3 py-1 rounded-full font-bold bg-brand-blue/10 text-brand-blue flex items-center gap-1">
-                  <Tag class="w-3.5 h-3.5" />
-                  {{ post.category || 'Cẩm nang in ấn' }}
-                </span>
-                <span class="text-slate-300">•</span>
-                <span class="text-slate-500 flex items-center gap-1">
-                  <Calendar class="w-3.5 h-3.5 text-slate-400" />
-                  {{ formatDate(post.published_at || post.created_at) }}
-                </span>
-                <span class="text-slate-300">•</span>
-                <span class="text-slate-500 flex items-center gap-1">
-                  <Clock class="w-3.5 h-3.5 text-slate-400" />
-                  {{ readingTime }} phút đọc
-                </span>
-                <span class="text-slate-300">•</span>
-                <span class="text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1">
-                  <ShieldCheck class="w-3.5 h-3.5" />
-                  Kỹ thuật xưởng duyệt
-                </span>
-              </div>
-
-              <!-- Main Title H1 -->
-              <h1 class="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 leading-tight tracking-tight">
-                {{ post.title }}
-              </h1>
-
-              <!-- Author Sub-bar & Quick Action Tools -->
-              <div class="flex items-center justify-between pt-2">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-blue via-blue-700 to-indigo-900 text-white font-black flex items-center justify-center text-sm shadow-sm ring-2 ring-blue-100 shrink-0">
-                    NN
-                  </div>
-                  <div>
-                    <div class="flex items-center gap-1.5">
-                      <p class="text-xs sm:text-sm font-bold text-slate-800">
-                        {{ post.author_name || 'Kỹ Thuật Viên Xưởng In Nhật Nguyên' }}
-                      </p>
-                      <span class="inline-block w-2 h-2 rounded-full bg-emerald-500" title="Đang trực tuyến"></span>
-                    </div>
-                    <p class="text-xs text-slate-500">Kinh nghiệm 10+ năm in Offset & Kỹ thuật số</p>
-                  </div>
-                </div>
-
-                <!-- Quick Action Buttons -->
-                <div class="flex items-center gap-2">
-                  <button
-                    @click="copyLink"
-                    class="p-2 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:text-brand-blue hover:border-brand-blue text-xs font-semibold flex items-center gap-1.5 transition-all"
-                    :title="isCopied ? 'Đã sao chép link' : 'Sao chép liên kết'"
-                  >
-                    <Check v-if="isCopied" class="w-3.5 h-3.5 text-emerald-600" />
-                    <Copy v-else class="w-3.5 h-3.5" />
-                    <span class="hidden sm:inline">{{ isCopied ? 'Đã chép' : 'Sao chép' }}</span>
-                  </button>
-                  <button
-                    @click="printArticle"
-                    class="p-2 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 text-xs hidden sm:flex items-center"
-                    title="In bài viết"
-                  >
-                    <Printer class="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              <!-- Excerpt / Key Takeaways Box -->
-              <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-blue-50/50 border border-amber-200/60 space-y-2">
-                <div class="flex items-center gap-2 text-xs font-bold text-amber-900 tracking-wide uppercase">
-                  <Sparkles class="w-4 h-4 text-amber-600" />
-                  <span>Tóm Tắt Nhanh & Lời Khuyên Từ Xưởng In</span>
-                </div>
-                <p class="text-xs sm:text-sm text-slate-700 leading-relaxed italic font-medium">
-                  {{ post.excerpt || 'Bài viết phân tích chi tiết quy cách, ưu thế công nghệ và hướng dẫn đặt in tối ưu chi phí trực tiếp tại Xưởng In Ấn Nhật Nguyên.' }}
-                </p>
-              </div>
-
-              <!-- Quick Jump Topic Chips (Lối tắt đọc nhanh theo nhu cầu) -->
-              <div v-if="tocItems.length > 0" class="pt-2">
-                <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
-                  <span class="text-slate-400 font-bold shrink-0 flex items-center gap-1">
-                    <ListTree class="w-3.5 h-3.5 text-amber-500" />
-                    <span>Xem nhanh:</span>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          <!-- LEFT COLUMN: Main Content (8 cols) -->
+          <main class="lg:col-span-8 space-y-8 min-w-0">
+            <article class="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 border border-slate-200/90 shadow-2xl space-y-8">
+              
+              <!-- Article Header Info -->
+              <header class="space-y-4 border-b border-slate-100 pb-6">
+                <!-- Category Pill & Metadata -->
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
+                  <span class="px-3 py-1 rounded-full font-bold bg-brand-blue/10 text-brand-blue flex items-center gap-1.5">
+                    <Tag class="w-3.5 h-3.5" />
+                    <span>Chuyên mục: {{ post.category || 'Bao bì & Tem nhãn' }} &rsaquo;</span>
                   </span>
-                  <button
-                    v-for="(item, idx) in tocItems.slice(0, 6)"
-                    :key="idx"
-                    @click="scrollToSection(item.id)"
-                    class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-brand-blue hover:text-white text-slate-700 font-semibold shrink-0 transition-all border border-slate-200/80 shadow-2xs hover:shadow"
+                  <span class="text-slate-300">•</span>
+                  <span class="text-slate-500 flex items-center gap-1">
+                    <Calendar class="w-3.5 h-3.5 text-slate-400" />
+                    {{ formatDate(post.published_at || post.created_at) }}
+                  </span>
+                  <span class="text-slate-300">•</span>
+                  <span class="text-slate-500 flex items-center gap-1">
+                    <Clock class="w-3.5 h-3.5 text-slate-400" />
+                    {{ readingTime }} phút đọc
+                  </span>
+                  <span class="text-slate-300">•</span>
+                  <span class="text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1">
+                    <ShieldCheck class="w-3.5 h-3.5" />
+                    Kỹ thuật xưởng duyệt
+                  </span>
+                </div>
+
+                <!-- Main Title H1 -->
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 leading-tight tracking-tight">
+                  {{ post.title }}
+                </h1>
+
+                <!-- Author Sub-bar & Quick Action Tools -->
+                <div class="flex items-center justify-between pt-2">
+                  <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-blue via-blue-700 to-indigo-900 text-white font-black flex items-center justify-center text-sm shadow-sm ring-2 ring-blue-100 shrink-0">
+                      NN
+                    </div>
+                    <div>
+                      <div class="flex items-center gap-1.5">
+                        <p class="text-xs sm:text-sm font-bold text-slate-800">
+                          {{ post.author_name || 'Kỹ Thuật Viên Xưởng In Nhật Nguyên' }}
+                        </p>
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500" title="Đang trực tuyến"></span>
+                      </div>
+                      <p class="text-xs text-slate-500">Kinh nghiệm 10+ năm in Offset & Kỹ thuật số</p>
+                    </div>
+                  </div>
+
+                  <!-- Quick Action Buttons -->
+                  <div class="flex items-center gap-2">
+                    <button
+                      @click="copyLink"
+                      class="p-2 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:text-brand-blue hover:border-brand-blue text-xs font-semibold flex items-center gap-1.5 transition-all"
+                      :title="isCopied ? 'Đã sao chép link' : 'Sao chép liên kết'"
+                    >
+                      <Check v-if="isCopied" class="w-3.5 h-3.5 text-emerald-600" />
+                      <Copy v-else class="w-3.5 h-3.5" />
+                      <span class="hidden sm:inline">{{ isCopied ? 'Đã chép' : 'Sao chép' }}</span>
+                    </button>
+                    <button
+                      @click="printArticle"
+                      class="p-2 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 text-xs hidden sm:flex items-center"
+                      title="In bài viết"
+                    >
+                      <Printer class="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Excerpt / Key Takeaways Box -->
+                <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-blue-50/50 border border-amber-200/60 space-y-2">
+                  <div class="flex items-center gap-2 text-xs font-bold text-amber-900 tracking-wide uppercase">
+                    <Sparkles class="w-4 h-4 text-amber-600" />
+                    <span>Tóm Tắt Nhanh & Lời Khuyên Từ Xưởng In</span>
+                  </div>
+                  <p class="text-xs sm:text-sm text-slate-700 leading-relaxed italic font-medium">
+                    {{ post.excerpt || 'Bài viết phân tích chi tiết quy cách, ưu thế công nghệ và hướng dẫn đặt in tối ưu chi phí trực tiếp tại Xưởng In Ấn Nhật Nguyên.' }}
+                  </p>
+                </div>
+
+                <!-- Quick Jump Topic Chips (Lối tắt đọc nhanh theo nhu cầu) -->
+                <div v-if="tocItems.length > 0" class="pt-2">
+                  <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
+                    <span class="text-slate-400 font-bold shrink-0 flex items-center gap-1">
+                      <ListTree class="w-3.5 h-3.5 text-amber-500" />
+                      <span>Xem nhanh:</span>
+                    </span>
+                    <button
+                      v-for="(item, idx) in tocItems.slice(0, 6)"
+                      :key="idx"
+                      @click="scrollToSection(item.id)"
+                      class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-brand-blue hover:text-white text-slate-700 font-semibold shrink-0 transition-all border border-slate-200/80 shadow-2xs hover:shadow"
+                    >
+                      {{ item.text }}
+                    </button>
+                  </div>
+                </div>
+              </header>
+
+              <!-- Technical Scorecard (Bảng Thông Số Kỹ Thuật Độc Quyền Của Nhật Nguyên) -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 sm:p-5 rounded-2xl bg-slate-950 text-white shadow-lg border border-slate-800">
+                <div class="text-center p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                  <div class="text-[11px] text-slate-400 font-medium">Chuẩn màu CMYK</div>
+                  <div class="text-lg sm:text-xl font-black text-amber-400">99.5%</div>
+                  <div class="text-[10px] text-emerald-400 font-bold">Chuẩn thiết kế</div>
+                </div>
+                <div class="text-center p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                  <div class="text-[11px] text-slate-400 font-medium">Độ bền nhiệt & bám</div>
+                  <div class="text-lg sm:text-xl font-black text-white">50+ Lần</div>
+                  <div class="text-[10px] text-slate-400">Giặt không nứt vỡ</div>
+                </div>
+                <div class="text-center p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                  <div class="text-[11px] text-slate-400 font-medium">Tốc độ in mẫu</div>
+                  <div class="text-lg sm:text-xl font-black text-brand-gold">2H - 4H</div>
+                  <div class="text-[10px] text-amber-300 font-bold">Lấy trong ngày</div>
+                </div>
+                <div class="text-center p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                  <div class="text-[11px] text-slate-400 font-medium">Báo giá trực tiếp</div>
+                  <div class="text-lg sm:text-xl font-black text-emerald-400">Giá Gốc</div>
+                  <div class="text-[10px] text-slate-400">Tiết kiệm 20-30%</div>
+                </div>
+              </div>
+
+              <!-- Mobile Table of Contents (Shown only on small screens) -->
+              <div v-if="tocItems.length > 0" class="lg:hidden rounded-2xl border border-slate-200 bg-slate-50/80 p-4 space-y-3">
+                <button
+                  @click="isMobileTocOpen = !isMobileTocOpen"
+                  class="w-full flex items-center justify-between font-bold text-sm text-slate-900"
+                >
+                  <div class="flex items-center gap-2 text-brand-blue">
+                    <ListTree class="w-4 h-4 text-brand-gold" />
+                    <span>Mục Lục Bài Viết ({{ tocItems.length }} mục)</span>
+                  </div>
+                  <ChevronRight
+                    class="w-4 h-4 text-slate-400 transition-transform duration-200"
+                    :class="{ 'rotate-90': isMobileTocOpen }"
+                  />
+                </button>
+
+                <nav v-show="isMobileTocOpen" class="space-y-1.5 pt-2 border-t border-slate-200/60 text-xs">
+                  <a
+                    v-for="(item, index) in tocItems"
+                    :key="index"
+                    :href="`#${item.id}`"
+                    @click.prevent="scrollToSection(item.id)"
+                    class="block py-1.5 px-2 rounded-lg text-slate-700 hover:bg-white hover:text-brand-blue font-medium transition-colors"
+                    :class="{ 'text-brand-blue font-bold bg-white shadow-2xs': activeTocId === item.id }"
                   >
                     {{ item.text }}
+                  </a>
+                </nav>
+              </div>
+
+              <!-- Dynamic Rich Body Content -->
+              <div
+                class="prose prose-slate max-w-none text-slate-800 text-sm sm:text-base leading-relaxed space-y-6 post-content"
+                v-html="renderedContent"
+              ></div>
+
+              <!-- Interactive Pre-press Checklist (Checklist kiểm tra file in trước khi chốt đơn) -->
+              <div class="p-6 rounded-3xl bg-slate-50 border-2 border-dashed border-slate-200 space-y-4">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500 text-slate-950 font-black flex items-center justify-center text-sm shadow-sm">
+                      ✓
+                    </div>
+                    <div>
+                      <h4 class="font-black text-sm text-slate-900">Checklist Kiểm Tra File In Của Thợ In Nhật Nguyên</h4>
+                      <p class="text-xs text-slate-500">Tick chọn để đảm bảo ấn phẩm in ra không bị lỗi màu hoặc vỡ nét</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-brand-blue bg-blue-50 px-3 py-1 rounded-full">
+                    {{ checkedCount }}/4 mục hoàn tất
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+                  <label
+                    v-for="(check, idx) in checklist"
+                    :key="idx"
+                    class="flex items-start gap-2.5 p-3 rounded-xl border transition-all cursor-pointer select-none"
+                    :class="check.done ? 'bg-emerald-50/60 border-emerald-300 text-emerald-900 font-semibold' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'"
+                  >
+                    <input
+                      type="checkbox"
+                      v-model="check.done"
+                      class="w-4 h-4 rounded text-brand-blue focus:ring-brand-blue mt-0.5"
+                    />
+                    <span>{{ check.text }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- In-Article Consultation CTA Box -->
+              <div class="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-brand-blue via-blue-800 to-slate-950 text-white shadow-xl relative overflow-hidden space-y-4">
+                <div class="absolute -right-8 -bottom-8 w-40 h-40 bg-brand-gold/20 rounded-full blur-2xl pointer-events-none"></div>
+
+                <div class="flex flex-wrap items-center justify-between gap-4 relative z-10">
+                  <div class="space-y-1 max-w-lg">
+                    <span class="px-2.5 py-0.5 rounded-full bg-brand-gold text-slate-950 font-black text-[11px] uppercase tracking-wider">
+                      Tư vấn trực tiếp 24/7
+                    </span>
+                    <h3 class="text-xl sm:text-2xl font-black text-white">
+                      Cần In Decal / Ấn Phẩm Theo Yêu Cầu?
+                    </h3>
+                    <p class="text-xs sm:text-sm text-blue-100/90 leading-relaxed">
+                      Xưởng In Nhật Nguyên nhận in mẫu thử, hỗ trợ kiểm tra và chỉnh file thiết kế chuẩn in trong 15 phút.
+                    </p>
+                  </div>
+
+                  <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto shrink-0">
+                    <a
+                      href="https://zalo.me/0767598368"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="w-full sm:w-auto px-5 py-3 rounded-full bg-brand-gold hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm shadow-lg text-center transition-all flex items-center justify-center gap-2"
+                    >
+                      <MessageSquare class="w-4 h-4" />
+                      <span>Chat Zalo Báo Giá</span>
+                    </a>
+                    <a
+                      href="tel:0767598368"
+                      class="w-full sm:w-auto px-5 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm border border-white/20 text-center transition-all flex items-center justify-center gap-2"
+                    >
+                      <Phone class="w-4 h-4 text-brand-gold" />
+                      <span>076.759.8368</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Article Rating Widget -->
+              <div class="p-5 rounded-2xl bg-amber-50/40 border border-amber-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+                <div>
+                  <h4 class="text-xs sm:text-sm font-bold text-slate-900">Bài viết này có hữu ích với bạn không?</h4>
+                  <p class="text-[11px] text-slate-500 mt-0.5">
+                    Đánh giá độ hữu ích: <strong class="text-amber-600">4.9 / 5</strong> (dựa trên 142 lượt bình chọn từ khách hàng)
+                  </p>
+                </div>
+
+                <div class="flex items-center gap-1 text-amber-400 text-lg cursor-pointer">
+                  <button
+                    v-for="star in 5"
+                    :key="star"
+                    @click="rateArticle(star)"
+                    class="hover:scale-125 transition-transform"
+                    :title="`Đánh giá ${star} sao`"
+                  >
+                    <span :class="userRating >= star ? 'text-amber-500' : 'text-slate-300'">★</span>
+                  </button>
+                  <span v-if="userRating > 0" class="text-xs font-bold text-emerald-600 ml-2">Cảm ơn bạn!</span>
+                </div>
+              </div>
+
+              <!-- Share & Print Toolbar -->
+              <div class="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-slate-100">
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                  <Share2 class="w-4 h-4 text-slate-400" />
+                  <span>Chia sẻ kiến thức in ấn:</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <button
+                    @click="shareZalo"
+                    class="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  >
+                    <span>Zalo</span>
+                  </button>
+                  <button
+                    @click="shareFacebook"
+                    class="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  >
+                    <span>Facebook</span>
+                  </button>
+                  <button
+                    @click="copyLink"
+                    class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  >
+                    <Copy class="w-3.5 h-3.5" />
+                    <span>{{ isCopied ? 'Đã chép!' : 'Chép link' }}</span>
                   </button>
                 </div>
               </div>
-            </header>
 
-            <!-- Technical Scorecard (Bảng Thông Số Kỹ Thuật Độc Quyền Của Nhật Nguyên) -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 sm:p-5 rounded-2xl bg-slate-950 text-white shadow-lg border border-slate-800">
-              <div class="text-center p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                <div class="text-[11px] text-slate-400 font-medium">Chuẩn màu CMYK</div>
-                <div class="text-lg sm:text-xl font-black text-amber-400">99.5%</div>
-                <div class="text-[10px] text-emerald-400 font-bold">Chuẩn thiết kế</div>
-              </div>
-              <div class="text-center p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                <div class="text-[11px] text-slate-400 font-medium">Độ bền nhiệt & bám</div>
-                <div class="text-lg sm:text-xl font-black text-white">50+ Lần</div>
-                <div class="text-[10px] text-slate-400">Giặt không nứt vỡ</div>
-              </div>
-              <div class="text-center p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                <div class="text-[11px] text-slate-400 font-medium">Tốc độ in mẫu</div>
-                <div class="text-lg sm:text-xl font-black text-brand-gold">2H - 4H</div>
-                <div class="text-[10px] text-amber-300 font-bold">Lấy trong ngày</div>
-              </div>
-              <div class="text-center p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                <div class="text-[11px] text-slate-400 font-medium">Báo giá trực tiếp</div>
-                <div class="text-lg sm:text-xl font-black text-emerald-400">Giá Gốc</div>
-                <div class="text-[10px] text-slate-400">Tiết kiệm 20-30%</div>
-              </div>
-            </div>
-
-            <!-- Featured Hero Image -->
-            <div class="aspect-[16/9] rounded-2xl overflow-hidden bg-slate-100 shadow-md border border-slate-200/80 relative group">
-              <img
-                :src="post.thumbnail || '/banner-chinh.jpg'"
-                :alt="post.title"
-                class="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
-              />
-              <div class="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-slate-950/80 via-slate-950/40 to-transparent text-white text-xs flex items-center justify-between">
-                <span class="font-medium truncate">Mẫu ấn phẩm hoàn thiện trực tiếp tại Xưởng In Nhật Nguyên</span>
-                <span class="text-amber-300 font-bold shrink-0 text-[11px]">Cam kết sắc nét 100%</span>
-              </div>
-            </div>
-
-            <!-- Mobile Table of Contents (Shown only on small screens) -->
-            <div v-if="tocItems.length > 0" class="lg:hidden rounded-2xl border border-slate-200 bg-slate-50/80 p-4 space-y-3">
-              <button
-                @click="isMobileTocOpen = !isMobileTocOpen"
-                class="w-full flex items-center justify-between font-bold text-sm text-slate-900"
-              >
-                <div class="flex items-center gap-2 text-brand-blue">
-                  <ListTree class="w-4 h-4 text-brand-gold" />
-                  <span>Mục Lục Bài Viết ({{ tocItems.length }} mục)</span>
+              <!-- Author Bio Card (E-E-A-T) -->
+              <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-brand-blue text-white font-black text-xl flex items-center justify-center shrink-0 shadow-md">
+                  NN
                 </div>
-                <ChevronRight
-                  class="w-4 h-4 text-slate-400 transition-transform duration-200"
-                  :class="{ 'rotate-90': isMobileTocOpen }"
-                />
-              </button>
+                <div class="space-y-1.5 text-center sm:text-left">
+                  <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                    <h4 class="text-sm font-bold text-slate-900">Xưởng In Ấn Nhật Nguyên</h4>
+                    <span class="text-[11px] bg-brand-blue/10 text-brand-blue font-bold px-2 py-0.5 rounded-md">
+                      Chuyên Gia In Ấn 10+ Năm
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-600 leading-relaxed">
+                    Nhật Nguyên là xưởng sản xuất trực tiếp tại TP.HCM chuyên in decal DTF, tem nhãn cuộn, bao bì hộp giấy, danh thiếp và ấn phẩm quảng cáo. Sở hữu dàn máy in kỹ thuật số công nghiệp hiện đại, nhận in mọi số lượng với giá gốc tại xưởng.
+                  </p>
+                  <div class="pt-1 flex items-center justify-center sm:justify-start gap-4 text-xs font-bold text-brand-blue">
+                    <a href="tel:0767598368" class="hover:underline flex items-center gap-1">
+                      <Phone class="w-3 h-3 text-brand-gold" />
+                      <span>076.759.8368</span>
+                    </a>
+                    <router-link to="/gioi-thieu" class="hover:underline flex items-center gap-1 text-slate-600">
+                      <span>Tìm hiểu về xưởng &rsaquo;</span>
+                    </router-link>
+                  </div>
+                </div>
+              </div>
 
-              <nav v-show="isMobileTocOpen" class="space-y-1.5 pt-2 border-t border-slate-200/60 text-xs">
+            </article>
+
+            <!-- Related Posts Section (Lưới bài viết liên quan) -->
+            <section v-if="relatedPosts.length > 0" class="space-y-4 pt-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                  <Bookmark class="w-5 h-5 text-brand-gold" />
+                  <span>Bài Viết Cùng Chuyên Mục</span>
+                </h3>
+                <router-link to="/tin-tuc" class="text-xs font-bold text-brand-blue hover:underline flex items-center gap-1">
+                  <span>Xem tất cả</span>
+                  <ChevronRight class="w-3.5 h-3.5" />
+                </router-link>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <router-link
+                  v-for="relPost in relatedPosts"
+                  :key="relPost.id"
+                  :to="`/tin-tuc/${relPost.slug}`"
+                  class="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-brand-blue/40 transition-all flex gap-3 group"
+                >
+                  <div class="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                    <img
+                      :src="relPost.thumbnail || '/banner-chinh.jpg'"
+                      :alt="relPost.title"
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div class="flex flex-col justify-between py-0.5 min-w-0">
+                    <h4 class="text-xs sm:text-sm font-bold text-slate-900 line-clamp-2 group-hover:text-brand-blue transition-colors leading-snug">
+                      {{ relPost.title }}
+                    </h4>
+                    <span class="text-[11px] text-slate-400 flex items-center gap-1">
+                      <Calendar class="w-3 h-3" />
+                      {{ formatDate(relPost.published_at || relPost.created_at) }}
+                    </span>
+                  </div>
+                </router-link>
+              </div>
+            </section>
+          </main>
+
+          <!-- RIGHT COLUMN: Sticky Sidebar (4 cols) -->
+          <aside class="lg:col-span-4 space-y-6 lg:sticky lg:top-24 mt-4 lg:mt-0">
+            
+            <!-- Widget 1: Interactive Table of Contents (TOC) -->
+            <div v-if="tocItems.length > 0" class="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm space-y-4 hidden lg:block">
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2 font-black text-sm text-slate-900">
+                  <ListTree class="w-4 h-4 text-brand-gold" />
+                  <span>Mục Lục Bài Viết</span>
+                </div>
+                <span class="text-[11px] font-bold text-slate-400">
+                  {{ tocItems.length }} phần
+                </span>
+              </div>
+
+              <nav class="space-y-1 max-h-[380px] overflow-y-auto pr-1 text-xs">
                 <a
-                  v-for="(item, index) in tocItems"
-                  :key="index"
+                  v-for="(item, idx) in tocItems"
+                  :key="idx"
                   :href="`#${item.id}`"
                   @click.prevent="scrollToSection(item.id)"
-                  class="block py-1.5 px-2 rounded-lg text-slate-700 hover:bg-white hover:text-brand-blue font-medium transition-colors"
-                  :class="{ 'text-brand-blue font-bold bg-white shadow-2xs': activeTocId === item.id }"
+                  class="block py-2 px-3 rounded-xl transition-all font-medium leading-snug"
+                  :class="activeTocId === item.id
+                    ? 'bg-brand-blue/10 text-brand-blue font-bold shadow-2xs translate-x-1'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'"
                 >
-                  {{ item.text }}
+                  <div class="flex items-start gap-2">
+                    <span
+                      class="w-4 h-4 rounded-full text-[10px] flex items-center justify-center shrink-0 mt-0.5"
+                      :class="activeTocId === item.id ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-500'"
+                    >
+                      {{ idx + 1 }}
+                    </span>
+                    <span class="line-clamp-2">{{ item.text }}</span>
+                  </div>
                 </a>
               </nav>
             </div>
 
-            <!-- Dynamic Rich Body Content -->
-            <div
-              class="prose prose-slate max-w-none text-slate-800 text-sm sm:text-base leading-relaxed space-y-6 post-content"
-              v-html="renderedContent"
-            ></div>
-
-            <!-- Interactive Pre-press Checklist (Checklist kiểm tra file in trước khi chốt đơn) -->
-            <div class="p-6 rounded-3xl bg-slate-50 border-2 border-dashed border-slate-200 space-y-4">
-              <div class="flex items-center justify-between flex-wrap gap-2">
-                <div class="flex items-center gap-2">
-                  <div class="w-8 h-8 rounded-xl bg-amber-500 text-slate-950 font-black flex items-center justify-center text-sm shadow-sm">
-                    ✓
+            <!-- Widget 2: Fast Quote / Zalo Consultation with Support Representative -->
+            <div class="bg-gradient-to-br from-brand-blue via-blue-900 to-slate-950 text-white rounded-3xl p-6 shadow-md space-y-4 relative overflow-hidden">
+              <div class="flex items-center gap-3">
+                <div class="relative">
+                  <div class="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 font-black flex items-center justify-center text-base shadow-sm">
+                    NN
                   </div>
-                  <div>
-                    <h4 class="font-black text-sm text-slate-900">Checklist Kiểm Tra File In Của Thợ In Nhật Nguyên</h4>
-                    <p class="text-xs text-slate-500">Tick chọn để đảm bảo ấn phẩm in ra không bị lỗi màu hoặc vỡ nét</p>
-                  </div>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-slate-900" title="Online sẵn sàng tư vấn"></span>
                 </div>
-                <span class="text-xs font-bold text-brand-blue bg-blue-50 px-3 py-1 rounded-full">
-                  {{ checkedCount }}/4 mục hoàn tất
-                </span>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
-                <label
-                  v-for="(check, idx) in checklist"
-                  :key="idx"
-                  class="flex items-start gap-2.5 p-3 rounded-xl border transition-all cursor-pointer select-none"
-                  :class="check.done ? 'bg-emerald-50/60 border-emerald-300 text-emerald-900 font-semibold' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'"
-                >
-                  <input
-                    type="checkbox"
-                    v-model="check.done"
-                    class="w-4 h-4 rounded text-brand-blue focus:ring-brand-blue mt-0.5"
-                  />
-                  <span>{{ check.text }}</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- In-Article Consultation CTA Box -->
-            <div class="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-brand-blue via-blue-800 to-slate-950 text-white shadow-xl relative overflow-hidden space-y-4">
-              <div class="absolute -right-8 -bottom-8 w-40 h-40 bg-brand-gold/20 rounded-full blur-2xl pointer-events-none"></div>
-
-              <div class="flex flex-wrap items-center justify-between gap-4 relative z-10">
-                <div class="space-y-1 max-w-lg">
-                  <span class="px-2.5 py-0.5 rounded-full bg-brand-gold text-slate-950 font-black text-[11px] uppercase tracking-wider">
-                    Tư vấn trực tiếp 24/7
-                  </span>
-                  <h3 class="text-xl sm:text-2xl font-black text-white">
-                    Cần In Decal / Ấn Phẩm Theo Yêu Cầu?
-                  </h3>
-                  <p class="text-xs sm:text-sm text-blue-100/90 leading-relaxed">
-                    Xưởng In Nhật Nguyên nhận in mẫu thử, hỗ trợ kiểm tra và chỉnh file thiết kế chuẩn in trong 15 phút.
-                  </p>
-                </div>
-
-                <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto shrink-0">
-                  <a
-                    href="https://zalo.me/0767598368"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="w-full sm:w-auto px-5 py-3 rounded-full bg-brand-gold hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm shadow-lg text-center transition-all flex items-center justify-center gap-2"
-                  >
-                    <MessageSquare class="w-4 h-4" />
-                    <span>Chat Zalo Báo Giá</span>
-                  </a>
-                  <a
-                    href="tel:0767598368"
-                    class="w-full sm:w-auto px-5 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm border border-white/20 text-center transition-all flex items-center justify-center gap-2"
-                  >
-                    <Phone class="w-4 h-4 text-brand-gold" />
-                    <span>076.759.8368</span>
-                  </a>
+                <div>
+                  <div class="text-xs font-bold text-amber-300">Tư Vấn Kỹ Thuật Viên</div>
+                  <div class="text-sm font-black text-white">Xưởng In Nhật Nguyên</div>
                 </div>
               </div>
-            </div>
 
-            <!-- Article Rating Widget -->
-            <div class="p-5 rounded-2xl bg-amber-50/40 border border-amber-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-              <div>
-                <h4 class="text-xs sm:text-sm font-bold text-slate-900">Bài viết này có hữu ích với bạn không?</h4>
-                <p class="text-[11px] text-slate-500 mt-0.5">
-                  Đánh giá độ hữu ích: <strong class="text-amber-600">4.9 / 5</strong> (dựa trên 142 lượt bình chọn từ khách hàng)
+              <div class="space-y-1">
+                <h4 class="font-bold text-sm text-blue-100">Cần Báo Giá In Decal / Ấn Phẩm?</h4>
+                <p class="text-xs text-blue-200/80 leading-relaxed">
+                  Gửi file hoặc kích thước qua Zalo để kỹ thuật viên kiểm tra và báo giá trong 5 - 15 phút.
                 </p>
               </div>
 
-              <div class="flex items-center gap-1 text-amber-400 text-lg cursor-pointer">
-                <button
-                  v-for="star in 5"
-                  :key="star"
-                  @click="rateArticle(star)"
-                  class="hover:scale-125 transition-transform"
-                  :title="`Đánh giá ${star} sao`"
+              <div class="p-3 bg-white/10 rounded-2xl space-y-1 border border-white/10">
+                <div class="text-[11px] text-blue-200">Hotline & Zalo Trực Tiếp:</div>
+                <div class="text-lg font-black text-brand-gold tracking-wider">076.759.8368</div>
+              </div>
+
+              <div class="space-y-2 pt-1">
+                <a
+                  href="https://zalo.me/0767598368"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="w-full py-3 rounded-xl bg-brand-gold hover:bg-amber-400 text-slate-950 font-black text-xs text-center block shadow transition-all"
                 >
-                  <span :class="userRating >= star ? 'text-amber-500' : 'text-slate-300'">★</span>
-                </button>
-                <span v-if="userRating > 0" class="text-xs font-bold text-emerald-600 ml-2">Cảm ơn bạn!</span>
-              </div>
-            </div>
-
-            <!-- Share & Print Toolbar -->
-            <div class="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-slate-100">
-              <div class="flex items-center gap-2 text-xs font-semibold text-slate-500">
-                <Share2 class="w-4 h-4 text-slate-400" />
-                <span>Chia sẻ kiến thức in ấn:</span>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <button
-                  @click="shareZalo"
-                  class="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  Nhắn Zalo Ngay →
+                </a>
+                <router-link
+                  to="/yeu-cau-bao-gia"
+                  class="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs text-center block transition-all"
                 >
-                  <span>Zalo</span>
-                </button>
-                <button
-                  @click="shareFacebook"
-                  class="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  Gửi Form Báo Giá
+                </router-link>
+              </div>
+            </div>
+
+            <!-- Widget 3: Featured Products (Sản phẩm in ấn liên quan) -->
+            <div v-if="relatedProducts.length > 0" class="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm space-y-4">
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h4 class="font-black text-sm text-slate-900 flex items-center gap-1.5">
+                  <Layers class="w-4 h-4 text-brand-gold" />
+                  <span>Dịch Vụ In Nổi Bật</span>
+                </h4>
+                <router-link to="/san-pham" class="text-[11px] font-bold text-brand-blue hover:underline">
+                  Xem tất cả
+                </router-link>
+              </div>
+
+              <div class="space-y-3">
+                <router-link
+                  v-for="prod in relatedProducts"
+                  :key="prod.id"
+                  :to="`/san-pham/${prod.slug}`"
+                  class="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-slate-50 transition-colors group border border-transparent hover:border-slate-100"
                 >
-                  <span>Facebook</span>
-                </button>
-                <button
-                  @click="copyLink"
-                  class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
-                >
-                  <Copy class="w-3.5 h-3.5" />
-                  <span>{{ isCopied ? 'Đã chép!' : 'Chép link' }}</span>
-                </button>
+                  <div class="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-100">
+                    <img
+                      :src="prod.image || '/logo.png'"
+                      :alt="prod.name"
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    />
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h5 class="text-xs font-bold text-slate-800 group-hover:text-brand-blue truncate">
+                      {{ prod.name }}
+                    </h5>
+                    <p class="text-[11px] text-slate-500 truncate">
+                      Thời gian: {{ prod.turnaround || '24h' }}
+                    </p>
+                    <p class="text-xs font-black text-amber-600 mt-0.5">
+                      {{ formatCurrency(prod.base_price) }}
+                    </p>
+                  </div>
+                  <ChevronRight class="w-4 h-4 text-slate-300 group-hover:text-brand-blue group-hover:translate-x-0.5 transition-all" />
+                </router-link>
               </div>
             </div>
 
-            <!-- Author Bio Card (E-E-A-T) -->
-            <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row items-center sm:items-start gap-4">
-              <div class="w-16 h-16 rounded-2xl bg-brand-blue text-white font-black text-xl flex items-center justify-center shrink-0 shadow-md">
-                NN
-              </div>
-              <div class="space-y-1.5 text-center sm:text-left">
-                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                  <h4 class="text-sm font-bold text-slate-900">Xưởng In Ấn Nhật Nguyên</h4>
-                  <span class="text-[11px] bg-brand-blue/10 text-brand-blue font-bold px-2 py-0.5 rounded-md">
-                    Chuyên Gia In Ấn 10+ Năm
-                  </span>
-                </div>
-                <p class="text-xs text-slate-600 leading-relaxed">
-                  Nhật Nguyên là xưởng sản xuất trực tiếp tại TP.HCM chuyên in decal DTF, tem nhãn cuộn, bao bì hộp giấy, danh thiếp và ấn phẩm quảng cáo. Sở hữu dàn máy in kỹ thuật số công nghiệp hiện đại, nhận in mọi số lượng với giá gốc tại xưởng.
-                </p>
-                <div class="pt-1 flex items-center justify-center sm:justify-start gap-4 text-xs font-bold text-brand-blue">
-                  <a href="tel:0767598368" class="hover:underline flex items-center gap-1">
-                    <Phone class="w-3 h-3 text-brand-gold" />
-                    <span>076.759.8368</span>
-                  </a>
-                  <router-link to="/gioi-thieu" class="hover:underline flex items-center gap-1 text-slate-600">
-                    <span>Tìm hiểu về xưởng &rsaquo;</span>
-                  </router-link>
-                </div>
-              </div>
-            </div>
-
-          </article>
-
-          <!-- Related Posts Section (Lưới bài viết liên quan) -->
-          <section v-if="relatedPosts.length > 0" class="space-y-4 pt-4">
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
-                <Bookmark class="w-5 h-5 text-brand-gold" />
-                <span>Bài Viết Cùng Chuyên Mục</span>
-              </h3>
-              <router-link to="/tin-tuc" class="text-xs font-bold text-brand-blue hover:underline flex items-center gap-1">
-                <span>Xem tất cả</span>
-                <ChevronRight class="w-3.5 h-3.5" />
-              </router-link>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <router-link
-                v-for="relPost in relatedPosts"
-                :key="relPost.id"
-                :to="`/tin-tuc/${relPost.slug}`"
-                class="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-brand-blue/40 transition-all flex gap-3 group"
-              >
-                <div class="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 shrink-0">
-                  <img
-                    :src="relPost.thumbnail || '/banner-chinh.jpg'"
-                    :alt="relPost.title"
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <div class="flex flex-col justify-between py-0.5 min-w-0">
-                  <h4 class="text-xs sm:text-sm font-bold text-slate-900 line-clamp-2 group-hover:text-brand-blue transition-colors leading-snug">
-                    {{ relPost.title }}
-                  </h4>
-                  <span class="text-[11px] text-slate-400 flex items-center gap-1">
-                    <Calendar class="w-3 h-3" />
-                    {{ formatDate(relPost.published_at || relPost.created_at) }}
-                  </span>
-                </div>
-              </router-link>
-            </div>
-          </section>
-        </main>
-
-        <!-- RIGHT COLUMN: Sticky Sidebar (4 cols) -->
-        <aside class="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
-          
-          <!-- Widget 1: Interactive Table of Contents (TOC) -->
-          <div v-if="tocItems.length > 0" class="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm space-y-4 hidden lg:block">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div class="flex items-center gap-2 font-black text-sm text-slate-900">
-                <ListTree class="w-4 h-4 text-brand-gold" />
-                <span>Mục Lục Bài Viết</span>
-              </div>
-              <span class="text-[11px] font-bold text-slate-400">
-                {{ tocItems.length }} phần
-              </span>
-            </div>
-
-            <nav class="space-y-1 max-h-[380px] overflow-y-auto pr-1 text-xs">
-              <a
-                v-for="(item, idx) in tocItems"
-                :key="idx"
-                :href="`#${item.id}`"
-                @click.prevent="scrollToSection(item.id)"
-                class="block py-2 px-3 rounded-xl transition-all font-medium leading-snug"
-                :class="activeTocId === item.id
-                  ? 'bg-brand-blue/10 text-brand-blue font-bold shadow-2xs translate-x-1'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'"
-              >
-                <div class="flex items-start gap-2">
-                  <span
-                    class="w-4 h-4 rounded-full text-[10px] flex items-center justify-center shrink-0 mt-0.5"
-                    :class="activeTocId === item.id ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-500'"
-                  >
-                    {{ idx + 1 }}
-                  </span>
-                  <span class="line-clamp-2">{{ item.text }}</span>
-                </div>
-              </a>
-            </nav>
-          </div>
-
-          <!-- Widget 2: Fast Quote / Zalo Consultation with Support Representative -->
-          <div class="bg-gradient-to-br from-brand-blue via-blue-900 to-slate-950 text-white rounded-3xl p-6 shadow-md space-y-4 relative overflow-hidden">
-            <div class="flex items-center gap-3">
-              <div class="relative">
-                <div class="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 font-black flex items-center justify-center text-base shadow-sm">
-                  NN
-                </div>
-                <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-slate-900" title="Online sẵn sàng tư vấn"></span>
-              </div>
-              <div>
-                <div class="text-xs font-bold text-amber-300">Tư Vấn Kỹ Thuật Viên</div>
-                <div class="text-sm font-black text-white">Xưởng In Nhật Nguyên</div>
-              </div>
-            </div>
-
-            <div class="space-y-1">
-              <h4 class="font-bold text-sm text-blue-100">Cần Báo Giá In Decal / Ấn Phẩm?</h4>
-              <p class="text-xs text-blue-200/80 leading-relaxed">
-                Gửi file hoặc kích thước qua Zalo để kỹ thuật viên kiểm tra và báo giá trong 5 - 15 phút.
-              </p>
-            </div>
-
-            <div class="p-3 bg-white/10 rounded-2xl space-y-1 border border-white/10">
-              <div class="text-[11px] text-blue-200">Hotline & Zalo Trực Tiếp:</div>
-              <div class="text-lg font-black text-brand-gold tracking-wider">076.759.8368</div>
-            </div>
-
-            <div class="space-y-2 pt-1">
-              <a
-                href="https://zalo.me/0767598368"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="w-full py-3 rounded-xl bg-brand-gold hover:bg-amber-400 text-slate-950 font-black text-xs text-center block shadow transition-all"
-              >
-                Nhắn Zalo Ngay →
-              </a>
-              <router-link
-                to="/yeu-cau-bao-gia"
-                class="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs text-center block transition-all"
-              >
-                Gửi Form Báo Giá
-              </router-link>
-            </div>
-          </div>
-
-          <!-- Widget 3: Featured Products (Sản phẩm in ấn liên quan) -->
-          <div v-if="relatedProducts.length > 0" class="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h4 class="font-black text-sm text-slate-900 flex items-center gap-1.5">
-                <Layers class="w-4 h-4 text-brand-gold" />
-                <span>Dịch Vụ In Nổi Bật</span>
+            <!-- Widget 4: Gold Trust Guarantees -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm space-y-3">
+              <h4 class="font-black text-xs uppercase tracking-wider text-slate-400">
+                Cam Kết Từ Nhật Nguyên
               </h4>
-              <router-link to="/san-pham" class="text-[11px] font-bold text-brand-blue hover:underline">
-                Xem tất cả
-              </router-link>
+
+              <ul class="space-y-2.5 text-xs text-slate-700">
+                <li class="flex items-start gap-2">
+                  <CheckCircle2 class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <span><strong>Giá gốc tận xưởng:</strong> Tiết kiệm đến 20-30% chi phí trung gian.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <CheckCircle2 class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <span><strong>Test màu miễn phí:</strong> Duyệt file mẫu trước khi bấm in số lượng lớn.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <CheckCircle2 class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <span><strong>Đổi trả 100%:</strong> Cam kết hoàn tiền hoặc in lại nếu sai lỗi xưởng.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <CheckCircle2 class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <span><strong>Giao hàng hỏa tốc:</strong> Hỗ trợ ship nhanh toàn quốc và nội thành TP.HCM.</span>
+                </li>
+              </ul>
             </div>
 
-            <div class="space-y-3">
-              <router-link
-                v-for="prod in relatedProducts"
-                :key="prod.id"
-                :to="`/san-pham/${prod.slug}`"
-                class="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-slate-50 transition-colors group border border-transparent hover:border-slate-100"
-              >
-                <div class="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-100">
-                  <img
-                    :src="prod.image || '/logo.png'"
-                    :alt="prod.name"
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  />
-                </div>
-                <div class="min-w-0 flex-1">
-                  <h5 class="text-xs font-bold text-slate-800 group-hover:text-brand-blue truncate">
-                    {{ prod.name }}
-                  </h5>
-                  <p class="text-[11px] text-slate-500 truncate">
-                    Thời gian: {{ prod.turnaround || '24h' }}
-                  </p>
-                  <p class="text-xs font-black text-amber-600 mt-0.5">
-                    {{ formatCurrency(prod.base_price) }}
-                  </p>
-                </div>
-                <ChevronRight class="w-4 h-4 text-slate-300 group-hover:text-brand-blue group-hover:translate-x-0.5 transition-all" />
-              </router-link>
-            </div>
-          </div>
+          </aside>
 
-          <!-- Widget 4: Gold Trust Guarantees -->
-          <div class="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-sm space-y-3">
-            <h4 class="font-black text-xs uppercase tracking-wider text-slate-400">
-              Cam Kết Từ Nhật Nguyên
-            </h4>
-
-            <ul class="space-y-2.5 text-xs text-slate-700">
-              <li class="flex items-start gap-2">
-                <CheckCircle2 class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span><strong>Giá gốc tận xưởng:</strong> Tiết kiệm đến 20-30% chi phí trung gian.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <CheckCircle2 class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span><strong>Test màu miễn phí:</strong> Duyệt file mẫu trước khi bấm in số lượng lớn.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <CheckCircle2 class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span><strong>Đổi trả 100%:</strong> Cam kết hoàn tiền hoặc in lại nếu sai lỗi xưởng.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <CheckCircle2 class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span><strong>Giao hàng hỏa tốc:</strong> Hỗ trợ ship nhanh toàn quốc và nội thành TP.HCM.</span>
-              </li>
-            </ul>
-          </div>
-
-        </aside>
-
+        </div>
       </div>
     </div>
   </div>
