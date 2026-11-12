@@ -483,23 +483,41 @@
               <span class="text-[10px] font-bold" :class="isDarkMode ? 'text-purple-400' : 'text-purple-600'">Chốt cuối tháng</span>
             </div>
             <div class="flex items-center gap-2">
-              <div class="relative w-24 shrink-0">
+              <!-- Ô 1: Nhập tỷ lệ % (Không giới hạn step để tránh lỗi trình duyệt) -->
+              <div class="relative w-28 shrink-0">
                 <input
-                  v-model.number="orderForm.commission_rate"
+                  :value="orderForm.commission_rate"
+                  @input="onCommissionRateInput($event)"
                   type="number"
                   min="0"
                   max="100"
-                  step="0.5"
+                  step="any"
+                  placeholder="0"
                   class="w-full text-xs rounded-xl pl-2.5 pr-6 py-2.5 border text-right font-bold transition-all focus:outline-none focus:ring-1 focus:ring-brand-gold"
                   :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-amber-400' : 'bg-white border-slate-300 text-amber-600 shadow-2xs'"
+                  title="Nhập tỷ lệ % hoa hồng"
                 />
                 <span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">%</span>
               </div>
-              <div class="flex-1 py-2 px-2.5 rounded-xl border text-right font-black text-xs truncate" :class="isDarkMode ? 'bg-black/10 border-[#2E3A47] text-amber-400' : 'bg-slate-50 border-slate-200 text-amber-700'">
-                +{{ formatMoney(calculatedCommissionAmount) }}
+
+              <!-- Ô 2: Nhập số tiền ₫ tự nhảy % và ngược lại -->
+              <div class="relative flex-1">
+                <input
+                  :value="formatInput(orderForm.commission_amount)"
+                  @input="onCommissionAmountInput($event)"
+                  type="text"
+                  inputmode="numeric"
+                  placeholder="0"
+                  class="w-full text-xs rounded-xl pl-2.5 pr-7 py-2.5 border text-right font-black transition-all focus:outline-none focus:ring-1 focus:ring-brand-gold"
+                  :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-amber-400' : 'bg-white border-slate-300 text-amber-700 shadow-2xs'"
+                  title="Nhập số tiền hoa hồng (₫) - Tự động quy đổi ra %"
+                />
+                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-bold pointer-events-none" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">₫</span>
               </div>
             </div>
-            <p class="text-[10px] mt-1" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">Đơn hàng vẫn thu đủ 100%, hoa hồng sẽ tự lưu vào Bảng kê cuối tháng.</p>
+            <p class="text-[10px] mt-1" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
+              Nhập số tiền tự nhảy % và ngược lại. Đơn thu đủ 100%, hoa hồng cộng vào Bảng kê tháng.
+            </p>
           </div>
 
           <!-- VAT Rate Pills -->
@@ -757,7 +775,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeft,
@@ -802,6 +820,7 @@ const orderForm = reactive({
   discount: 0,
   discount_mode: 'direct',
   commission_rate: 0,
+  commission_amount: 0,
   vat_rate: 0,
   is_vat_required: false,
   shipping_fee_customer: 0,
@@ -875,7 +894,7 @@ const calculated = computed(() => {
 
   // Chiết khấu / Hoa hồng trả khách (trừ thẳng vào lợi nhuận)
   const commissionOrDiscount = orderForm.discount_mode === 'monthly_commission'
-    ? Math.round((subtotal * (Number(orderForm.commission_rate) || 0)) / 100)
+    ? (Number(orderForm.commission_amount) || Math.round((subtotal * (Number(orderForm.commission_rate) || 0)) / 100))
     : (Number(orderForm.discount) || 0)
 
   let profitAmount = 0
@@ -908,11 +927,46 @@ const calculated = computed(() => {
   }
 })
 
-// Tính số tiền hoa hồng tháng ước tính
-const calculatedCommissionAmount = computed(() => {
+// 2-Way Sync giữa Tỷ lệ % hoa hồng và Số tiền hoa hồng (₫)
+function onCommissionRateInput(e) {
+  const val = e.target.value
+  if (val === '' || val === null) {
+    orderForm.commission_rate = ''
+    orderForm.commission_amount = 0
+    return
+  }
+  const num = parseFloat(val)
+  orderForm.commission_rate = isNaN(num) ? 0 : num
   const subtotal = calculated.value.subtotal || 0
-  const rate = Number(orderForm.commission_rate) || 0
-  return Math.round((subtotal * rate) / 100)
+  if (subtotal > 0 && !isNaN(num)) {
+    orderForm.commission_amount = Math.round((subtotal * num) / 100)
+  } else {
+    orderForm.commission_amount = 0
+  }
+}
+
+function onCommissionAmountInput(e) {
+  const raw = e.target.value.replace(/[^\d]/g, '')
+  const val = Number(raw) || 0
+  orderForm.commission_amount = val
+  const subtotal = calculated.value.subtotal || 0
+  if (subtotal > 0 && val > 0) {
+    // Tính ra % làm tròn 2 chữ số thập phân
+    const rate = Number(((val / subtotal) * 100).toFixed(2))
+    orderForm.commission_rate = rate
+  } else if (val === 0) {
+    orderForm.commission_rate = 0
+  }
+}
+
+// Khi tổng tiền in thay đổi, tự động cập nhật lại số tiền hoa hồng nếu đã có %
+watch(() => calculated.value.subtotal, (newSubtotal) => {
+  if (orderForm.discount_mode === 'monthly_commission') {
+    const rate = Number(orderForm.commission_rate) || 0
+    if (rate > 0 && newSubtotal > 0) {
+      orderForm.commission_amount = Math.round((newSubtotal * rate) / 100)
+    }
+  }
 })
 
 // 2-Way Sync between Unit Price and Line Total
@@ -1073,6 +1127,9 @@ async function lookupCustomerPhone() {
       // Tự động nhận diện chính sách chiết khấu của khách hàng
       if (res.data.commission_rate > 0) {
         orderForm.commission_rate = Number(res.data.commission_rate)
+        if (calculated.value.subtotal > 0) {
+          orderForm.commission_amount = Math.round((calculated.value.subtotal * orderForm.commission_rate) / 100)
+        }
         if (res.data.commission_type === 'monthly') {
           orderForm.discount_mode = 'monthly_commission'
         }
@@ -1152,6 +1209,7 @@ async function submitOrder() {
       discount: orderForm.discount || 0,
       discount_mode: orderForm.discount_mode || 'direct',
       commission_rate: orderForm.commission_rate || 0,
+      commission_amount: orderForm.commission_amount || 0,
       vat_rate: orderForm.vat_rate || 0,
       is_vat_required: orderForm.vat_rate > 0,
       shipping_fee_customer: orderForm.shipping_fee_customer || 0,
@@ -1229,6 +1287,7 @@ async function loadOrderData(id) {
       orderForm.discount = order.discount || 0
       orderForm.discount_mode = order.discount_mode || 'direct'
       orderForm.commission_rate = order.commission_rate_snapshot || 0
+      orderForm.commission_amount = order.commission_amount || (order.commission_rate_snapshot && order.subtotal ? Math.round((order.subtotal * order.commission_rate_snapshot) / 100) : 0)
       orderForm.vat_rate = order.vat_rate || 0
       orderForm.shipping_fee_customer = order.shipping_fee_customer || 0
       orderForm.shipping_fee_shop = order.shipping_fee_shop || 0

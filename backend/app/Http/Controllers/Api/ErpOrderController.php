@@ -136,6 +136,7 @@ class ErpOrderController extends Controller
             'discount' => 'nullable|numeric|min:0',
             'discount_mode' => 'nullable|string|in:direct,monthly_commission',
             'commission_rate' => 'nullable|numeric|min:0|max:100',
+            'commission_amount' => 'nullable|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',
             'payment_method' => 'nullable|string',
 
@@ -234,7 +235,14 @@ class ErpOrderController extends Controller
             } else {
                 // Tích lũy tính hoa hồng / chiết khấu định kỳ hàng tháng
                 $orderDiscount = 0;
-                $commissionAmount = round(($subtotal * $commissionRateSnapshot) / 100);
+                if (isset($validated['commission_amount']) && (float)$validated['commission_amount'] > 0) {
+                    $commissionAmount = round((float) $validated['commission_amount']);
+                    if ($subtotal > 0 && empty($validated['commission_rate'])) {
+                        $commissionRateSnapshot = round(($commissionAmount / $subtotal) * 100, 2);
+                    }
+                } else {
+                    $commissionAmount = round(($subtotal * $commissionRateSnapshot) / 100);
+                }
             }
 
             $commissionOrDiscount = $discountMode === 'monthly_commission' ? $commissionAmount : $orderDiscount;
@@ -356,6 +364,7 @@ class ErpOrderController extends Controller
             'discount' => 'nullable|numeric|min:0',
             'discount_mode' => 'nullable|string|in:direct,monthly_commission',
             'commission_rate' => 'nullable|numeric|min:0|max:100',
+            'commission_amount' => 'nullable|numeric|min:0',
             'vat_rate' => 'nullable|numeric|min:0',
             'shipping_fee_customer' => 'nullable|numeric|min:0',
             'shipping_fee_shop' => 'nullable|numeric|min:0',
@@ -422,7 +431,11 @@ class ErpOrderController extends Controller
                 $order->discount = 0;
                 $rate = isset($validated['commission_rate']) ? (float) $validated['commission_rate'] : ($order->commission_rate_snapshot ?: 0);
                 $order->commission_rate_snapshot = $rate;
-                $order->commission_amount = round(($order->subtotal * $rate) / 100);
+                if (isset($validated['commission_amount']) && (float)$validated['commission_amount'] > 0) {
+                    $order->commission_amount = round((float) $validated['commission_amount']);
+                } else {
+                    $order->commission_amount = round(($order->subtotal * $rate) / 100);
+                }
             }
 
             if (isset($validated['vat_rate'])) $order->vat_rate = (float) $validated['vat_rate'];
