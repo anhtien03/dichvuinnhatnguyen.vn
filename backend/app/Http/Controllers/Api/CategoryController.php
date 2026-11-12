@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\SiteSetting;
+use App\Services\GoogleIndexingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -75,6 +77,13 @@ class CategoryController extends Controller
 
         $category = Category::create($validated);
 
+        if (SiteSetting::get('google_indexing_auto_publish', true)) {
+            try {
+                $indexingService = app(GoogleIndexingService::class);
+                $indexingService->publishUrl('https://dichvuinnhatnguyen.vn/danh-muc/' . $category->slug, 'URL_UPDATED');
+            } catch (\Throwable $e) {}
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Thêm danh mục thành công',
@@ -108,6 +117,13 @@ class CategoryController extends Controller
 
         $category->update($validated);
 
+        if (SiteSetting::get('google_indexing_auto_publish', true)) {
+            try {
+                $indexingService = app(GoogleIndexingService::class);
+                $indexingService->publishUrl('https://dichvuinnhatnguyen.vn/danh-muc/' . $category->slug, 'URL_UPDATED');
+            } catch (\Throwable $e) {}
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Cập nhật danh mục thành công',
@@ -118,7 +134,15 @@ class CategoryController extends Controller
     public function destroy($id)
     {
         $category = Category::findOrFail($id);
+        $deletedSlug = $category->slug;
         $category->delete();
+
+        if (SiteSetting::get('google_indexing_auto_publish', true)) {
+            try {
+                $indexingService = app(GoogleIndexingService::class);
+                $indexingService->publishUrl('https://dichvuinnhatnguyen.vn/danh-muc/' . $deletedSlug, 'URL_DELETED');
+            } catch (\Throwable $e) {}
+        }
 
         return response()->json([
             'success' => true,
