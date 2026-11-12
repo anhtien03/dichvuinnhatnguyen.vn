@@ -244,14 +244,27 @@
               </span>
             </div>
 
-            <input
-              v-model="form.google_site_verification"
-              @blur="cleanVerificationCode"
-              type="text"
-              placeholder="Dán mã content hoặc cả thẻ <meta name='google-site-verification' content='...' />"
-              class="w-full rounded-xl px-3 py-2 border font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-brand-gold"
-              :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
-            />
+            <div class="flex items-center gap-2">
+              <input
+                v-model="form.google_site_verification"
+                @blur="cleanVerificationCode"
+                @keyup.enter="handleSave"
+                type="text"
+                placeholder="Dán mã content hoặc cả thẻ <meta name='google-site-verification' content='...' />"
+                class="flex-1 rounded-xl px-3 py-2.5 border font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-brand-gold"
+                :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+              />
+              <button
+                type="button"
+                @click="handleSave"
+                :disabled="isSaving"
+                class="px-4 py-2.5 rounded-xl bg-brand-gold hover:bg-amber-400 text-slate-950 font-black text-xs shrink-0 flex items-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+              >
+                <Loader2 v-if="isSaving" class="w-3.5 h-3.5 animate-spin" />
+                <Save v-else class="w-3.5 h-3.5" />
+                <span>{{ isSaving ? 'Đang lưu...' : 'Lưu Mã' }}</span>
+              </button>
+            </div>
             <p class="text-[10px] text-slate-400 mt-1">
               Bạn có thể dán trực tiếp chuỗi mã hoặc dán nguyên thẻ meta HTML từ Google, hệ thống sẽ tự động lọc chuẩn.
             </p>
@@ -266,13 +279,25 @@
               <BarChart3 class="w-4 h-4 text-brand-gold" />
               <span>Google Analytics 4 (GA4 Measurement ID)</span>
             </label>
-            <input
-              v-model="form.google_analytics_id"
-              type="text"
-              placeholder="VD: G-XXXXXXXXXX"
-              class="w-full rounded-xl px-3 py-2 border font-mono text-xs focus:outline-none focus:ring-1 focus:ring-brand-gold"
-              :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
-            />
+            <div class="flex items-center gap-2">
+              <input
+                v-model="form.google_analytics_id"
+                @keyup.enter="handleSave"
+                type="text"
+                placeholder="VD: G-XXXXXXXXXX"
+                class="flex-1 rounded-xl px-3 py-2.5 border font-mono text-xs focus:outline-none focus:ring-1 focus:ring-brand-gold"
+                :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+              />
+              <button
+                type="button"
+                @click="handleSave"
+                :disabled="isSaving"
+                class="px-4 py-2.5 rounded-xl border font-bold text-xs shrink-0 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] hover:border-brand-gold text-slate-200' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'"
+              >
+                <span>Lưu GA4</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -526,6 +551,27 @@
         </div>
       </div>
     </div>
+
+    <!-- Sticky bottom Save bar -->
+    <div class="sticky bottom-4 z-20 p-3.5 rounded-2xl border shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 backdrop-blur-md" :class="isDarkMode ? 'bg-[#1C2434]/95 border-[#2E3A47]' : 'bg-white/95 border-slate-200'">
+      <div class="flex items-center gap-2 text-xs">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span :class="isDarkMode ? 'text-slate-300' : 'text-slate-600'">
+          Bấm lưu để cập nhật thông tin hệ thống, database và mã xác minh vào tệp mã nguồn HTML.
+        </span>
+      </div>
+
+      <button
+        type="button"
+        @click="handleSave"
+        :disabled="isSaving"
+        class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-amber-500 hover:from-amber-400 hover:to-brand-gold text-slate-950 font-black text-xs shadow-md shadow-brand-gold/20 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+      >
+        <Loader2 v-if="isSaving" class="w-4 h-4 animate-spin" />
+        <Save v-else class="w-4 h-4" />
+        <span>{{ isSaving ? 'Đang lưu...' : 'Lưu Tất Cả Cài Đặt' }}</span>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -743,14 +789,18 @@ async function handleSave() {
   isSaving.value = true
   saveSuccess.value = false
   try {
-    await api.updateAdminSettings(form.value)
+    const res = await api.updateAdminSettings(form.value)
+    if (res?.data) {
+      Object.assign(form.value, res.data)
+    }
     applyGoogleTags(form.value)
     saveSuccess.value = true
+    alert('✅ Đã lưu cài đặt và cập nhật mã xác minh Google Search Console thành công! (Dữ liệu đã được lưu vĩnh viễn, F5 không bị mất)')
     setTimeout(() => {
       saveSuccess.value = false
     }, 4000)
   } catch (err) {
-    alert('Lỗi lưu cài đặt: ' + err.message)
+    alert('Lỗi lưu cài đặt: ' + (err.message || 'Không thể lưu'))
   } finally {
     isSaving.value = false
   }

@@ -14,7 +14,26 @@ class SettingController extends Controller
             $decoded = json_decode($item->value, true);
             $val = (json_last_error() === JSON_ERROR_NONE) ? $decoded : $item->value;
             return [$item->key => $val];
-        });
+        })->toArray();
+
+        // Nếu database chưa lưu mã google_site_verification, tự động đọc mã hiện tại từ file HTML
+        // để trên giao diện Admin không bao giờ bị rỗng khi F5
+        if (empty($settings['google_site_verification'])) {
+            $targetFiles = [
+                base_path('../dist/index.html'),
+                base_path('../index.html'),
+                public_path('index.html'),
+            ];
+            foreach ($targetFiles as $file) {
+                if (file_exists($file)) {
+                    $html = file_get_contents($file);
+                    if (preg_match('/<meta\s+name=["\']google-site-verification["\']\s+content=["\']([^"\']+)["\']/i', $html, $m)) {
+                        $settings['google_site_verification'] = $m[1];
+                        break;
+                    }
+                }
+            }
+        }
 
         return response()->json([
             'success' => true,
