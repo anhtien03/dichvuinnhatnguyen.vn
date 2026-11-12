@@ -15,7 +15,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
         <div class="lg:col-span-5 space-y-6">
           <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm space-y-4">
-            <div class="relative aspect-[4/3] rounded-2xl bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 border border-slate-100 flex flex-col items-center justify-center p-6 text-center">
+            <div class="relative aspect-square rounded-2xl bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 border border-slate-100 flex flex-col items-center justify-center p-6 text-center">
               <div class="relative flex items-center justify-center mb-3">
                 <span class="absolute inline-flex h-20 w-20 rounded-full bg-brand-blue/15 animate-ping"></span>
                 <div class="relative w-16 h-16 rounded-2xl bg-white shadow-lg border border-slate-100 flex items-center justify-center p-2.5">
@@ -79,11 +79,11 @@
         <div class="lg:col-span-5 space-y-5">
           <div class="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/90 shadow-sm space-y-4">
             <!-- Main Hero Image -->
-            <div class="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 border border-slate-100 group">
+            <div class="relative aspect-square rounded-2xl overflow-hidden bg-slate-50/70 border border-slate-100 group flex items-center justify-center p-3">
               <img
                 :src="activeImage || product.image || '/logo.png'"
                 :alt="product.name"
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
               />
               <span v-if="product.tag" class="absolute top-3 right-3 px-3 py-1 rounded-lg bg-brand-gold text-slate-950 font-black text-xs shadow-md">
                 {{ product.tag }}
@@ -102,11 +102,11 @@
                 type="button"
                 @click="activeImage = img"
                 :class="[
-                  'w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer',
+                  'w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer bg-slate-50 flex items-center justify-center p-1',
                   activeImage === img ? 'border-brand-blue ring-2 ring-brand-blue/30 scale-105' : 'border-slate-200 hover:border-slate-300 opacity-70 hover:opacity-100'
                 ]"
               >
-                <img :src="img" :alt="product.name" class="w-full h-full object-cover" />
+                <img :src="img" :alt="product.name" class="w-full h-full object-contain" />
               </button>
             </div>
 

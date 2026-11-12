@@ -49,11 +49,11 @@
           :to="'/san-pham/' + (prod.slug || prod.id)"
           class="group rounded-2xl bg-white border border-slate-200/90 overflow-hidden hover:shadow-xl hover:border-brand-blue/40 transition-all flex flex-col"
         >
-          <div class="aspect-[4/3] bg-slate-100 overflow-hidden relative">
+          <div class="aspect-square bg-slate-50/70 overflow-hidden relative flex items-center justify-center p-2">
             <img
               :src="prod.image || '/logo.png'"
               :alt="prod.name"
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
             />
             <span
