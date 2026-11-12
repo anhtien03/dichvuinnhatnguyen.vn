@@ -24,15 +24,24 @@ class ErpSupplierController extends Controller
             });
         }
 
-        $suppliers = $query->withSum('orderItems as total_cost', 'cost_total')
+        $suppliers = $query->withSum('orderItems as total_base_cost', 'cost_total')
+            ->withSum('orderItems as total_vat', 'vat_input_amount')
+            ->withSum('orderItems as total_cost', DB::raw('cost_total + COALESCE(vat_input_amount, cost_total * vat_input_rate / 100, 0)'))
             ->withSum('payments as total_paid', 'amount')
             ->orderBy('id', 'desc')
             ->get();
 
-        // Calculate current debt balance: total_cost - total_paid
+        // Calculate current debt balance: total_cost (đã gồm VAT tùy theo từng đơn có/không VAT) - total_paid
         $suppliers->transform(function ($item) {
-            $cost = (float) ($item->total_cost ?? 0);
+            $baseCost = (float) ($item->total_base_cost ?? 0);
+            $vat = (float) ($item->total_vat ?? 0);
+            $cost = (float) ($item->total_cost ?? ($baseCost + $vat));
             $paid = (float) ($item->total_paid ?? 0);
+
+            $item->total_base_cost = $baseCost;
+            $item->total_vat = $vat;
+            $item->total_cost = $cost;
+            $item->total_paid = $paid;
             $item->balance = $cost - $paid;
             return $item;
         });
@@ -70,18 +79,27 @@ class ErpSupplierController extends Controller
     {
         $supplier = ErpSupplier::with([
             'payments' => function ($q) {
-                $q->orderBy('paid_at', 'desc')->take(30);
+                $q->orderBy('paid_at', 'desc')->take(50);
             },
             'orderItems' => function ($q) {
-                $q->with('order')->orderBy('id', 'desc')->take(30);
+                $q->with('order')->orderBy('id', 'desc')->take(100);
             }
         ])
-        ->withSum('orderItems as total_cost', 'cost_total')
+        ->withSum('orderItems as total_base_cost', 'cost_total')
+        ->withSum('orderItems as total_vat', 'vat_input_amount')
+        ->withSum('orderItems as total_cost', DB::raw('cost_total + COALESCE(vat_input_amount, cost_total * vat_input_rate / 100, 0)'))
         ->withSum('payments as total_paid', 'amount')
         ->findOrFail($id);
 
-        $cost = (float) ($supplier->total_cost ?? 0);
+        $baseCost = (float) ($supplier->total_base_cost ?? 0);
+        $vat = (float) ($supplier->total_vat ?? 0);
+        $cost = (float) ($supplier->total_cost ?? ($baseCost + $vat));
         $paid = (float) ($supplier->total_paid ?? 0);
+
+        $supplier->total_base_cost = $baseCost;
+        $supplier->total_vat = $vat;
+        $supplier->total_cost = $cost;
+        $supplier->total_paid = $paid;
         $supplier->balance = $cost - $paid;
 
         return response()->json([

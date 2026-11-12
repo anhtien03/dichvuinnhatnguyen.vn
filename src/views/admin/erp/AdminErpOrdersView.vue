@@ -186,8 +186,16 @@
               </td>
 
               <!-- Financials -->
-              <td class="py-3.5 px-4 text-right font-bold">
-                {{ formatMoney(order.total_amount) }}
+              <td class="py-3.5 px-4 text-right">
+                <div class="font-bold" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
+                  {{ formatMoney(order.total_amount) }}
+                </div>
+                <div v-if="order.vat_rate > 0" class="text-[10px] font-semibold text-purple-400">
+                  +VAT {{ order.vat_rate }}%: {{ formatMoney(order.vat_amount) }}
+                </div>
+                <div v-else class="text-[10px] text-slate-400">
+                  (K.VAT)
+                </div>
               </td>
 
               <td class="py-3.5 px-4 text-right text-emerald-400 font-semibold">
@@ -195,7 +203,10 @@
               </td>
 
               <td class="py-3.5 px-4 text-right font-bold" :class="(order.total_amount - order.paid_amount) > 0 ? 'text-red-400' : 'text-slate-400'">
-                {{ formatMoney(order.total_amount - order.paid_amount) }}
+                <div>{{ formatMoney(order.total_amount - order.paid_amount) }}</div>
+                <div v-if="(order.total_amount - order.paid_amount) > 0" class="text-[10px] font-normal" :class="order.vat_rate > 0 ? 'text-purple-400' : 'text-slate-400'">
+                  {{ order.vat_rate > 0 ? 'Gồm VAT ' + order.vat_rate + '%' : 'Đơn k.VAT' }}
+                </div>
               </td>
 
               <td class="py-3.5 px-4 text-right font-black text-brand-gold">

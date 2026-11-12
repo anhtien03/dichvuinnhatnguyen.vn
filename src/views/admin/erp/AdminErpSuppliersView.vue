@@ -62,9 +62,15 @@
               <th class="py-3 px-4">Số Điện Thoại</th>
               <th class="py-3 px-4">Dịch Vụ Năng Lực</th>
               <th class="py-3 px-4">Tài Khoản Ngân Hàng</th>
-              <th class="py-3 px-4 text-right">Tổng Tiền Đặt</th>
+              <th class="py-3 px-4 text-right">
+                <div>Tổng Tiền Đặt</div>
+                <div class="text-[10px] font-bold text-amber-500 normal-case tracking-normal">Đã gồm VAT xưởng</div>
+              </th>
               <th class="py-3 px-4 text-right">Đã Trả Xưởng</th>
-              <th class="py-3 px-4 text-right">Công Nợ Tồn</th>
+              <th class="py-3 px-4 text-right">
+                <div>Công Nợ Tồn</div>
+                <div class="text-[10px] font-semibold text-slate-400 normal-case tracking-normal">Tùy đơn có/k VAT</div>
+              </th>
               <th class="py-3 px-4 text-center">Thao Tác</th>
             </tr>
           </thead>
@@ -76,7 +82,7 @@
               :class="isDarkMode ? 'text-slate-200' : 'text-slate-800'"
             >
               <td class="py-3.5 px-4 font-bold">
-                <div>{{ s.name }}</div>
+                <div class="cursor-pointer hover:text-brand-gold transition-colors" @click="openDetailModal(s)">{{ s.name }}</div>
                 <div class="text-[10px] text-slate-400 font-normal truncate max-w-xs">{{ s.address }}</div>
               </td>
 
@@ -95,23 +101,43 @@
                 <div class="text-[10px] text-slate-400 font-mono">{{ s.bank_account }} ({{ s.bank_owner }})</div>
               </td>
 
-              <td class="py-3.5 px-4 text-right font-semibold">
-                {{ formatMoney(s.total_cost) }}
+              <td class="py-3.5 px-4 text-right">
+                <div class="font-bold text-sm" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
+                  {{ formatMoney(s.total_cost) }}
+                </div>
+                <div v-if="s.total_vat > 0" class="text-[10px] text-amber-500 font-semibold mt-0.5">
+                  (Vốn: {{ formatMoney(s.total_base_cost) }} + VAT: {{ formatMoney(s.total_vat) }})
+                </div>
+                <div v-else class="text-[10px] text-slate-400 mt-0.5">
+                  (Đơn không VAT)
+                </div>
               </td>
 
-              <td class="py-3.5 px-4 text-right text-emerald-400 font-semibold">
+              <td class="py-3.5 px-4 text-right text-emerald-400 font-bold">
                 {{ formatMoney(s.total_paid) }}
               </td>
 
-              <td class="py-3.5 px-4 text-right font-black" :class="(s.balance || 0) > 0 ? 'text-red-400' : 'text-slate-400'">
-                {{ formatMoney(s.balance) }}
+              <td class="py-3.5 px-4 text-right font-black" :class="(s.balance || 0) > 0 ? (isDarkMode ? 'text-red-400' : 'text-rose-600') : 'text-slate-400'">
+                <div class="text-sm">{{ formatMoney(s.balance) }}</div>
+                <div v-if="(s.balance || 0) > 0 && s.total_vat > 0" class="text-[10px] text-amber-500 font-normal">
+                  Đã tính VAT xưởng
+                </div>
               </td>
 
               <td class="py-3.5 px-4 text-center">
                 <div class="flex items-center justify-center gap-1.5">
                   <button
+                    @click="openDetailModal(s)"
+                    class="px-2 py-1 rounded-lg text-[11px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500 hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
+                    title="Đối soát chi tiết đơn gia công có/không VAT"
+                  >
+                    <Receipt class="w-3.5 h-3.5" />
+                    <span>Đối Soát</span>
+                  </button>
+
+                  <button
                     @click="openPaymentModal(s)"
-                    class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-slate-950 transition-colors"
+                    class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-slate-950 transition-colors cursor-pointer"
                     title="Trả tiền xưởng"
                   >
                     Trả Nợ
@@ -119,7 +145,7 @@
 
                   <button
                     @click="editSupplier(s)"
-                    class="p-1.5 rounded-lg border text-blue-400 hover:bg-blue-500/10"
+                    class="p-1.5 rounded-lg border text-blue-400 hover:bg-blue-500/10 cursor-pointer"
                     :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'"
                     title="Chỉnh sửa xưởng"
                   >
@@ -128,7 +154,7 @@
 
                   <button
                     @click="deleteSupplier(s)"
-                    class="p-1.5 rounded-lg border text-red-400 hover:bg-red-500/10"
+                    class="p-1.5 rounded-lg border text-red-400 hover:bg-red-500/10 cursor-pointer"
                     :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'"
                     title="Xóa xưởng"
                   >
@@ -333,6 +359,148 @@
         </form>
       </div>
     </div>
+    <!-- DETAIL / RECONCILIATION MODAL -->
+    <div
+      v-if="isDetailModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+    >
+      <div
+        class="relative w-full max-w-4xl max-h-[90vh] flex flex-col rounded-3xl border shadow-2xl overflow-hidden"
+        :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
+      >
+        <!-- Modal Header -->
+        <div class="p-5 border-b flex items-center justify-between" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
+          <div>
+            <h3 class="text-base font-black text-brand-gold flex items-center gap-2">
+              <Receipt class="w-5 h-5" />
+              <span>Đối Soát Công Nợ Xưởng In: {{ detailSupplier?.name }}</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">
+              SĐT: {{ detailSupplier?.phone || '-' }} | Ngân hàng: {{ detailSupplier?.bank_name || '-' }} - {{ detailSupplier?.bank_account }} ({{ detailSupplier?.bank_owner }})
+            </p>
+          </div>
+          <button @click="isDetailModalOpen = false" class="p-1.5 text-slate-400 hover:text-white cursor-pointer">
+            <X class="w-5 h-5" />
+          </button>
+        </div>
+
+        <div v-if="isLoadingDetail" class="p-12 text-center text-slate-400 text-xs">
+          Đang tải dữ liệu đối soát xưởng in...
+        </div>
+
+        <template v-else>
+          <!-- KPI 4 Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-5 border-b" :class="isDarkMode ? 'bg-[#161D2A] border-[#2E3A47]' : 'bg-slate-50 border-slate-100'">
+            <div class="p-3 rounded-xl border" :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200'">
+              <div class="text-[10px] uppercase font-bold text-slate-400">1. Vốn Gia Công Gốc</div>
+              <div class="text-base font-black mt-1">{{ formatMoney(detailSupplier?.total_base_cost) }}</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">Chưa tính VAT</div>
+            </div>
+
+            <div class="p-3 rounded-xl border bg-amber-500/10 border-amber-500/30">
+              <div class="text-[10px] uppercase font-bold text-amber-500">2. Thuế VAT Xưởng Lấy</div>
+              <div class="text-base font-black text-amber-500 mt-1">+{{ formatMoney(detailSupplier?.total_vat) }}</div>
+              <div class="text-[10px] text-amber-400/80 mt-0.5">Cộng từ các đơn có VAT</div>
+            </div>
+
+            <div class="p-3 rounded-xl border bg-blue-500/10 border-blue-500/30">
+              <div class="text-[10px] uppercase font-bold text-blue-400">3. Tổng Nợ Xưởng (Vốn+VAT)</div>
+              <div class="text-base font-black text-blue-400 mt-1">{{ formatMoney(detailSupplier?.total_cost) }}</div>
+              <div class="text-[10px] text-emerald-400 mt-0.5">Đã trả: {{ formatMoney(detailSupplier?.total_paid) }}</div>
+            </div>
+
+            <div class="p-3 rounded-xl border bg-red-500/10 border-red-500/30">
+              <div class="text-[10px] uppercase font-bold text-red-400">4. Công Nợ Còn Tồn</div>
+              <div class="text-base font-black text-red-400 mt-1">{{ formatMoney(detailSupplier?.balance) }}</div>
+              <div class="text-[10px] text-red-300/80 mt-0.5">Còn nợ xưởng</div>
+            </div>
+          </div>
+
+          <!-- Table of Order Items -->
+          <div class="flex-1 overflow-y-auto p-5 custom-scrollbar space-y-3">
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+              <span>Danh Sách Đơn Hàng Gia Công ({{ detailSupplier?.order_items?.length || 0 }} món)</span>
+              <span class="text-[11px] font-normal normal-case text-amber-400">Tự động tính thuế VAT theo từng đơn/món có hoặc không có VAT</span>
+            </div>
+
+            <div class="rounded-xl border overflow-hidden" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
+              <table class="w-full text-left text-xs">
+                <thead class="uppercase font-bold tracking-wider border-b" :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-600'">
+                  <tr>
+                    <th class="py-2.5 px-3">Mã Đơn & Ngày</th>
+                    <th class="py-2.5 px-3">Sản Phẩm & Quy Cách</th>
+                    <th class="py-2.5 px-3 text-center">Số Lượng</th>
+                    <th class="py-2.5 px-3 text-right">Tiền Vốn Gốc</th>
+                    <th class="py-2.5 px-3 text-center">Thuế VAT Xưởng</th>
+                    <th class="py-2.5 px-3 text-right">Tiền Thuế</th>
+                    <th class="py-2.5 px-3 text-right font-black text-brand-gold">Tổng Tiền (Vốn+VAT)</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y" :class="isDarkMode ? 'divide-[#2E3A47]' : 'divide-slate-100'">
+                  <tr v-for="it in (detailSupplier?.order_items || [])" :key="it.id" class="hover:bg-brand-gold/5">
+                    <td class="py-2.5 px-3 font-mono font-bold">
+                      <div>{{ it.order?.code || ('Đơn #' + it.order_id) }}</div>
+                      <div class="text-[10px] text-slate-400 font-normal">{{ it.order?.created_at?.substring(0, 10) }}</div>
+                    </td>
+                    <td class="py-2.5 px-3">
+                      <div class="font-bold">{{ it.product_name }}</div>
+                      <div v-if="it.specifications" class="text-[10px] text-slate-400 max-w-xs truncate">{{ it.specifications }}</div>
+                    </td>
+                    <td class="py-2.5 px-3 text-center font-bold">
+                      {{ formatNumber(it.quantity) }} {{ it.unit || 'Cái' }}
+                    </td>
+                    <td class="py-2.5 px-3 text-right font-semibold">
+                      {{ formatMoney(it.cost_total) }}
+                    </td>
+                    <td class="py-2.5 px-3 text-center">
+                      <span v-if="it.vat_input_rate > 0" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        {{ it.vat_input_rate }}%
+                      </span>
+                      <span v-else class="text-[10px] text-slate-400">
+                        0% (K.VAT)
+                      </span>
+                    </td>
+                    <td class="py-2.5 px-3 text-right font-medium" :class="it.vat_input_amount > 0 ? 'text-amber-400' : 'text-slate-400'">
+                      {{ formatMoney(it.vat_input_amount || (it.cost_total * (it.vat_input_rate || 0) / 100)) }}
+                    </td>
+                    <td class="py-2.5 px-3 text-right font-black" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
+                      {{ formatMoney(it.cost_total + (it.vat_input_amount || (it.cost_total * (it.vat_input_rate || 0) / 100))) }}
+                    </td>
+                  </tr>
+                  <tr v-if="!detailSupplier?.order_items || detailSupplier.order_items.length === 0">
+                    <td colspan="7" class="py-8 text-center text-slate-400 italic">
+                      Chưa có đơn hàng nào gán cho xưởng này.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="p-4 border-t flex items-center justify-between" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
+            <div class="text-xs text-slate-400">
+              Tổng tiền nợ xưởng: <strong class="text-brand-gold">{{ formatMoney(detailSupplier?.total_cost) }}</strong> (Đã cộng VAT từ các đơn có VAT)
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                @click="isDetailModalOpen = false; openPaymentModal(detailSupplier)"
+                class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 text-slate-950 hover:bg-emerald-400 cursor-pointer"
+              >
+                Thanh Toán Trả Nợ Cho Xưởng Này
+              </button>
+              <button
+                @click="isDetailModalOpen = false"
+                class="px-4 py-2 rounded-xl text-xs border cursor-pointer"
+                :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -343,7 +511,8 @@ import {
   Search,
   Edit3,
   Trash2,
-  X
+  X,
+  Receipt
 } from 'lucide-vue-next'
 import { api } from '../../../services/api'
 import { useAdminTheme } from '../../../composables/useAdminTheme'
@@ -374,6 +543,26 @@ const paymentForm = reactive({
   payment_method: 'bank_acb',
   note: ''
 })
+
+const isDetailModalOpen = ref(false)
+const detailSupplier = ref(null)
+const isLoadingDetail = ref(false)
+
+async function openDetailModal(s) {
+  detailSupplier.value = s
+  isDetailModalOpen.value = true
+  isLoadingDetail.value = true
+  try {
+    const res = await api.getErpSupplier(s.id)
+    if (res.data) {
+      detailSupplier.value = res.data
+    }
+  } catch (err) {
+    console.error('Failed to load supplier detail', err)
+  } finally {
+    isLoadingDetail.value = false
+  }
+}
 
 async function fetchSuppliers() {
   isLoading.value = true
@@ -465,6 +654,11 @@ async function submitPayment() {
 function formatMoney(num) {
   if (!num) return '0 ₫'
   return new Intl.NumberFormat('vi-VN').format(Math.round(num)) + ' ₫'
+}
+
+function formatNumber(num) {
+  if (!num) return '0'
+  return new Intl.NumberFormat('vi-VN').format(num)
 }
 
 onMounted(() => {
