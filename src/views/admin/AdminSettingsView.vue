@@ -255,6 +255,10 @@
             <p class="text-[10px] text-slate-400 mt-1">
               Bạn có thể dán trực tiếp chuỗi mã hoặc dán nguyên thẻ meta HTML từ Google, hệ thống sẽ tự động lọc chuẩn.
             </p>
+            <div v-if="form.google_site_verification" class="mt-2 p-2 rounded-lg bg-black/20 border border-emerald-500/30 text-[11px] font-mono text-emerald-400 select-all flex items-center justify-between">
+              <span>&lt;meta name="google-site-verification" content="{{ form.google_site_verification }}" /&gt;</span>
+              <span class="text-[10px] text-emerald-500 font-bold uppercase ml-2 shrink-0">Sẵn sàng xác minh</span>
+            </div>
           </div>
 
           <div>
@@ -707,7 +711,13 @@ async function loadSettings() {
     const res = await api.getSettings()
     if (res.data) {
       Object.assign(form.value, res.data)
-      applyGoogleTags(res.data)
+      if (!form.value.google_site_verification) {
+        const existingMeta = document.querySelector('meta[name="google-site-verification"]')
+        if (existingMeta && existingMeta.getAttribute('content')) {
+          form.value.google_site_verification = existingMeta.getAttribute('content')
+        }
+      }
+      applyGoogleTags(form.value)
     }
   } catch (err) {
     console.error('Failed to load settings', err)

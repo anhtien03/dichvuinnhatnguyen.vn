@@ -31,6 +31,42 @@ class SettingController extends Controller
             SiteSetting::set($key, $value);
         }
 
+        // Tự động đồng bộ mã google_site_verification trực tiếp vào các file tĩnh HTML
+        // để bot Google Search Console đọc được ngay mà không cần đợi JS SPA render
+        if (isset($data['google_site_verification'])) {
+            $code = trim($data['google_site_verification']);
+            if (preg_match('/content=["\']([^"\']+)["\']/', $code, $matches)) {
+                $code = $matches[1];
+                SiteSetting::set('google_site_verification', $code);
+            }
+
+            $targetFiles = [
+                base_path('../dist/index.html'),
+                base_path('../index.html'),
+                public_path('index.html'),
+            ];
+
+            foreach ($targetFiles as $filePath) {
+                if (file_exists($filePath)) {
+                    $html = file_get_contents($filePath);
+                    if (str_contains($html, 'name="google-site-verification"')) {
+                        $html = preg_replace(
+                            '/<meta\s+name=["\']google-site-verification["\']\s+content=["\'][^"\']*["\']\s*\/?>/i',
+                            '<meta name="google-site-verification" content="' . htmlspecialchars($code, ENT_QUOTES) . '" />',
+                            $html
+                        );
+                    } elseif (!empty($code)) {
+                        $html = str_replace(
+                            '</head>',
+                            '  <meta name="google-site-verification" content="' . htmlspecialchars($code, ENT_QUOTES) . '" />' . "\n</head>",
+                            $html
+                        );
+                    }
+                    @file_put_contents($filePath, $html);
+                }
+            }
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Cập nhật cấu hình website thành công',
