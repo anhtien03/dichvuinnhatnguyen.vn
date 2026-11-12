@@ -6,46 +6,40 @@
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         
         <!-- Cột 1 (3/12): Menu Danh Mục Sản Phẩm Nổi Bật -->
-        <div class="hidden lg:flex lg:col-span-3 flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
-          <div class="bg-brand-blue text-white px-4 py-3.5 flex items-center justify-between font-black text-sm uppercase tracking-wider">
+        <div class="hidden lg:flex lg:col-span-3 flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm relative z-20">
+          <div class="bg-brand-blue text-white px-4 py-3.5 flex items-center justify-between font-black text-sm uppercase tracking-wider rounded-t-2xl">
             <span class="flex items-center gap-2">
               <Layers class="w-4 h-4 text-brand-gold" />
               SẢN PHẨM NỔI BẬT
             </span>
           </div>
 
-          <!-- Search Category Input -->
-          <div class="p-2.5 border-b border-slate-100 bg-slate-50/50">
-            <div class="relative">
-              <input
-                v-model="searchKeyword"
-                type="text"
-                placeholder="Tìm ấn phẩm (namecard, tờ rơi...)"
-                class="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue placeholder-slate-400"
-                @keyup.enter="handleSearch"
-              />
-              <Search class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+
+          <!-- Category List (Hiển thị danh sách danh mục trực tiếp, gọn gàng, bấm vào tới trang danh mục, không có popup che màn hình) -->
+          <div class="flex-1 divide-y divide-slate-100 text-xs font-semibold">
+            <div
+              v-for="cat in menuCategories"
+              :key="cat.id"
+            >
+              <router-link
+                :to="cat.link"
+                class="flex items-center justify-between px-3.5 py-2.5 transition-colors group hover:bg-brand-blue-light/40 text-slate-700 hover:text-brand-blue"
+              >
+                <div class="flex items-center gap-2.5">
+                  <span class="text-base">{{ cat.icon }}</span>
+                  <span>{{ cat.name }}</span>
+                </div>
+
+                <!-- Mũi tên chuyển hướng -->
+                <ChevronRight
+                  class="w-3.5 h-3.5 text-slate-400 group-hover:text-brand-blue group-hover:translate-x-0.5 transition-transform"
+                />
+              </router-link>
             </div>
           </div>
 
-          <!-- Category List -->
-          <div class="flex-1 divide-y divide-slate-100 text-xs font-semibold">
-            <router-link
-              v-for="cat in menuCategories"
-              :key="cat.id"
-              :to="cat.link"
-              class="flex items-center justify-between px-3.5 py-2.5 hover:bg-brand-blue-light/50 text-slate-700 hover:text-brand-blue transition-colors group"
-            >
-              <div class="flex items-center gap-2.5">
-                <span class="text-base">{{ cat.icon }}</span>
-                <span>{{ cat.name }}</span>
-              </div>
-              <ChevronRight class="w-3.5 h-3.5 text-slate-400 group-hover:text-brand-blue" />
-            </router-link>
-          </div>
-
           <!-- Footer View All -->
-          <div class="p-2.5 border-t border-slate-100 bg-slate-50/50 text-center">
+          <div class="p-2.5 border-t border-slate-100 bg-slate-50/50 text-center rounded-b-2xl">
             <router-link
               to="/san-pham"
               class="text-xs font-bold text-brand-blue flex items-center justify-center gap-1 py-0.5"
@@ -192,6 +186,9 @@ import { siteSettings } from '../../data/siteSettings'
 const router = useRouter()
 const searchKeyword = ref('')
 const activeBanners = ref([])
+const loadedProducts = ref([])
+const hoveredCategoryId = ref(null)
+let flyoutTimeout = null
 const primaryHotline = computed(() => siteSettings.hotlines?.[0]?.number || '0359 005 469')
 
 async function loadBanners() {
@@ -202,6 +199,17 @@ async function loadBanners() {
     }
   } catch (err) {
     // Graceful fallback to static defaults
+  }
+}
+
+async function loadProducts() {
+  try {
+    const res = await api.getProducts()
+    if (res?.data) {
+      loadedProducts.value = Array.isArray(res.data) ? res.data : (res.data.data || [])
+    }
+  } catch (err) {
+    console.error('Failed to load products for HeroBanner', err)
   }
 }
 
@@ -224,16 +232,57 @@ function handleSearch() {
 }
 
 const menuCategories = [
-  { id: 'hop-giay', name: 'Hộp giấy', icon: '📦', link: '/san-pham/in-hop-giay-hop-cung-cao-cap' },
-  { id: 'tui-giay', name: 'Túi giấy - Paper bags', icon: '🛍️', link: '/san-pham/in-tui-giay-kraft-couche-gia-xuong' },
-  { id: 'nhan-decal', name: 'Nhãn Decal', icon: '🏷️', link: '/san-pham/in-tem-nhan-decal-be-thanh-pham' },
-  { id: 'bia-so-mi', name: 'Bìa Sơ Mi (Folder) - Folder', icon: '📁', link: '/san-pham?cat=an-pham-van-phong' },
-  { id: 'to-roi', name: 'Tờ Rơi - Leaflets, Brochures', icon: '📰', link: '/san-pham/in-to-roi-to-gap-gia-re-tphcm' },
-  { id: 'catalogue', name: 'Catalogue - Cẩm Nang', icon: '📖', link: '/san-pham/in-catalogue-profile-cong-ty' },
-  { id: 'brochure', name: 'Brochure - Tờ Gấp', icon: '📑', link: '/san-pham/in-brochure-to-gap-quang-cao' },
-  { id: 'ho-so-nang-luc', name: 'Hồ sơ năng lực', icon: '🖼️', link: '/san-pham/in-catalogue-profile-cong-ty' },
-  { id: 'the-nhua', name: 'In Thẻ Nhựa', icon: '💳', link: '/san-pham?cat=an-pham-van-phong' }
+  { id: 'hop-giay', name: 'Hộp giấy', icon: '📦', link: '/san-pham?cat=bao-bi-tui-giay', slugMatch: ['hop', 'hop-giay', 'hop-cung'] },
+  { id: 'tui-giay', name: 'Túi giấy - Paper bags', icon: '🛍️', link: '/san-pham?cat=bao-bi-tui-giay', slugMatch: ['tui', 'tui-giay'] },
+  { id: 'nhan-decal', name: 'Nhãn Decal', icon: '🏷️', link: '/san-pham?cat=tem-nhan-decal', slugMatch: ['decal', 'tem', 'nhan-mac', 'tag'] },
+  { id: 'bia-so-mi', name: 'Bìa Sơ Mi (Folder) - Folder', icon: '📁', link: '/san-pham?cat=an-pham-van-phong', slugMatch: ['folder', 'bia', 'kep-file'] },
+  { id: 'to-roi', name: 'Tờ Rơi - Leaflets, Brochures', icon: '📰', link: '/san-pham?cat=tiep-thi-quang-cao', slugMatch: ['to-roi', 'flyer'] },
+  { id: 'catalogue', name: 'Catalogue - Cẩm Nang', icon: '📖', link: '/san-pham?cat=tiep-thi-quang-cao', slugMatch: ['catalogue', 'cam-nang'] },
+  { id: 'brochure', name: 'Brochure - Tờ Gấp', icon: '📑', link: '/san-pham?cat=tiep-thi-quang-cao', slugMatch: ['brochure', 'to-gap'] },
+  { id: 'ho-so-nang-luc', name: 'Hồ sơ năng lực', icon: '🖼️', link: '/san-pham?cat=tiep-thi-quang-cao', slugMatch: ['ho-so-nang-luc', 'profile'] },
+  { id: 'the-nhua', name: 'In Thẻ Nhựa', icon: '💳', link: '/san-pham?cat=an-pham-van-phong', slugMatch: ['the-nhua', 'the-pvc'] }
 ]
+
+function getCategoryProducts(cat) {
+  if (!loadedProducts.value || loadedProducts.value.length === 0) return []
+  return loadedProducts.value.filter(p => {
+    const slug = (p.slug || '').toLowerCase()
+    const name = (p.name || '').toLowerCase()
+    const catSlug = (p.category?.slug || '').toLowerCase()
+    return cat.slugMatch.some(k => slug.includes(k) || name.includes(k) || catSlug.includes(k))
+  })
+}
+
+const activeHoveredCategory = computed(() => {
+  if (!hoveredCategoryId.value) return null
+  return menuCategories.find(c => c.id === hoveredCategoryId.value) || null
+})
+
+const activeCategoryProducts = computed(() => {
+  if (!activeHoveredCategory.value) return []
+  return getCategoryProducts(activeHoveredCategory.value)
+})
+
+function handleCategoryMouseEnter(cat) {
+  if (flyoutTimeout) {
+    clearTimeout(flyoutTimeout)
+    flyoutTimeout = null
+  }
+  hoveredCategoryId.value = cat.id
+}
+
+function handleCategoryMouseLeave() {
+  flyoutTimeout = setTimeout(() => {
+    hoveredCategoryId.value = null
+  }, 180)
+}
+
+function cancelFlyoutClose() {
+  if (flyoutTimeout) {
+    clearTimeout(flyoutTimeout)
+    flyoutTimeout = null
+  }
+}
 
 const rotatingWords = [
   'Menu Bìa Bồi Cứng',
@@ -280,6 +329,7 @@ function typeEffect() {
 onMounted(() => {
   typeEffect()
   loadBanners()
+  loadProducts()
 })
 
 onUnmounted(() => {

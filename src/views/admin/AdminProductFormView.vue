@@ -829,6 +829,7 @@
                 @update:metaTitle="form.meta_title = $event"
                 @update:metaDescription="form.meta_description = $event"
                 @update:slug="form.slug = $event"
+                @update:content="onSeoContentUpdate"
               />
 
               <!-- Tùy chỉnh thẻ Meta Tags chi tiết -->
@@ -1568,8 +1569,15 @@ const form = ref({
   is_popular: false,
   meta_title: '',
   meta_description: '',
+  meta_keywords: '',
   canonical_url: ''
 })
+
+async function onSeoContentUpdate(newHtml) {
+  form.value.description = newHtml || ''
+  await nextTick()
+  syncVisualFromModel()
+}
 
 const defaultPlaceholderImage = '/logo.png'
 
@@ -1694,6 +1702,7 @@ async function loadProductDetail(id) {
         is_popular: Boolean(p.is_popular),
         meta_title: p.meta_title || '',
         meta_description: p.meta_description || '',
+        meta_keywords: p.meta_keywords || '',
         canonical_url: p.canonical_url || ''
       }
       await nextTick()
@@ -1732,6 +1741,7 @@ async function handleSubmit() {
       is_popular: form.value.is_popular,
       meta_title: form.value.meta_title || null,
       meta_description: form.value.meta_description || null,
+      meta_keywords: form.value.meta_keywords || null,
       canonical_url: form.value.canonical_url || null
     }
 

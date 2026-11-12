@@ -1,4 +1,4 @@
-﻿import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import { getAdminToken, can } from '../services/api'
 import { usePageLoader } from '../composables/usePageLoader'
@@ -309,6 +309,32 @@ router.beforeEach((to, from, next) => {
 
 router.afterEach(() => {
   finishNavLoading()
+})
+
+// Automatically recover when Vite deployment changes chunk hashes or network fails
+router.onError((error, to) => {
+  finishNavLoading()
+  const isChunkLoadFailed =
+    error.name === 'ChunkLoadError' ||
+    /loading chunk/i.test(error.message || '') ||
+    /failed to fetch dynamically imported module/i.test(error.message || '') ||
+    /importing a module script failed/i.test(error.message || '')
+
+  if (isChunkLoadFailed) {
+    const targetUrl = to?.fullPath || window.location.href
+    const key = `vite_chunk_reload_${targetUrl}`
+    const lastReload = sessionStorage.getItem(key)
+    const now = Date.now()
+
+    // Chỉ tự reload 1 lần trong 10 giây để tránh reload loop vô tận
+    if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+      sessionStorage.setItem(key, now.toString())
+      window.location.href = targetUrl
+      return
+    }
+  }
+
+  console.error('[Router Error]', error)
 })
 
 export default router

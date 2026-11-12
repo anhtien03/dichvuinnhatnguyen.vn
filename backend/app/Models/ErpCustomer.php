@@ -19,8 +19,17 @@ class ErpCustomer extends Model
         'company_name',
         'tax_code',
         'tag',
+        'commission_rate',
+        'commission_type',
         'notes',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'commission_rate' => 'float',
+        ];
+    }
 
     public function orders()
     {

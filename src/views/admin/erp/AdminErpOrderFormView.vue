@@ -427,15 +427,43 @@
         class="p-5 sm:p-6 rounded-2xl border shadow-sm space-y-5"
         :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200'"
       >
-        <div class="text-xs font-black uppercase tracking-wider text-brand-gold flex items-center gap-2 border-b pb-3" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
-          <DollarSign class="w-4 h-4" />
-          <span>3. Chiết Khấu, VAT Khách Hàng & Bảng Lợi Nhuận Gộp</span>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
+          <div class="text-xs font-black uppercase tracking-wider text-brand-gold flex items-center gap-2">
+            <DollarSign class="w-4 h-4" />
+            <span>3. Chiết Khấu, VAT Khách Hàng & Bảng Lợi Nhuận Gộp</span>
+          </div>
+
+          <!-- Tab chuyển đổi hình thức chiết khấu -->
+          <div class="flex items-center gap-1.5 p-1 rounded-xl bg-black/10 border text-xs" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
+            <button
+              type="button"
+              @click="orderForm.discount_mode = 'direct'"
+              class="px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer"
+              :class="orderForm.discount_mode === 'direct' ? 'bg-brand-gold text-slate-950 shadow-2xs' : 'text-slate-400 hover:text-white'"
+            >
+              Trừ chiết khấu ngay đơn này
+            </button>
+            <button
+              type="button"
+              @click="orderForm.discount_mode = 'monthly_commission'"
+              class="px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1"
+              :class="orderForm.discount_mode === 'monthly_commission' ? 'bg-amber-500 text-slate-950 shadow-2xs' : 'text-slate-400 hover:text-white'"
+            >
+              <span>Tích lũy tính hoa hồng tháng</span>
+              <span v-if="orderForm.commission_rate > 0" class="text-[10px] px-1 rounded bg-black/20 text-slate-950 font-black">
+                {{ orderForm.commission_rate }}%
+              </span>
+            </button>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
-          <!-- Chiết khấu -->
-          <div class="sm:col-span-3">
-            <label class="block text-xs font-bold text-slate-400 mb-1">Giảm Giá / Chiết Khấu (₫)</label>
+          <!-- Chiết khấu TRỪ TRỰC TIẾP -->
+          <div v-if="orderForm.discount_mode === 'direct'" class="sm:col-span-3">
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-bold text-slate-400">Giảm Giá / Chiết Khấu (₫)</label>
+              <span class="text-[10px] text-emerald-400 font-semibold">Trừ vào lợi nhuận</span>
+            </div>
             <input
               :value="formatInput(orderForm.discount)"
               @input="handleFormMoneyInput($event, 'discount')"
@@ -445,6 +473,33 @@
               class="w-full text-xs rounded-xl px-3 py-2.5 border text-right font-bold text-amber-400"
               :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'"
             />
+            <p class="text-[10px] text-slate-400 mt-1">Trừ thẳng vào lợi nhuận xưởng, giữ nguyên bill khách trả.</p>
+          </div>
+
+          <!-- TÍCH LŨY HOA HỒNG THÁNG (Không trừ trên đơn, tự động cộng dồn cuối tháng) -->
+          <div v-else class="sm:col-span-3">
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-bold text-amber-400">Hoa Hồng Tháng Khách Được Hưởng</label>
+              <span class="text-[10px] text-purple-400 font-bold">Chốt cuối tháng</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="relative w-24 shrink-0">
+                <input
+                  v-model.number="orderForm.commission_rate"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                  class="w-full text-xs rounded-xl pl-2.5 pr-6 py-2.5 border text-right font-bold text-amber-400"
+                  :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-slate-50 border-slate-200'"
+                />
+                <span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
+              </div>
+              <div class="flex-1 py-2 px-2.5 rounded-xl border bg-black/10 text-right font-black text-xs text-amber-400 truncate" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
+                +{{ formatMoney(calculatedCommissionAmount) }}
+              </div>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-1">Đơn hàng vẫn thu đủ 100%, hoa hồng sẽ tự lưu vào Bảng kê cuối tháng.</p>
           </div>
 
           <!-- VAT Rate Pills -->
@@ -584,6 +639,9 @@
             <div v-if="calculated.supplier_vat_total > 0" class="text-[10px] text-amber-400 mt-0.5">
               (Gồm {{ formatMoney(calculated.supplier_vat_total) }} VAT xưởng)
             </div>
+            <div v-if="orderForm.shipping_fee_shop > 0" class="text-[10px] text-sky-400 mt-0.5">
+              (Ship Grab {{ formatMoney(orderForm.shipping_fee_shop) }} trừ vào lời)
+            </div>
           </div>
 
           <!-- 4. Lợi nhuận gộp -->
@@ -671,6 +729,8 @@ const orderForm = reactive({
   order_date: new Date().toISOString().substring(0, 10),
   notes: '',
   discount: 0,
+  discount_mode: 'direct',
+  commission_rate: 0,
   vat_rate: 0,
   is_vat_required: false,
   shipping_fee_customer: 0,
@@ -730,24 +790,33 @@ const calculated = computed(() => {
     supplierVatTotal += rowVatInput
   })
 
-  const discount = Number(orderForm.discount) || 0
   const vatRate = Number(orderForm.vat_rate) || 0
-  const vatAmount = Math.max(0, (subtotal - discount)) * (vatRate / 100)
+  const vatAmount = subtotal * (vatRate / 100)
   const shipCustomer = Number(orderForm.shipping_fee_customer) || 0
   const shipShop = Number(orderForm.shipping_fee_shop) || 0
   const surcharge = Number(orderForm.surcharge) || 0
 
-  const totalAmount = Math.max(0, (subtotal - discount) + vatAmount + shipCustomer + surcharge)
-  const totalSupplierDebt = baseCost + supplierVatTotal + shipShop
+  // 2. Tổng khách trả (Bill): Tiền in + VAT + Ship thu khách + Phụ thu (KHÔNG trừ chiết khấu)
+  const totalAmount = Math.max(0, subtotal + vatAmount + shipCustomer + surcharge)
+
+  // 3. Tiền nợ xưởng in: Chỉ gồm tiền gia công xưởng in + VAT xưởng (KHÔNG cộng ship Grab)
+  const totalSupplierDebt = baseCost + supplierVatTotal
+
+  // Chiết khấu / Hoa hồng trả khách (trừ thẳng vào lợi nhuận)
+  const commissionOrDiscount = orderForm.discount_mode === 'monthly_commission'
+    ? Math.round((subtotal * (Number(orderForm.commission_rate) || 0)) / 100)
+    : (Number(orderForm.discount) || 0)
 
   let profitAmount = 0
   let vatWarning = ''
 
   if (vatRate > 0) {
     const taxPayable = Math.max(0, vatAmount - supplierVatTotal)
-    profitAmount = totalAmount - totalSupplierDebt - taxPayable
+    // Lợi nhuận = Doanh thu - Nợ xưởng - Phí ship trả xưởng/Grab - Chiết khấu/hoa hồng - Thuế nộp
+    profitAmount = totalAmount - totalSupplierDebt - shipShop - commissionOrDiscount - taxPayable
   } else {
-    profitAmount = (subtotal - discount + surcharge) - totalSupplierDebt
+    // Không VAT: Lợi nhuận = (Tiền in + Phụ thu + Ship thu khách) - Nợ xưởng - Phí ship trả xưởng/Grab - Chiết khấu/hoa hồng
+    profitAmount = (subtotal + shipCustomer + surcharge) - totalSupplierDebt - shipShop - commissionOrDiscount
     if (supplierVatTotal > 0) {
       vatWarning = `Khách không lấy VAT nhưng xưởng in bắt lấy VAT (${formatMoney(supplierVatTotal)}). Bạn đang chịu thay khoản thuế này, lợi nhuận bị trừ tương ứng.`
     }
@@ -766,6 +835,13 @@ const calculated = computed(() => {
     profit_margin: profitMargin,
     vat_warning: vatWarning
   }
+})
+
+// Tính số tiền hoa hồng tháng ước tính
+const calculatedCommissionAmount = computed(() => {
+  const subtotal = calculated.value.subtotal || 0
+  const rate = Number(orderForm.commission_rate) || 0
+  return Math.round((subtotal * rate) / 100)
 })
 
 // 2-Way Sync between Unit Price and Line Total
@@ -922,6 +998,14 @@ async function lookupCustomerPhone() {
       if (!orderForm.customer_address) orderForm.customer_address = res.data.address || ''
       if (!orderForm.customer_company) orderForm.customer_company = res.data.company_name || ''
       if (!orderForm.customer_tax_code) orderForm.customer_tax_code = res.data.tax_code || ''
+
+      // Tự động nhận diện chính sách chiết khấu của khách hàng
+      if (res.data.commission_rate > 0) {
+        orderForm.commission_rate = Number(res.data.commission_rate)
+        if (res.data.commission_type === 'monthly') {
+          orderForm.discount_mode = 'monthly_commission'
+        }
+      }
     }
   } catch (err) {
     console.error('Customer lookup error', err)
@@ -942,10 +1026,6 @@ function copyZaloQuote() {
    • Thành tiền: ${lineTotal}`
   }).join('\n')
 
-  let discountText = ''
-  if (orderForm.discount > 0) {
-    discountText = `• Giảm giá: -${formatMoney(orderForm.discount)}\n`
-  }
   let vatText = ''
   if (orderForm.vat_rate > 0) {
     vatText = `• Thuế VAT (${orderForm.vat_rate}%): +${formatMoney(calculated.value.vat_amount)}\n`
@@ -965,7 +1045,7 @@ Kính gửi: ${customerName} ${orderForm.customer_phone ? '(' + orderForm.custom
 ${itemsText}
 ---------------------------------------
 • Tiền in: ${formatMoney(calculated.value.subtotal)}
-${discountText}${vatText}${shipText}${surchargeText}👉 TỔNG THANH TOÁN: ${formatMoney(calculated.value.total_amount)}
+${vatText}${shipText}${surchargeText}👉 TỔNG THANH TOÁN: ${formatMoney(calculated.value.total_amount)}
 ---------------------------------------
 CÔNG TY THIẾT KẾ IN ẤN NHẬT NGUYÊN
 Hotline / Zalo: 0359 005 469 - 076 759 8368
@@ -999,6 +1079,8 @@ async function submitOrder() {
       order_date: orderForm.order_date,
       notes: orderForm.notes,
       discount: orderForm.discount || 0,
+      discount_mode: orderForm.discount_mode || 'direct',
+      commission_rate: orderForm.commission_rate || 0,
       vat_rate: orderForm.vat_rate || 0,
       is_vat_required: orderForm.vat_rate > 0,
       shipping_fee_customer: orderForm.shipping_fee_customer || 0,
@@ -1074,6 +1156,8 @@ async function loadOrderData(id) {
       orderForm.order_date = order.created_at ? order.created_at.substring(0, 10) : new Date().toISOString().substring(0, 10)
       orderForm.notes = order.notes || ''
       orderForm.discount = order.discount || 0
+      orderForm.discount_mode = order.discount_mode || 'direct'
+      orderForm.commission_rate = order.commission_rate_snapshot || 0
       orderForm.vat_rate = order.vat_rate || 0
       orderForm.shipping_fee_customer = order.shipping_fee_customer || 0
       orderForm.shipping_fee_shop = order.shipping_fee_shop || 0

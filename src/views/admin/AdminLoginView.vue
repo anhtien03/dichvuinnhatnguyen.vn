@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="min-h-screen bg-slate-950 flex items-center justify-center p-4">
     <!-- Background glow decorative effects -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">

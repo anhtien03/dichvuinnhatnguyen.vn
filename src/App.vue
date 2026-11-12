@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <!-- Global Top Progress Bar on navigation -->
   <TopProgressBar />
 
@@ -7,11 +7,7 @@
 
   <!-- Admin layout routes: clean standalone view -->
   <div v-if="isAdminRoute" class="min-h-screen font-sans bg-slate-900 text-slate-100">
-    <router-view v-slot="{ Component }">
-      <transition name="page-fade" mode="out-in">
-        <component :is="Component" />
-      </transition>
-    </router-view>
+    <router-view />
   </div>
 
   <!-- Public client layout -->
@@ -24,9 +20,9 @@
 
     <!-- Router View Page Content with Smooth Transition -->
     <main class="flex-grow">
-      <router-view v-slot="{ Component }">
+      <router-view v-slot="{ Component, route }">
         <transition name="page-fade" mode="out-in">
-          <component :is="Component" />
+          <component :is="Component" :key="route.fullPath" />
         </transition>
       </router-view>
     </main>

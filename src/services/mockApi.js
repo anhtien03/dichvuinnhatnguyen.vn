@@ -27,8 +27,8 @@ export const mockApi = {
   async search(query) {
     if (!query || !query.trim()) return []
     const q = query.toLowerCase().trim()
-    return products.filter(p => 
-      p.name.toLowerCase().includes(q) || 
+    return products.filter(p =>
+      p.name.toLowerCase().includes(q) ||
       p.categoryName.toLowerCase().includes(q) ||
       p.description.toLowerCase().includes(q) ||
       (p.tag && p.tag.toLowerCase().includes(q))

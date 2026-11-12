@@ -168,18 +168,29 @@
             />
           </div>
 
-          <!-- Mô Tả Danh Mục -->
+          <!-- Mô Tả Chi Tiết Danh Mục (Chuẩn Word / Google Docs) -->
           <div>
-            <label class="block font-bold text-xs mb-1.5" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
-              Mô Tả Danh Mục
-            </label>
-            <textarea
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <label class="block font-bold text-xs" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
+                  Mô Tả Chi Tiết Danh Mục
+                </label>
+                <span class="text-[11px] text-slate-400">
+                  Hiển thị bài viết giới thiệu nhóm ấn phẩm ở đầu trang catalog và tối ưu SEO Google.
+                </span>
+              </div>
+            </div>
+
+            <AdminWordEditor
+              ref="categoryEditorRef"
               v-model="form.description"
-              rows="3"
-              placeholder="Mô tả nhóm ấn phẩm hiển thị trên đầu trang catalog sản phẩm hoặc mega menu..."
-              class="w-full rounded-xl p-3.5 border text-xs leading-relaxed transition-colors focus:outline-none focus:border-brand-gold"
-              :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white placeholder-slate-500' : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'"
-            ></textarea>
+              :entity-name="form.name || 'Mô tả danh mục'"
+              folder="categories"
+              placeholder="Nhập mô tả chi tiết danh mục, ưu điểm kỹ thuật, quy cách gia công, các loại giấy in tại Xưởng In Nhật Nguyên..."
+              :min-height="240"
+              :max-height="480"
+              @openMedia="openMediaForDescription"
+            />
           </div>
         </div>
 
@@ -268,79 +279,82 @@
           </div>
         </div>
 
-        <!-- 3. Tối Ưu Hóa SEO & Google Preview -->
-        <div
-          class="rounded-2xl border p-5 sm:p-6 space-y-4 shadow-sm"
-          :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-white border-slate-200'"
-        >
-          <div class="flex items-center justify-between">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-brand-gold flex items-center gap-2">
-              <Globe class="w-4 h-4 text-brand-gold" />
-              <span>3. Cấu Hình Tối Ưu SEO Google</span>
-            </h2>
-            <button
-              type="button"
-              @click="autoFillSEO"
-              class="inline-flex items-center gap-1.5 text-xs font-bold text-amber-500 hover:text-amber-400 cursor-pointer"
-            >
-              <Sparkles class="w-3.5 h-3.5" />
-              <span>Gợi ý SEO tự động</span>
-            </button>
-          </div>
+        <!-- 3. Tối Ưu Hóa Rank Math SEO Pro -->
+        <div class="space-y-4">
+          <RankMathSeoBox
+            :title="form.name"
+            :meta-title="form.meta_title"
+            :meta-description="form.meta_description"
+            :slug="form.slug"
+            :content="form.description"
+            :image="form.image"
+            :initial-keyword="form.meta_keywords"
+            url-prefix="danh-muc"
+            type="category"
+            :default-excerpt="form.meta_description || form.description"
+            @update:focusKeyword="form.meta_keywords = $event"
+            @update:metaTitle="form.meta_title = $event"
+            @update:metaDescription="form.meta_description = $event"
+            @update:slug="form.slug = $event"
+            @update:content="form.description = $event"
+          />
 
-          <!-- Meta Title -->
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label class="block font-bold text-xs" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
-                Tiêu Đề Trang SEO (Meta Title)
-              </label>
-              <span class="text-[10px] font-mono text-slate-400">
-                {{ form.meta_title ? form.meta_title.length : 0 }}/65 ký tự
-              </span>
+          <!-- Tùy chỉnh thẻ Meta Tags chi tiết -->
+          <div
+            class="rounded-2xl border p-5 sm:p-6 space-y-4 shadow-sm"
+            :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-white border-slate-200'"
+          >
+            <div class="flex items-center justify-between">
+              <h2 class="text-sm font-bold uppercase tracking-wider text-brand-gold flex items-center gap-2">
+                <Globe class="w-4 h-4 text-brand-gold" />
+                <span>Tùy Chỉnh Meta Tags Thủ Công</span>
+              </h2>
+              <button
+                type="button"
+                @click="autoFillSEO"
+                class="inline-flex items-center gap-1.5 text-xs font-bold text-amber-500 hover:text-amber-400 cursor-pointer"
+              >
+                <Sparkles class="w-3.5 h-3.5" />
+                <span>Gợi ý SEO tự động</span>
+              </button>
             </div>
-            <input
-              v-model="form.meta_title"
-              type="text"
-              placeholder="In Hộp Giấy Giá Xưởng TPHCM - Thiết Kế Miễn Phí | Xưởng In Nhật Nguyên"
-              class="w-full rounded-xl px-3.5 py-2.5 border text-xs transition-colors focus:outline-none focus:border-brand-gold"
-              :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white placeholder-slate-500' : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'"
-            />
-          </div>
 
-          <!-- Meta Description -->
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label class="block font-bold text-xs" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
-                Thẻ Mô Tả Tìm Kiếm (Meta Description)
-              </label>
-              <span class="text-[10px] font-mono text-slate-400">
-                {{ form.meta_description ? form.meta_description.length : 0 }}/160 ký tự
-              </span>
+            <!-- Meta Title -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block font-bold text-xs" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
+                  Tiêu Đề Trang SEO (Meta Title)
+                </label>
+                <span class="text-[10px] font-mono text-slate-400">
+                  {{ form.meta_title ? form.meta_title.length : 0 }}/65 ký tự
+                </span>
+              </div>
+              <input
+                v-model="form.meta_title"
+                type="text"
+                placeholder="In Hộp Giấy Giá Xưởng TPHCM - Thiết Kế Miễn Phí | Xưởng In Nhật Nguyên"
+                class="w-full rounded-xl px-3.5 py-2.5 border text-xs transition-colors focus:outline-none focus:border-brand-gold"
+                :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white placeholder-slate-500' : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'"
+              />
             </div>
-            <textarea
-              v-model="form.meta_description"
-              rows="3"
-              placeholder="Xưởng in Nhật Nguyên chuyên in ấn chất lượng cao, chuẩn màu, hỗ trợ kiểm tra file thiết kế và giao hàng toàn quốc."
-              class="w-full rounded-xl p-3.5 border text-xs leading-relaxed transition-colors focus:outline-none focus:border-brand-gold"
-              :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white placeholder-slate-500' : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'"
-            ></textarea>
-          </div>
 
-          <!-- Live Google SERP Snippet Preview -->
-          <div class="p-4 rounded-xl border bg-white text-left space-y-1 shadow-inner border-slate-200">
-            <div class="text-[10px] uppercase font-bold text-slate-400 mb-1">
-              Xem trước kết quả trên Google Search (SERP Preview):
-            </div>
-            <div class="flex items-center gap-1.5 text-xs text-slate-700 truncate">
-              <span class="text-emerald-700 font-semibold font-mono">https://dichvuinnhatnguyen.vn</span>
-              <span class="text-slate-400">› danh-muc ›</span>
-              <span class="text-slate-600 font-mono">{{ form.slug || 'slug-danh-muc' }}</span>
-            </div>
-            <div class="text-base text-[#1a0dab] hover:underline font-medium cursor-pointer line-clamp-1 leading-snug">
-              {{ form.meta_title || form.name || 'Tiêu Đề Danh Mục In Nhật Nguyên' }}
-            </div>
-            <div class="text-xs text-[#4d5156] line-clamp-2 leading-relaxed">
-              {{ form.meta_description || form.description || 'Mô tả tóm tắt nội dung danh mục ấn phẩm in ấn phục vụ doanh nghiệp, cửa hàng và sự kiện.' }}
+            <!-- Meta Description -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block font-bold text-xs" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
+                  Thẻ Mô Tả Tìm Kiếm (Meta Description)
+                </label>
+                <span class="text-[10px] font-mono text-slate-400">
+                  {{ form.meta_description ? form.meta_description.length : 0 }}/160 ký tự
+                </span>
+              </div>
+              <textarea
+                v-model="form.meta_description"
+                rows="3"
+                placeholder="Xưởng in Nhật Nguyên chuyên in ấn chất lượng cao, chuẩn màu, hỗ trợ kiểm tra file thiết kế và giao hàng toàn quốc."
+                class="w-full rounded-xl p-3.5 border text-xs leading-relaxed transition-colors focus:outline-none focus:border-brand-gold"
+                :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white placeholder-slate-500' : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'"
+              ></textarea>
             </div>
           </div>
         </div>
@@ -469,6 +483,8 @@ import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
 import { slugify } from '../../composables/useSEO'
 import MediaLibraryModal from '../../components/admin/MediaLibraryModal.vue'
+import RankMathSeoBox from '../../components/admin/RankMathSeoBox.vue'
+import AdminWordEditor from '../../components/admin/AdminWordEditor.vue'
 
 const { isDarkMode } = useAdminTheme()
 const route = useRoute()
@@ -482,6 +498,8 @@ const isUploading = ref(false)
 const toastMessage = ref('')
 const toastType = ref('success')
 const isMediaModalOpen = ref(false)
+const mediaTarget = ref('image') // 'image' or 'description'
+const categoryEditorRef = ref(null)
 const categoryDetail = ref(null)
 const allCategories = ref([])
 
@@ -498,6 +516,7 @@ const form = reactive({
   description: '',
   meta_title: '',
   meta_description: '',
+  meta_keywords: '',
   sort_order: 0,
   is_active: true
 })
@@ -526,10 +545,26 @@ function autoFillSEO() {
   showToast('Đã tạo gợi ý tiêu đề & mô tả SEO tự động!')
 }
 
+function openMediaForDescription() {
+  mediaTarget.value = 'description'
+  isMediaModalOpen.value = true
+}
+
 // Media Selection callback
 function onMediaSelected(mediaItem) {
   const url = typeof mediaItem === 'string' ? mediaItem : (mediaItem?.url || '')
-  if (url) {
+  if (!url) return
+
+  if (mediaTarget.value === 'description') {
+    const titleName = form.name || 'Hình ảnh thực tế danh mục'
+    const imgHtml = `<figure class="my-5 text-center"><img src="${url}" alt="${titleName}" class="rounded-2xl max-w-full h-auto mx-auto shadow-md" /><figcaption class="text-xs text-slate-500 mt-2 italic">${titleName} tại Xưởng In Nhật Nguyên</figcaption></figure><p></p>`
+    if (categoryEditorRef.value) {
+      categoryEditorRef.value.insertHtml(imgHtml)
+    } else {
+      form.description = (form.description || '') + '\n' + imgHtml
+    }
+    showToast('Đã chèn ảnh vào mô tả danh mục!')
+  } else {
     form.image = url
     showToast('Đã chọn hình ảnh danh mục từ thư viện!')
   }
@@ -584,6 +619,7 @@ async function fetchCategory() {
     form.description = cat.description || ''
     form.meta_title = cat.meta_title || ''
     form.meta_description = cat.meta_description || ''
+    form.meta_keywords = cat.meta_keywords || ''
     form.sort_order = cat.sort_order ?? 0
     form.is_active = cat.is_active ?? true
   } catch (err) {
@@ -610,6 +646,7 @@ async function saveCategory() {
       description: form.description?.trim() || null,
       meta_title: form.meta_title?.trim() || null,
       meta_description: form.meta_description?.trim() || null,
+      meta_keywords: form.meta_keywords?.trim() || null,
       sort_order: Number(form.sort_order) || 0,
       is_active: Boolean(form.is_active)
     }

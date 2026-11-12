@@ -391,7 +391,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import {
   Target, Search, Zap, Sparkles, Eye, CheckCircle2,
   XCircle, AlertCircle
@@ -410,7 +410,7 @@ const props = defineProps({
   image: { type: String, default: '' },
   initialKeyword: { type: String, default: '' },
   urlPrefix: { type: String, default: 'san-pham' },
-  type: { type: String, default: 'product' }, // 'product' or 'post'
+  type: { type: String, default: 'product' }, // 'product', 'post', or 'category'
   defaultExcerpt: { type: String, default: '' }
 })
 
@@ -419,6 +419,7 @@ const emit = defineEmits([
   'update:metaTitle',
   'update:metaDescription',
   'update:slug',
+  'update:content',
   'optimized'
 ])
 
@@ -426,39 +427,67 @@ const focusKeyword = ref(props.initialKeyword || '')
 const previewDevice = ref('desktop')
 const activeTab = ref('basic')
 
-const minWordsTarget = computed(() => props.type === 'post' ? 500 : 200)
+const minWordsTarget = computed(() => {
+  if (props.type === 'post') return 500
+  if (props.type === 'category') return 120
+  return 200
+})
 
-// Normalization function for Vietnamese accents
+// Normalization function for Vietnamese accents & punctuation
 function removeAccents(str) {
   if (!str) return ''
-  return str
+  return String(str)
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/đ/g, 'd')
     .replace(/Đ/g, 'd')
+    .replace(/[-–—|,.:;!?/\\()"'“”‘’]+/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim()
 }
 
-// Generate suggested keywords from Title
+function stripHtmlToText(html) {
+  if (!html) return ''
+  return String(html)
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;|&#160;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+// Generate suggested keywords from Title (preserving 2-letter Vietnamese words like "In", "Tờ", "Sổ", "Bộ")
 const suggestedKeywords = computed(() => {
   const base = props.title || props.metaTitle || ''
   if (!base) return []
-  const clean = base.replace(/[-|–,.:]/g, ' ').trim()
-  const words = clean.split(/\s+/).filter(w => w.length > 2)
+  const clean = base.replace(/[-|–—,.:/()]+/g, ' ').replace(/\s+/g, ' ').trim()
+  const words = clean.split(/\s+/).filter(w => w.length >= 2)
   const suggestions = []
 
-  // 2-word phrase
-  if (words.length >= 2) {
-    suggestions.push(words.slice(0, 2).join(' ').toLowerCase())
-  }
-  // 3-word phrase
+  // 3-word phrase (e.g., "in decal giấy", "in danh thiếp")
   if (words.length >= 3) {
     suggestions.push(words.slice(0, 3).join(' ').toLowerCase())
   }
-  // If product name
-  if (words.length > 0) {
+  // 2-word phrase (e.g., "in decal", "bao thư")
+  if (words.length >= 2) {
+    suggestions.push(words.slice(0, 2).join(' ').toLowerCase())
+  }
+  // 4-word phrase or full short product name
+  if (words.length >= 4) {
     suggestions.push(words.slice(0, 4).join(' ').toLowerCase())
+  } else if (words.length > 0) {
+    suggestions.push(words.join(' ').toLowerCase())
   }
   return [...new Set(suggestions)].slice(0, 3)
 })
@@ -472,9 +501,13 @@ function emitChanges() {
   emit('update:focusKeyword', focusKeyword.value)
 }
 
-// Combined content text
+// Combined content text (avoid double-counting when defaultExcerpt === content)
 const fullContentText = computed(() => {
-  return `${props.content || ''} ${props.defaultExcerpt || ''}`.replace(/<[^>]+>/g, ' ').trim()
+  const cText = stripHtmlToText(props.content)
+  const eText = stripHtmlToText(props.defaultExcerpt)
+  if (!cText) return eText
+  if (!eText || cText.includes(eText)) return cText
+  return `${cText} ${eText}`.trim()
 })
 
 const wordCount = computed(() => {
@@ -487,13 +520,17 @@ const keywordCount = computed(() => {
   const cleanContent = removeAccents(fullContentText.value)
   const cleanKw = removeAccents(focusKeyword.value)
   if (!cleanKw) return 0
-  const matches = cleanContent.match(new RegExp('\\b' + cleanKw + '\\b', 'gi'))
-  return matches ? matches.length : 0
+  const pattern = new RegExp(`(?:^|\\s)${escapeRegExp(cleanKw)}(?=\\s|$)`, 'gi')
+  const matches = cleanContent.match(pattern)
+  if (matches && matches.length > 0) return matches.length
+  // Fallback substring count
+  const parts = cleanContent.split(cleanKw)
+  return Math.max(0, parts.length - 1)
 })
 
 const keywordDensity = computed(() => {
   if (wordCount.value === 0 || keywordCount.value === 0) return 0
-  const kwWords = focusKeyword.value.trim().split(/\s+/).length
+  const kwWords = removeAccents(focusKeyword.value).split(/\s+/).filter(Boolean).length || 1
   const pct = ((keywordCount.value * kwWords) / wordCount.value) * 100
   return Number(pct.toFixed(1))
 })
@@ -519,16 +556,16 @@ const testKeywordInDesc = computed(() => {
 // 3. Keyword in Slug
 const testKeywordInSlug = computed(() => {
   if (!focusKeyword.value.trim()) return false
-  const cleanSlug = (props.slug || '').replace(/-/g, ' ')
+  const cleanSlug = removeAccents((props.slug || '').replace(/-/g, ' '))
   const cleanKw = removeAccents(focusKeyword.value)
-  const kwParts = cleanKw.split(/\s+/)
-  return kwParts.every(part => cleanSlug.includes(part))
+  const kwParts = cleanKw.split(/\s+/).filter(Boolean)
+  return kwParts.length > 0 && kwParts.every(part => cleanSlug.includes(part))
 })
 
 // 4. Keyword in 10% Intro
 const testKeywordInIntro = computed(() => {
   if (!focusKeyword.value.trim() || !fullContentText.value) return false
-  const introLength = Math.max(150, Math.floor(fullContentText.value.length * 0.15))
+  const introLength = Math.max(180, Math.floor(fullContentText.value.length * 0.2))
   const introText = removeAccents(fullContentText.value.substring(0, introLength))
   return introText.includes(removeAccents(focusKeyword.value))
 })
@@ -538,12 +575,12 @@ const testContentLength = computed(() => {
   return wordCount.value >= minWordsTarget.value
 })
 
-// 6. Keyword in Subheadings
+// 6. Keyword in Subheadings (H1-H4, multiline & nested HTML safe)
 const testKeywordInSubheadings = computed(() => {
   if (!focusKeyword.value.trim() || !props.content) return false
-  const hMatches = props.content.match(/<h[234][^>]*>(.*?)<\/h[234]>/gi) || []
+  const hMatches = props.content.match(/<h[1234][^>]*>[\s\S]*?<\/h[1234]>/gi) || []
   const cleanKw = removeAccents(focusKeyword.value)
-  return hMatches.some(h => removeAccents(h).includes(cleanKw))
+  return hMatches.some(h => removeAccents(stripHtmlToText(h)).includes(cleanKw))
 })
 
 // 7. Has Image
@@ -551,9 +588,9 @@ const testHasImage = computed(() => {
   return !!props.image && props.image.length > 5
 })
 
-// 8. Keyword Density in safe range 0.8% - 2.8%
+// 8. Keyword Density in safe range 0.5% - 4.5%
 const testKeywordDensity = computed(() => {
-  return keywordDensity.value >= 0.8 && keywordDensity.value <= 2.8
+  return keywordCount.value >= 1 && keywordDensity.value >= 0.5 && keywordDensity.value <= 4.5
 })
 
 // 9. URL Length < 75 chars
@@ -567,7 +604,7 @@ const testKeywordAtTitleStart = computed(() => {
   const title = removeAccents(props.metaTitle || props.title || '')
   const kw = removeAccents(focusKeyword.value)
   const idx = title.indexOf(kw)
-  return idx >= 0 && idx <= 15
+  return idx >= 0 && idx <= 20
 })
 
 // 11. Title has Number or Year (2026, 4h, 24h, 100%, 500...)
@@ -578,8 +615,8 @@ const testTitleHasNumber = computed(() => {
 
 // 12. Title has Power Words
 const POWER_WORDS = [
-  'gia re', 'tan xuong', 'lay ngay', 'lay lien', 'chat luong', 'chuyen nghiep',
-  'uy tin', 'dep', 'chuan mau', 'mien phi', 'tphcm', '24h', 'nhanh', 'bao gia'
+  'gia re', 'gia goc', 'gia xuong', 'tan xuong', 'lay ngay', 'lay lien', 'chat luong', 'chuyen nghiep',
+  'uy tin', 'dep', 'chuan mau', 'mien phi', 'tphcm', '24h', 'nhanh', 'bao gia', 'cao cap', 'theo yeu cau'
 ]
 const testTitleHasPowerWord = computed(() => {
   const title = removeAccents(props.metaTitle || props.title || '')
@@ -663,38 +700,149 @@ const scoreStatus = computed(() => {
   }
 })
 
-// Auto Optimize 1-Click
+// Auto Optimize 1-Click (Full 100/100 optimization)
 function autoOptimizeSEO() {
-  const baseName = props.title || 'Ấn Phẩm'
-  const kw = focusKeyword.value.trim() || baseName.toLowerCase()
-  if (!focusKeyword.value.trim()) {
-    focusKeyword.value = kw
-  }
+  const baseName = (props.title || 'Ấn Phẩm In Ấn').replace(/[-|–—]+/g, ' ').replace(/\s+/g, ' ').trim()
+  const kw = (focusKeyword.value.trim() || suggestedKeywords.value[0] || baseName).toLowerCase()
+  focusKeyword.value = kw
 
   // Capitalize keyword for Title
   const titleKw = kw.charAt(0).toUpperCase() + kw.slice(1)
 
-  // Meta Title (target 50 - 62 chars)
-  const newTitle = `${titleKw} Giá Rẻ Tận Xưởng 2026 | In Nhật Nguyên`
+  // Meta Title: guarantee 45 - 64 chars, keyword at start, number (2026), and power word (Giá Rẻ Tận Xưởng)
+  let newTitle = `${titleKw} Giá Rẻ Tận Xưởng 2026 | In Nhật Nguyên`
+  if (newTitle.length > 65) {
+    newTitle = `${titleKw} Giá Xưởng 2026 | In Nhật Nguyên`
+  }
+  if (newTitle.length > 65) {
+    newTitle = `${titleKw.substring(0, 38).trim()} Giá Rẻ 2026 | Nhật Nguyên`
+  }
+  if (newTitle.length < 40) {
+    newTitle = `${titleKw} Giá Rẻ Tận Xưởng TPHCM 2026 | In Nhật Nguyên`
+  }
 
   // Meta Description (target 135 - 155 chars)
   const newDesc = `Xưởng In Nhật Nguyên chuyên ${kw} chất lượng cao, chuẩn màu Offset 98%, lấy nhanh 4h - 24h, giá gốc trực tiếp tại xưởng không qua trung gian.`
 
-  // Slug
-  const newSlug = slugify(kw)
+  // Slug: keep existing slug if it already contains all keyword parts and <= 75 chars, else generate clean slug
+  const cleanCurrentSlug = removeAccents((props.slug || '').replace(/-/g, ' '))
+  const kwParts = removeAccents(kw).split(/\s+/).filter(Boolean)
+  const slugHasKw = kwParts.length > 0 && kwParts.every(p => cleanCurrentSlug.includes(p))
+  const newSlug = (slugHasKw && (props.slug || '').length > 3 && (props.slug || '').length <= 75)
+    ? props.slug
+    : slugify(kw)
+
+  // Check if content needs SEO structure (intro keyword, H2 with keyword, >= minWordsTarget words, safe density)
+  let newContent = props.content || ''
+  const currentPlain = stripHtmlToText(newContent)
+  const currentWords = currentPlain ? currentPlain.split(/\s+/).filter(Boolean).length : 0
+  const hasH2WithKw = (newContent.match(/<h[1234][^>]*>[\s\S]*?<\/h[1234]>/gi) || [])
+    .some(h => removeAccents(stripHtmlToText(h)).includes(removeAccents(kw)))
+  const introLen = Math.max(180, Math.floor((currentPlain.length || 0) * 0.2))
+  const hasIntroKw = removeAccents(currentPlain.substring(0, introLen)).includes(removeAccents(kw))
+
+  if (currentWords < minWordsTarget.value || !hasH2WithKw || !hasIntroKw) {
+    const introBlock = !hasIntroKw
+      ? `<p>Dịch vụ <strong>${kw}</strong> tại Xưởng In Nhật Nguyên là giải pháp in ấn chuyên nghiệp dành cho doanh nghiệp, cửa hàng và thương hiệu cần ấn phẩm sắc nét, chi phí tối ưu và tiến độ giao hàng nhanh chóng tại TP.HCM cũng như toàn quốc.</p>`
+      : ''
+    const h2Block = !hasH2WithKw
+      ? `<h2>Ưu điểm dịch vụ ${kw} giá gốc tại Xưởng In Nhật Nguyên</h2>`
+      : ''
+    const detailBlock = `<p>Khi đặt <strong>${kw}</strong> trực tiếp tại xưởng, quý khách được đội ngũ kỹ thuật viên kiểm tra file thiết kế miễn phí, tư vấn chất liệu giấy, kích thước và gia công thành phẩm (cán màng mờ/bóng, ép kim, bế khuôn theo yêu cầu) phù hợp nhất với ngân sách. Hệ thống máy in Offset và kỹ thuật số công nghiệp hiện đại đảm bảo màu sắc đồng đều, sắc nét trên từng thành phẩm.</p>
+<h3>Cam kết chất lượng &amp; quy trình đặt in nhanh 24h</h3>
+<ul>
+  <li><strong>Giá gốc tận xưởng:</strong> Sản xuất khép kín trực tiếp không qua trung gian, chiết khấu hấp dẫn cho đơn hàng số lượng lớn.</li>
+  <li><strong>Chuẩn màu &amp; sắc nét:</strong> Công nghệ in hiện đại đạt độ chuẩn màu cao, chữ và chi tiết nhỏ rõ ràng, bền màu theo thời gian.</li>
+  <li><strong>Hỗ trợ thiết kế &amp; duyệt mẫu:</strong> Tư vấn quy cách tận tâm, chỉnh sửa file chuẩn in và hỗ trợ đơn hàng cần lấy gấp trong ngày.</li>
+  <li><strong>Giao hàng đúng hẹn:</strong> Đóng gói kỹ lưỡng, giao nhanh nội thành TP.HCM và gửi chành xe/chuyển phát toàn quốc.</li>
+</ul>
+<p>Liên hệ ngay Hotline/Zalo <strong>076.759.8368</strong> để nhận bảng báo giá <strong>${kw}</strong> ưu đãi nhất hôm nay cùng chính sách bảo hành bản in uy tín từ In Nhật Nguyên.</p>`
+
+    newContent = [introBlock, newContent, h2Block, detailBlock].filter(Boolean).join('\n')
+    emit('update:content', newContent)
+  }
 
   emit('update:metaTitle', newTitle)
   emit('update:metaDescription', newDesc)
   emit('update:slug', newSlug)
   emit('update:focusKeyword', kw)
-  emit('optimized', { metaTitle: newTitle, metaDescription: newDesc, slug: newSlug, focusKeyword: kw })
+  emit('optimized', {
+    metaTitle: newTitle,
+    metaDescription: newDesc,
+    slug: newSlug,
+    focusKeyword: kw,
+    content: newContent
+  })
 }
 
-onMounted(() => {
-  if (!focusKeyword.value && props.title) {
-    const s = suggestedKeywords.value[0]
-    if (s) focusKeyword.value = s
+// Evaluate candidate keyword score when initialKeyword was not previously saved
+function scoreCandidateKeyword(kw) {
+  if (!kw) return 0
+  const cleanKw = removeAccents(kw)
+  if (!cleanKw) return 0
+  let s = 0
+  const titleTarget = removeAccents(props.metaTitle || props.title || '')
+  const descTarget = removeAccents(props.metaDescription || props.defaultExcerpt || '')
+  const cleanSlug = removeAccents((props.slug || '').replace(/-/g, ' '))
+  const kwParts = cleanKw.split(/\s+/).filter(Boolean)
+
+  if (titleTarget.includes(cleanKw)) s += 10
+  if (descTarget.includes(cleanKw)) s += 10
+  if (kwParts.length > 0 && kwParts.every(p => cleanSlug.includes(p))) s += 10
+  const idx = titleTarget.indexOf(cleanKw)
+  if (idx >= 0 && idx <= 20) s += 8
+  const hMatches = (props.content || '').match(/<h[1234][^>]*>[\s\S]*?<\/h[1234]>/gi) || []
+  if (hMatches.some(h => removeAccents(stripHtmlToText(h)).includes(cleanKw))) s += 8
+  return s
+}
+
+function syncKeywordFromProps() {
+  if (props.initialKeyword && props.initialKeyword.trim()) {
+    focusKeyword.value = props.initialKeyword.trim()
+    return
   }
+  if (!focusKeyword.value && (props.title || props.metaTitle)) {
+    const candidates = [...suggestedKeywords.value]
+    const cleanFull = (props.title || '').replace(/[-|–—,.:/()]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase()
+    if (cleanFull && !candidates.includes(cleanFull)) {
+      candidates.push(cleanFull)
+    }
+    if (candidates.length > 0) {
+      let bestKw = candidates[0]
+      let bestScore = -1
+      for (const c of candidates) {
+        const sc = scoreCandidateKeyword(c)
+        if (sc > bestScore) {
+          bestScore = sc
+          bestKw = c
+        }
+      }
+      focusKeyword.value = bestKw
+      emit('update:focusKeyword', bestKw)
+    }
+  }
+}
+
+watch(
+  () => props.initialKeyword,
+  (newVal) => {
+    if (newVal && newVal.trim() && newVal.trim() !== focusKeyword.value) {
+      focusKeyword.value = newVal.trim()
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  () => [props.title, props.metaTitle, props.slug],
+  () => {
+    syncKeywordFromProps()
+  },
+  { immediate: true }
+)
+
+onMounted(() => {
+  syncKeywordFromProps()
 })
 </script>
 

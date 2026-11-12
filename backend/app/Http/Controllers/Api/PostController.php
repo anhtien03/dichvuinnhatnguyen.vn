@@ -81,6 +81,7 @@ class PostController extends Controller
             'published_at' => 'nullable|date',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:500',
+            'meta_keywords' => 'nullable|string|max:255',
         ]);
 
         if (empty($validated['slug'])) {
@@ -164,6 +165,7 @@ class PostController extends Controller
             'published_at' => 'nullable|date',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:500',
+            'meta_keywords' => 'nullable|string|max:255',
         ]);
 
         if (isset($validated['is_published']) && $validated['is_published'] && empty($post->published_at)) {

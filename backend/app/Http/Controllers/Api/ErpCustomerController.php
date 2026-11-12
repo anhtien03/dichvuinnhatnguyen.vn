@@ -112,6 +112,8 @@ class ErpCustomerController extends Controller
             'company_name' => 'nullable|string|max:255',
             'tax_code' => 'nullable|string|max:100',
             'tag' => 'nullable|string|in:vip,regular,bulk,demanding,care_needed',
+            'commission_rate' => 'nullable|numeric|min:0|max:100',
+            'commission_type' => 'nullable|string|in:monthly,per_order',
             'notes' => 'nullable|string',
         ]);
 
@@ -148,6 +150,8 @@ class ErpCustomerController extends Controller
             'company_name' => 'nullable|string|max:255',
             'tax_code' => 'nullable|string|max:100',
             'tag' => 'nullable|string|in:vip,regular,bulk,demanding,care_needed',
+            'commission_rate' => 'nullable|numeric|min:0|max:100',
+            'commission_type' => 'nullable|string|in:monthly,per_order',
             'notes' => 'nullable|string',
         ]);
 
@@ -190,6 +194,8 @@ class ErpCustomerController extends Controller
                     'company_name' => $item['company_name'] ?? null,
                     'tax_code' => $item['tax_code'] ?? null,
                     'tag' => $item['tag'] ?? 'regular',
+                    'commission_rate' => $item['commission_rate'] ?? 0,
+                    'commission_type' => $item['commission_type'] ?? 'monthly',
                     'notes' => $item['notes'] ?? null,
                 ]
             );
@@ -200,6 +206,106 @@ class ErpCustomerController extends Controller
             'status' => 'success',
             'message' => "Đã nhập thành công {$imported} khách hàng",
             'imported_count' => $imported
+        ]);
+    }
+
+    /**
+     * Bảng tổng hợp doanh số và chốt chiết khấu / hoa hồng định kỳ theo khách hàng
+     */
+    public function commissionStatement(Request $request)
+    {
+        $month = $request->input('month', date('m'));
+        $year = $request->input('year', date('Y'));
+        $tag = $request->input('tag');
+        $search = trim($request->input('search', ''));
+
+        $startDate = "{$year}-{$month}-01 00:00:00";
+        $endDate = date('Y-m-t 23:59:59', strtotime($startDate));
+
+        $customersQuery = ErpCustomer::query();
+
+        if (!empty($tag)) {
+            $customersQuery->where('tag', $tag);
+        }
+
+        if (!empty($search)) {
+            $customersQuery->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('company_name', 'like', "%{$search}%");
+            });
+        }
+
+        // Lấy danh sách khách hàng và kèm các đơn hàng trong tháng
+        $customers = $customersQuery->with(['orders' => function ($q) use ($startDate, $endDate) {
+            $q->whereBetween('created_at', [$startDate, $endDate])
+              ->where('status', '!=', 'cancelled')
+              ->select([
+                  'id', 'code', 'customer_id', 'subtotal', 'discount', 'discount_mode',
+                  'total_amount', 'paid_amount', 'commission_rate_snapshot',
+                  'commission_amount', 'commission_status', 'status', 'created_at'
+              ]);
+        }])->get();
+
+        $statements = $customers->map(function ($c) use ($month, $year) {
+            $orders = $c->orders;
+            $orderCount = $orders->count();
+
+            // Tổng tiền in (subtotal) và tổng tiền khách trả
+            $totalSubtotal = (float) $orders->sum('subtotal');
+            $totalBilled = (float) $orders->sum('total_amount');
+            $totalPaid = (float) $orders->sum('paid_amount');
+
+            // Tính hoa hồng / chiết khấu:
+            // 1. Hoa hồng đã được lưu từ từng đơn (nếu có)
+            $recordedCommission = (float) $orders->where('discount_mode', 'monthly_commission')->sum('commission_amount');
+            
+            // 2. Nếu khách có cài tỷ lệ commission_rate mà đơn chưa tính riêng thì tính theo tổng subtotal
+            $rate = (float) ($c->commission_rate ?? 0);
+            $calculatedCommission = $recordedCommission > 0 ? $recordedCommission : round(($totalSubtotal * $rate) / 100);
+
+            // Đơn có chiết khấu trừ trực tiếp
+            $directDiscount = (float) $orders->where('discount_mode', 'direct')->sum('discount');
+
+            return [
+                'customer_id' => $c->id,
+                'customer_name' => $c->name,
+                'customer_phone' => $c->phone,
+                'company_name' => $c->company_name,
+                'tag' => $c->tag,
+                'commission_rate' => $rate,
+                'commission_type' => $c->commission_type ?? 'monthly',
+                'order_count' => $orderCount,
+                'total_subtotal' => $totalSubtotal,
+                'total_billed' => $totalBilled,
+                'total_paid' => $totalPaid,
+                'direct_discount' => $directDiscount,
+                'monthly_commission' => $calculatedCommission,
+                'month' => (int) $month,
+                'year' => (int) $year,
+                'orders' => $orders
+            ];
+        });
+
+        // Lọc ra các khách có đơn hàng trong tháng hoặc có cài tỷ lệ hoa hồng
+        $statements = $statements->filter(function ($item) {
+            return $item['order_count'] > 0 || $item['commission_rate'] > 0;
+        })->values();
+
+        $summary = [
+            'total_customers' => $statements->count(),
+            'total_orders' => $statements->sum('order_count'),
+            'total_subtotal' => $statements->sum('total_subtotal'),
+            'total_billed' => $statements->sum('total_billed'),
+            'total_commission' => $statements->sum('monthly_commission'),
+            'month' => (int) $month,
+            'year' => (int) $year
+        ];
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $statements,
+            'summary' => $summary
         ]);
     }
 }

@@ -64,6 +64,22 @@
         @submit.prevent="handleSubmit"
         class="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/90 shadow-xl space-y-8"
       >
+        <!-- Notice if coming from Mega Menu or specific product -->
+        <div
+          v-if="form.productName"
+          class="flex items-center gap-3 p-3.5 sm:p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm"
+        >
+          <div class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 font-bold shadow-xs">
+            ★
+          </div>
+          <div class="flex-1">
+            <span class="font-bold">Đang yêu cầu báo giá:</span>
+            <span class="text-brand-blue font-black ml-1 text-sm sm:text-base">{{ form.productName }}</span>
+            <p class="text-[11px] text-amber-700 mt-0.5">
+              Xưởng In Nhật Nguyên nhận sản xuất mọi quy cách, số lượng theo yêu cầu. Báo giá nhanh qua Zalo/Điện thoại trong 15 phút.
+            </p>
+          </div>
+        </div>
         <!-- Section 1: Customer Contact -->
         <div>
           <h3 class="text-sm font-bold text-brand-blue uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
@@ -152,6 +168,13 @@
                 class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-800 bg-white focus:outline-none focus:border-brand-blue"
               >
                 <option value="">-- Chọn ấn phẩm in hoặc nhập mục khác --</option>
+                <!-- Custom pre-filled product from Mega Menu if not in DB -->
+                <option
+                  v-if="form.productName && !availableProducts.some(p => p.name === form.productName)"
+                  :value="form.productName"
+                >
+                  ⭐ {{ form.productName }} (Ấn phẩm yêu cầu)
+                </option>
                 <option v-for="p in availableProducts" :key="p.id" :value="p.name">
                   {{ p.name }} ({{ p.category?.name || 'Ấn phẩm in' }})
                 </option>
@@ -261,11 +284,18 @@ onMounted(async () => {
   }
 
   if (route.query.product) {
-    const prod = availableProducts.value.find(p => p.slug === route.query.product)
+    const raw = String(route.query.product).trim()
+    const prod = availableProducts.value.find(p => p.slug === raw || p.name.toLowerCase() === raw.toLowerCase())
     if (prod) {
       form.value.productName = prod.name
       if (route.query.qty) {
         form.value.quantity = `${route.query.qty} ${prod.unit || 'cái'}`
+      }
+    } else {
+      // Direct product name or custom request from Mega Menu
+      form.value.productName = raw
+      if (route.query.qty) {
+        form.value.quantity = route.query.qty
       }
     }
   }

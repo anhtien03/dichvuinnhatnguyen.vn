@@ -36,8 +36,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        $recentPosts = Post::with('category')
-            ->orderBy('id', 'desc')
+        $recentPosts = Post::orderBy('id', 'desc')
             ->take(5)
             ->get();
 

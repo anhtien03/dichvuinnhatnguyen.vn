@@ -114,6 +114,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/admin/erp/customers', [ErpCustomerController::class, 'index'])->middleware('permission:clients.view');
         Route::get('/admin/erp/customers/search', [ErpCustomerController::class, 'search'])->middleware('permission:clients.view');
         Route::get('/admin/erp/customers/daily-care', [ErpCustomerController::class, 'dailyCare'])->middleware('permission:clients.care');
+        Route::get('/admin/erp/customers/commission-statement', [ErpCustomerController::class, 'commissionStatement'])->middleware('permission:clients.view');
         Route::post('/admin/erp/customers', [ErpCustomerController::class, 'store'])->middleware('permission:clients.manage');
         Route::get('/admin/erp/customers/{id}', [ErpCustomerController::class, 'show'])->middleware('permission:clients.view');
         Route::put('/admin/erp/customers/{id}', [ErpCustomerController::class, 'update'])->middleware('permission:clients.manage');

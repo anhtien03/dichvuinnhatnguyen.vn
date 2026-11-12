@@ -137,7 +137,7 @@
           </div>
         </div>
 
-        <!-- 2. Khung Soạn Thảo Nội Dung Bài Viết -->
+        <!-- 2. Khung Soạn Thảo Nội Dung Bài Viết (Chuẩn Word / Google Docs 2 Hàng) -->
         <div
           class="p-6 rounded-2xl border space-y-4 shadow-sm"
           :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200'"
@@ -145,99 +145,25 @@
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b pb-3" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
             <div>
               <label class="text-xs font-bold block" :class="isDarkMode ? 'text-slate-200' : 'text-slate-700'">
-                Nội Dung Chi Tiết Bài Viết (Hỗ trợ HTML / Định dạng)
+                Nội Dung Chi Tiết Bài Viết
               </label>
               <span class="text-[11px] text-slate-400">
-                Sử dụng các nút bên dưới để chèn nhanh tiêu đề đoạn, danh sách hoặc hình ảnh minh họa.
+                Giao diện soạn thảo trực quan chuẩn Word: Phông chữ, Cỡ chữ (A+/A-), Bảng biểu, Màu sắc, Căn lề & Chèn ảnh.
               </span>
             </div>
-
-            <button
-              type="button"
-              @click="openMediaForContent"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-gold/15 hover:bg-brand-gold/25 text-brand-gold font-bold text-xs transition-colors cursor-pointer self-start sm:self-auto"
-            >
-              <FolderOpen class="w-3.5 h-3.5" />
-              <span>Chèn Ảnh từ Media</span>
-            </button>
           </div>
 
-          <!-- Quick Formatting Toolbar -->
-          <div class="flex flex-wrap items-center gap-1.5 p-2 rounded-xl bg-slate-500/10 border" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
-            <button
-              type="button"
-              @click="insertFormat('h2')"
-              class="px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer hover:border-brand-gold"
-              :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
-              title="Tiêu đề đoạn H2"
-            >
-              H2
-            </button>
-            <button
-              type="button"
-              @click="insertFormat('h3')"
-              class="px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer hover:border-brand-gold"
-              :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
-              title="Tiêu đề đoạn H3"
-            >
-              H3
-            </button>
-            <button
-              type="button"
-              @click="insertFormat('bold')"
-              class="px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer hover:border-brand-gold"
-              :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
-              title="In đậm"
-            >
-              <strong>B</strong>
-            </button>
-            <button
-              type="button"
-              @click="insertFormat('italic')"
-              class="px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer hover:border-brand-gold"
-              :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
-              title="In nghiêng"
-            >
-              <em>I</em>
-            </button>
-            <button
-              type="button"
-              @click="insertFormat('ul')"
-              class="px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer hover:border-brand-gold"
-              :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
-              title="Danh sách gạch đầu dòng"
-            >
-              • Danh sách
-            </button>
-            <button
-              type="button"
-              @click="insertFormat('quote')"
-              class="px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer hover:border-brand-gold"
-              :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
-              title="Đoạn trích dẫn"
-            >
-              “ Trích dẫn ”
-            </button>
-            <button
-              type="button"
-              @click="insertFormat('tip')"
-              class="px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer text-amber-500 hover:border-amber-500"
-              :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47]' : 'bg-white border-slate-200'"
-              title="Hộp lưu ý xưởng in"
-            >
-              💡 Lưu ý xưởng
-            </button>
-          </div>
-
-          <!-- Textarea Content -->
-          <textarea
+          <AdminWordEditor
             ref="contentEditorRef"
             v-model="form.content"
-            rows="16"
-            placeholder="Nhập nội dung bài viết ở đây... Bạn có thể gõ nội dung hoặc dán mã HTML/văn bản."
-            class="w-full rounded-xl px-4 py-3 border text-xs font-mono leading-relaxed transition-colors focus:outline-none focus:border-brand-gold"
-            :class="isDarkMode ? 'bg-[#1A222C] border-[#2E3A47] text-white placeholder-slate-500' : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'"
-          ></textarea>
+            :entity-name="form.title || 'Hình minh họa bài viết'"
+            folder="posts"
+            placeholder="Nhập nội dung bài viết cẩm nang, hướng dẫn kỹ thuật in, chia sẻ kinh nghiệm... Bạn có thể căn chỉnh văn bản và tải ảnh trực tiếp."
+            :min-height="380"
+            :max-height="750"
+            :rows="18"
+            @openMedia="openMediaForContent"
+          />
         </div>
 
         <!-- 3. Cấu hình Rank Math SEO Pro -->
@@ -256,6 +182,7 @@
           @update:metaTitle="form.meta_title = $event"
           @update:metaDescription="form.meta_description = $event"
           @update:slug="form.slug = $event"
+          @update:content="form.content = $event"
         />
 
         <!-- Tùy chỉnh thẻ Meta Tags chi tiết -->
@@ -617,6 +544,7 @@ import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
 import MediaLibraryModal from '../../components/admin/MediaLibraryModal.vue'
 import RankMathSeoBox from '../../components/admin/RankMathSeoBox.vue'
+import AdminWordEditor from '../../components/admin/AdminWordEditor.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -748,8 +676,13 @@ function onMediaSelected(mediaItem) {
     form.banner_image = url
     showToast('Đã chọn ảnh bìa Hero Banner!')
   } else if (mediaTarget.value === 'content') {
-    const imgHtml = `\n\n<figure class="my-6 text-center">\n  <img src="${url}" alt="${form.title || 'Hình ảnh in ấn'}" class="rounded-2xl max-w-full h-auto mx-auto shadow-md" />\n  <figcaption class="text-xs text-slate-400 mt-2 italic">Hình minh họa từ In Nhật Nguyên</figcaption>\n</figure>\n\n`
-    form.content = (form.content || '') + imgHtml
+    const titleName = form.title || 'Hình ảnh in ấn thực tế'
+    const imgHtml = `\n\n<figure class="my-6 text-center">\n  <img src="${url}" alt="${titleName}" class="rounded-2xl max-w-full h-auto mx-auto shadow-md" />\n  <figcaption class="text-xs text-slate-400 mt-2 italic">${titleName} tại In Nhật Nguyên</figcaption>\n</figure>\n\n`
+    if (contentEditorRef.value) {
+      contentEditorRef.value.insertHtml(imgHtml)
+    } else {
+      form.content = (form.content || '') + imgHtml
+    }
     showToast('Đã chèn ảnh vào nội dung bài viết!')
   }
 
@@ -811,6 +744,7 @@ async function fetchPostDetail() {
       form.published_at = p.published_at || null
       form.meta_title = p.meta_title || ''
       form.meta_description = p.meta_description || ''
+      postFocusKeyword.value = p.meta_keywords || ''
     }
   } catch (err) {
     console.error('Failed to load post detail', err)
@@ -837,7 +771,8 @@ async function savePost() {
       is_published: Boolean(form.is_published),
       published_at: form.published_at,
       meta_title: form.meta_title?.trim() || null,
-      meta_description: form.meta_description?.trim() || null
+      meta_description: form.meta_description?.trim() || null,
+      meta_keywords: postFocusKeyword.value?.trim() || null
     }
 
     if (isEditMode.value) {

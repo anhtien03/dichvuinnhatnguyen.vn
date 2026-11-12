@@ -134,6 +134,8 @@ class ErpOrderController extends Controller
             'shipping_fee_shop' => 'nullable|numeric|min:0',
             'surcharge' => 'nullable|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
+            'discount_mode' => 'nullable|string|in:direct,monthly_commission',
+            'commission_rate' => 'nullable|numeric|min:0|max:100',
             'paid_amount' => 'nullable|numeric|min:0',
             'payment_method' => 'nullable|string',
 
@@ -221,15 +223,32 @@ class ErpOrderController extends Controller
                 ];
             }
 
-            $orderDiscount = (float) ($validated['discount'] ?? 0);
+            $discountMode = $validated['discount_mode'] ?? 'direct';
+            $orderDiscount = 0;
+            $commissionRateSnapshot = (float) ($validated['commission_rate'] ?? ($customer->commission_rate ?? 0));
+            $commissionAmount = 0;
+
+            if ($discountMode === 'direct') {
+                // Giảm giá trừ ngay trên đơn
+                $orderDiscount = (float) ($validated['discount'] ?? 0);
+            } else {
+                // Tích lũy tính hoa hồng / chiết khấu định kỳ hàng tháng
+                $orderDiscount = 0;
+                $commissionAmount = round(($subtotal * $commissionRateSnapshot) / 100);
+            }
+
+            $commissionOrDiscount = $discountMode === 'monthly_commission' ? $commissionAmount : $orderDiscount;
+
             $vatRate = (float) ($validated['vat_rate'] ?? 0);
-            $vatAmount = ($subtotal - $orderDiscount) * ($vatRate / 100);
+            $vatAmount = $subtotal * ($vatRate / 100);
             $shipCustomer = (float) ($validated['shipping_fee_customer'] ?? 0);
             $shipShop = (float) ($validated['shipping_fee_shop'] ?? 0);
             $surcharge = (float) ($validated['surcharge'] ?? 0);
 
-            $totalAmount = max(0, ($subtotal - $orderDiscount) + $vatAmount + $shipCustomer + $surcharge);
-            $profitAmount = ($subtotal + $surcharge) - $costAmount - $orderDiscount - $shipShop;
+            // Bill khách trả: Tiền in + VAT + Ship thu khách + Phụ thu (không trừ chiết khấu)
+            $totalAmount = max(0, $subtotal + $vatAmount + $shipCustomer + $surcharge);
+            // Lợi nhuận gộp: trừ thẳng tiền ship Grab & chiết khấu / hoa hồng
+            $profitAmount = ($subtotal + $shipCustomer + $surcharge) - $costAmount - $commissionOrDiscount - $shipShop;
             $paidAmount = (float) ($validated['paid_amount'] ?? 0);
 
             $paymentStatus = 'unpaid';
@@ -253,6 +272,10 @@ class ErpOrderController extends Controller
                 'followers' => $validated['followers'] ?? null,
                 'subtotal' => $subtotal,
                 'discount' => $orderDiscount,
+                'discount_mode' => $discountMode,
+                'commission_rate_snapshot' => $commissionRateSnapshot,
+                'commission_amount' => $commissionAmount,
+                'commission_status' => 'pending',
                 'vat_rate' => $vatRate,
                 'vat_amount' => $vatAmount,
                 'shipping_fee_customer' => $shipCustomer,
@@ -331,6 +354,8 @@ class ErpOrderController extends Controller
             'invoice_date' => 'nullable|date',
             'invoice_status' => 'nullable|string',
             'discount' => 'nullable|numeric|min:0',
+            'discount_mode' => 'nullable|string|in:direct,monthly_commission',
+            'commission_rate' => 'nullable|numeric|min:0|max:100',
             'vat_rate' => 'nullable|numeric|min:0',
             'shipping_fee_customer' => 'nullable|numeric|min:0',
             'shipping_fee_shop' => 'nullable|numeric|min:0',
@@ -386,16 +411,32 @@ class ErpOrderController extends Controller
                 $order->cost_amount = $costAmount;
             }
 
-            if (isset($validated['discount'])) $order->discount = (float) $validated['discount'];
+            if (isset($validated['discount_mode'])) {
+                $order->discount_mode = $validated['discount_mode'];
+            }
+
+            if ($order->discount_mode === 'direct') {
+                if (isset($validated['discount'])) $order->discount = (float) $validated['discount'];
+                $order->commission_amount = 0;
+            } else {
+                $order->discount = 0;
+                $rate = isset($validated['commission_rate']) ? (float) $validated['commission_rate'] : ($order->commission_rate_snapshot ?: 0);
+                $order->commission_rate_snapshot = $rate;
+                $order->commission_amount = round(($order->subtotal * $rate) / 100);
+            }
+
             if (isset($validated['vat_rate'])) $order->vat_rate = (float) $validated['vat_rate'];
             if (isset($validated['shipping_fee_customer'])) $order->shipping_fee_customer = (float) $validated['shipping_fee_customer'];
             if (isset($validated['shipping_fee_shop'])) $order->shipping_fee_shop = (float) $validated['shipping_fee_shop'];
             if (isset($validated['surcharge'])) $order->surcharge = (float) $validated['surcharge'];
 
             // Recalculate
-            $order->vat_amount = ($order->subtotal - $order->discount) * ($order->vat_rate / 100);
-            $order->total_amount = max(0, ($order->subtotal - $order->discount) + $order->vat_amount + $order->shipping_fee_customer + $order->surcharge);
-            $order->profit_amount = ($order->subtotal + $order->surcharge) - $order->cost_amount - $order->discount - $order->shipping_fee_shop;
+            $commissionOrDiscount = $order->discount_mode === 'monthly_commission' ? $order->commission_amount : $order->discount;
+            $order->vat_amount = $order->subtotal * ($order->vat_rate / 100);
+            // Bill khách trả: Tiền in + VAT + Ship thu khách + Phụ thu (không trừ chiết khấu)
+            $order->total_amount = max(0, $order->subtotal + $order->vat_amount + $order->shipping_fee_customer + $order->surcharge);
+            // Lợi nhuận gộp: trừ thẳng tiền ship Grab & chiết khấu / hoa hồng
+            $order->profit_amount = ($order->subtotal + $order->shipping_fee_customer + $order->surcharge) - $order->cost_amount - $commissionOrDiscount - $order->shipping_fee_shop;
 
             // Recalculate paid amount from payment rows
             $paidTotal = (float) $order->payments()->sum('amount');

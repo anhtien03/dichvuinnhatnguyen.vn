@@ -83,6 +83,12 @@ export async function apiRequest(endpoint, options = {}) {
     throw err
   }
 
+  // Clear client cache after any write/mutation request
+  const method = (options.method || 'GET').toUpperCase()
+  if (method !== 'GET') {
+    publicCache.clear()
+  }
+
   return data
 }
 
@@ -207,6 +213,10 @@ export const api = {
   getErpDailyCare: (days = 15) => apiRequest(`/admin/erp/customers/daily-care?days=${days}`),
   createErpCustomer: (data) => apiRequest('/admin/erp/customers', { method: 'POST', body: data }),
   getErpCustomer: (id) => apiRequest(`/admin/erp/customers/${id}`),
+  getErpCustomerCommissionStatement: (params = {}) => {
+    const query = new URLSearchParams(params).toString()
+    return apiRequest(`/admin/erp/customers/commission-statement${query ? '?' + query : ''}`)
+  },
   updateErpCustomer: (id, data) => apiRequest(`/admin/erp/customers/${id}`, { method: 'PUT', body: data }),
   deleteErpCustomer: (id) => apiRequest(`/admin/erp/customers/${id}`, { method: 'DELETE' }),
   importErpCustomers: (customers) => apiRequest('/admin/erp/customers/import', { method: 'POST', body: { customers } }),
