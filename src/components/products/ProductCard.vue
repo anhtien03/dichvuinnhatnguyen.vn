@@ -1,11 +1,11 @@
 <template>
   <div class="bg-white rounded-2xl border border-slate-200/90 hover:border-brand-blue/50 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group transform-gpu hover:-translate-y-1">
-    <!-- Image with Badges (Giữ tỉ lệ 1:1 vuông & object-contain để hiển thị trọn vẹn toàn bộ hình không bị cắt mép) -->
-    <router-link :to="'/san-pham/' + product.slug" class="relative block overflow-hidden aspect-square bg-slate-50/70 flex items-center justify-center">
+    <!-- Image with Badges (Chuẩn tỉ lệ 800x600 px -> 4:3 hiển thị sắc nét, đều đặn) -->
+    <router-link :to="'/san-pham/' + product.slug" class="relative block overflow-hidden aspect-[4/3] bg-slate-100">
       <img
         :src="product.image"
         :alt="product.name"
-        class="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
+        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         loading="lazy"
       />
       <!-- Gradient overlay on bottom of image for contrast -->

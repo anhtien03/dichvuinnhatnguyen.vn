@@ -984,12 +984,12 @@
 
             <!-- Real Mockup Card Component -->
             <div class="bg-white rounded-2xl border border-slate-200/90 shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 text-slate-900">
-              <!-- Image Banner -->
-              <div class="relative aspect-square bg-slate-50/70 overflow-hidden flex items-center justify-center p-2">
+              <!-- Image Banner (Chuẩn 800x600 px -> 4:3) -->
+              <div class="relative aspect-[4/3] bg-slate-100 overflow-hidden">
                 <img
                   :src="previewImage"
                   :alt="form.name || 'Ảnh ấn phẩm'"
-                  class="w-full h-full object-contain transition-transform duration-500 hover:scale-105"
+                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                   @error="onPreviewImageError"
                 />
                 
