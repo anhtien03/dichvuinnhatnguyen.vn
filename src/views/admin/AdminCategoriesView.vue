@@ -125,7 +125,7 @@
               <!-- Cột 3: Mô tả -->
               <td class="py-3.5 px-4 max-w-[240px]">
                 <p class="text-slate-400 line-clamp-2">
-                  {{ cat.description || 'Chưa có mô tả' }}
+                  {{ stripHtml(cat.meta_description || cat.description) || 'Chưa có mô tả' }}
                 </p>
               </td>
 
@@ -209,6 +209,11 @@ async function handleDelete(cat) {
   } catch (err) {
     alert('Lỗi xóa danh mục: ' + err.message)
   }
+}
+
+function stripHtml(html) {
+  if (!html) return ''
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()
 }
 
 onMounted(() => {

@@ -295,7 +295,7 @@
                   </div>
 
                   <p class="text-xs text-slate-600 leading-relaxed line-clamp-2">
-                    {{ cat.description }}
+                    {{ stripHtml(cat.meta_description || cat.description) }}
                   </p>
 
                   <!-- Liệt kê các ấn phẩm tiêu biểu trong danh mục -->
@@ -418,15 +418,15 @@
         <!-- Category header banner when browsing a category -->
         <div
           v-if="currentCategory && !searchKeyword"
-          class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+          class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs flex flex-col sm:flex-row sm:items-start justify-between gap-4"
         >
-          <div class="flex items-start gap-4">
+          <div class="flex items-start gap-4 flex-1 min-w-0">
             <div class="w-12 h-12 rounded-xl bg-brand-blue/10 text-brand-blue flex items-center justify-center shrink-0">
               <component :is="getCategoryIcon(currentCategory.icon)" class="w-6 h-6 stroke-[1.8]" />
             </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <h2 class="text-lg font-black text-slate-900">{{ currentCategory.name }}</h2>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h1 class="text-lg font-black text-slate-900">{{ currentCategory.name }}</h1>
                 <span
                   v-if="currentCategory.badge"
                   class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200"
@@ -434,13 +434,34 @@
                   {{ currentCategory.badge }}
                 </span>
               </div>
-              <p class="text-xs text-slate-600 mt-1 max-w-xl">
-                {{ currentCategory.description }}
-              </p>
+
+              <!-- Category Description with Rich HTML Support -->
+              <div v-if="currentCategory.description" class="mt-2">
+                <div
+                  class="category-description-html text-xs text-slate-600 leading-relaxed max-w-3xl overflow-hidden transition-all duration-300 relative"
+                  :class="{ 'max-h-20': !isCategoryDescExpanded && isLongCategoryDesc }"
+                >
+                  <div v-html="currentCategory.description"></div>
+                  <div
+                    v-if="!isCategoryDescExpanded && isLongCategoryDesc"
+                    class="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none"
+                  ></div>
+                </div>
+
+                <button
+                  v-if="isLongCategoryDesc"
+                  type="button"
+                  @click="isCategoryDescExpanded = !isCategoryDescExpanded"
+                  class="mt-1.5 text-[11px] font-bold text-brand-blue hover:text-brand-blue-dark inline-flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <span>{{ isCategoryDescExpanded ? 'Thu gọn giới thiệu' : 'Xem thêm giới thiệu chi tiết' }}</span>
+                  <ChevronDown class="w-3 h-3 transition-transform duration-200" :class="{ 'rotate-180': isCategoryDescExpanded }" />
+                </button>
+              </div>
             </div>
           </div>
 
-          <div class="shrink-0 flex items-center gap-2">
+          <div class="shrink-0 flex items-center gap-2 self-start sm:self-center">
             <router-link
               :to="'/yeu-cau-bao-gia?product=' + encodeURIComponent(currentCategory.name)"
               class="px-4 py-2 rounded-xl bg-brand-gold hover:bg-brand-gold-hover text-slate-950 font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5"
@@ -523,6 +544,31 @@
         </div>
       </template>
 
+      <!-- Full SEO Category Article at Bottom (Chuẩn SEO E-Commerce) -->
+      <div
+        v-if="currentCategory && currentCategory.description && !searchKeyword && isLongCategoryDesc"
+        class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xs space-y-4"
+      >
+        <div class="flex items-center gap-3 pb-4 border-b border-slate-100">
+          <div class="w-10 h-10 rounded-xl bg-brand-blue/10 text-brand-blue flex items-center justify-center shrink-0">
+            <component :is="getCategoryIcon(currentCategory.icon)" class="w-5 h-5 stroke-[1.8]" />
+          </div>
+          <div>
+            <h2 class="text-base sm:text-lg font-black text-slate-900">
+              Chi Tiết Dịch Vụ & Bảng Giá {{ currentCategory.name }} Tại Xưởng In Nhật Nguyên
+            </h2>
+            <p class="text-xs text-slate-400">
+              Thông tin quy cách, công nghệ in ấn và chính sách bảo hành trực tiếp từ xưởng
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="category-description-html text-xs sm:text-sm text-slate-700 leading-relaxed"
+          v-html="currentCategory.description"
+        ></div>
+      </div>
+
       <!-- 5. Bottom Custom Spec & Consultation Banner (Khối Báo Giá Quy Cách Riêng) -->
       <div class="bg-gradient-to-br from-brand-blue-dark via-brand-blue to-brand-blue-dark rounded-3xl p-8 sm:p-10 text-white shadow-xl relative overflow-hidden">
         <!-- Background decorative graphic shapes -->
@@ -603,7 +649,8 @@ import {
   Flag,
   Calendar,
   Layers,
-  Loader2
+  Loader2,
+  ChevronDown
 } from 'lucide-vue-next'
 import { products as fallbackProducts } from '../data/products'
 import { categories as fallbackCategories } from '../data/categories'
@@ -691,6 +738,7 @@ watch(
     if (newQueryQ !== undefined) {
       searchKeyword.value = newQueryQ || ''
     }
+    isCategoryDescExpanded.value = false
     applyCategorySEO()
   }
 )
@@ -698,6 +746,19 @@ watch(
 const currentCategory = computed(() => {
   return categories.value.find(c => c.slug === activeCategory.value)
 })
+
+const isCategoryDescExpanded = ref(false)
+
+const isLongCategoryDesc = computed(() => {
+  const desc = currentCategory.value?.description || ''
+  const plain = stripHtml(desc)
+  return plain.length > 200 || desc.includes('<h2') || desc.includes('<h3') || desc.includes('<ul') || desc.includes('<ol')
+})
+
+function stripHtml(html) {
+  if (!html) return ''
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()
+}
 
 // Danh sách các danh mục kèm thông tin số lượng sản phẩm và danh sách sản phẩm mẫu
 // CHỈ hiển thị danh mục đang kích hoạt (is_active !== false) VÀ ĐÃ CÓ ít nhất 1 sản phẩm liên kết (> 0)
@@ -856,3 +917,55 @@ onMounted(() => {
   loadData()
 })
 </script>
+
+<style scoped>
+.category-description-html :deep(p) {
+  margin-bottom: 0.5rem;
+}
+.category-description-html :deep(p:last-child) {
+  margin-bottom: 0;
+}
+.category-description-html :deep(strong),
+.category-description-html :deep(b) {
+  font-weight: 700;
+  color: #0f172a;
+}
+.category-description-html :deep(h2) {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: 0.75rem;
+  margin-bottom: 0.375rem;
+}
+.category-description-html :deep(h3) {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 0.625rem;
+  margin-bottom: 0.25rem;
+}
+.category-description-html :deep(ul) {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-top: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+.category-description-html :deep(ol) {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  margin-top: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+.category-description-html :deep(li) {
+  margin-bottom: 0.25rem;
+}
+.category-description-html :deep(a) {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+.category-description-html :deep(img) {
+  border-radius: 0.75rem;
+  max-width: 100%;
+  margin: 0.5rem 0;
+}
+</style>
