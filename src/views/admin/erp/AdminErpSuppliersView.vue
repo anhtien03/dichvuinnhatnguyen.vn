@@ -22,6 +22,82 @@
       </div>
     </div>
 
+    <!-- 4 Financial Summary KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <!-- 1. Vốn Gia Công Gốc -->
+      <div
+        class="p-4 rounded-2xl border flex flex-col justify-between transition-all ring-1"
+        :class="isDarkMode ? 'bg-blue-950/20 border-blue-500/30 ring-blue-500/20' : 'bg-blue-50/70 border-blue-200 ring-blue-200/50 shadow-xs'"
+      >
+        <div>
+          <div class="text-[11px] uppercase font-black tracking-wider" :class="isDarkMode ? 'text-blue-400' : 'text-blue-700'">
+            1. Vốn Gia Công Gốc
+          </div>
+          <div class="text-xl sm:text-2xl font-black mt-1.5" :class="isDarkMode ? 'text-blue-300' : 'text-blue-900'">
+            {{ formatMoney(totals.baseCost) }}
+          </div>
+        </div>
+        <div class="mt-2.5 pt-2 border-t text-[10px] font-medium" :class="isDarkMode ? 'border-blue-500/20 text-slate-400' : 'border-blue-200/60 text-slate-500'">
+          (Chưa tính thuế VAT xưởng)
+        </div>
+      </div>
+
+      <!-- 2. Thuế VAT Xưởng Lấy -->
+      <div
+        class="p-4 rounded-2xl border flex flex-col justify-between transition-all ring-1"
+        :class="isDarkMode ? 'bg-amber-500/10 border-amber-500/30 ring-amber-500/20' : 'bg-amber-50/80 border-amber-300 ring-amber-300/50 shadow-xs'"
+      >
+        <div>
+          <div class="text-[11px] uppercase font-black tracking-wider" :class="isDarkMode ? 'text-amber-400' : 'text-amber-800'">
+            2. Thuế VAT Xưởng Lấy
+          </div>
+          <div class="text-xl sm:text-2xl font-black mt-1.5" :class="isDarkMode ? 'text-amber-400' : 'text-amber-600'">
+            +{{ formatMoney(totals.vat) }}
+          </div>
+        </div>
+        <div class="mt-2.5 pt-2 border-t text-[10px] font-semibold" :class="isDarkMode ? 'border-amber-500/20 text-amber-400/90' : 'border-amber-200/60 text-amber-800'">
+          Tự động cộng từ các đơn có VAT
+        </div>
+      </div>
+
+      <!-- 3. Tổng Nợ Xưởng (Vốn+VAT) -->
+      <div
+        class="p-4 rounded-2xl border flex flex-col justify-between transition-all ring-1"
+        :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] ring-white/5' : 'bg-white border-slate-200 ring-slate-200/50 shadow-xs'"
+      >
+        <div>
+          <div class="text-[11px] uppercase font-black tracking-wider" :class="isDarkMode ? 'text-slate-300' : 'text-slate-700'">
+            3. Tổng Nợ Xưởng (Vốn+VAT)
+          </div>
+          <div class="text-xl sm:text-2xl font-black mt-1.5" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
+            {{ formatMoney(totals.totalCost) }}
+          </div>
+        </div>
+        <div class="mt-2.5 pt-2 border-t flex items-center justify-between text-[10px]" :class="isDarkMode ? 'border-[#2E3A47] text-slate-400' : 'border-slate-100 text-slate-600'">
+          <span>Đã trả:</span>
+          <strong class="text-emerald-500 font-bold">{{ formatMoney(totals.totalPaid) }}</strong>
+        </div>
+      </div>
+
+      <!-- 4. Tổng Công Nợ Tồn Hiện Tại -->
+      <div
+        class="p-4 rounded-2xl border flex flex-col justify-between transition-all ring-1"
+        :class="isDarkMode ? 'bg-rose-950/20 border-rose-500/30 ring-rose-500/20' : 'bg-rose-50/80 border-rose-300 ring-rose-300/50 shadow-xs'"
+      >
+        <div>
+          <div class="text-[11px] uppercase font-black tracking-wider" :class="isDarkMode ? 'text-rose-400' : 'text-rose-700'">
+            4. Tổng Công Nợ Tồn Còn Nợ
+          </div>
+          <div class="text-xl sm:text-2xl font-black mt-1.5" :class="isDarkMode ? 'text-rose-400' : 'text-rose-600'">
+            {{ formatMoney(totals.balance) }}
+          </div>
+        </div>
+        <div class="mt-2.5 pt-2 border-t text-[10px] font-semibold" :class="isDarkMode ? 'border-rose-500/20 text-rose-300' : 'border-rose-200/60 text-rose-700'">
+          Tùy theo đơn có VAT và không VAT
+        </div>
+      </div>
+    </div>
+
     <!-- Search Bar -->
     <div class="p-4 rounded-2xl border flex items-center gap-3" :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200'">
       <div class="relative flex-1">
@@ -69,7 +145,7 @@
               <th class="py-3 px-4 text-right">Đã Trả Xưởng</th>
               <th class="py-3 px-4 text-right">
                 <div>Công Nợ Tồn</div>
-                <div class="text-[10px] font-semibold text-slate-400 normal-case tracking-normal">Tùy đơn có/k VAT</div>
+                <div class="text-[10px] font-semibold text-rose-400 normal-case tracking-normal">Tùy đơn có/k VAT</div>
               </th>
               <th class="py-3 px-4 text-center">Thao Tác</th>
             </tr>
@@ -113,15 +189,27 @@
                 </div>
               </td>
 
-              <td class="py-3.5 px-4 text-right text-emerald-400 font-bold">
+              <td class="py-3.5 px-4 text-right text-emerald-500 font-bold">
                 {{ formatMoney(s.total_paid) }}
               </td>
 
-              <td class="py-3.5 px-4 text-right font-black" :class="(s.balance || 0) > 0 ? (isDarkMode ? 'text-red-400' : 'text-rose-600') : 'text-slate-400'">
-                <div class="text-sm">{{ formatMoney(s.balance) }}</div>
-                <div v-if="(s.balance || 0) > 0 && s.total_vat > 0" class="text-[10px] text-amber-500 font-normal">
-                  Đã tính VAT xưởng
-                </div>
+              <td class="py-3.5 px-4 text-right font-black">
+                <template v-if="(s.balance || 0) > 0">
+                  <div class="text-sm" :class="isDarkMode ? 'text-rose-400' : 'text-rose-600'">
+                    {{ formatMoney(s.balance) }}
+                  </div>
+                  <div v-if="s.total_vat > 0" class="text-[10px] text-amber-500 font-semibold mt-0.5">
+                    Gồm {{ formatMoney(s.total_vat) }} VAT
+                  </div>
+                  <div v-else class="text-[10px] text-slate-400 mt-0.5">
+                    Đơn không VAT
+                  </div>
+                </template>
+                <template v-else>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    ✓ 0 ₫ (Hết nợ)
+                  </span>
+                </template>
               </td>
 
               <td class="py-3.5 px-4 text-center">
@@ -164,6 +252,27 @@
               </td>
             </tr>
           </tbody>
+          <tfoot class="font-bold border-t-2" :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-white' : 'bg-slate-100 border-slate-300 text-slate-900'">
+            <tr>
+              <td colspan="4" class="py-3.5 px-4 uppercase text-xs tracking-wider">
+                Tổng cộng tất cả ({{ suppliers.length }} xưởng in)
+              </td>
+              <td class="py-3.5 px-4 text-right font-black">
+                <div class="text-sm">{{ formatMoney(totals.totalCost) }}</div>
+                <div v-if="totals.vat > 0" class="text-[10px] text-amber-500 font-semibold">
+                  (Vốn: {{ formatMoney(totals.baseCost) }} + VAT: {{ formatMoney(totals.vat) }})
+                </div>
+              </td>
+              <td class="py-3.5 px-4 text-right font-black text-emerald-500 text-sm">
+                {{ formatMoney(totals.totalPaid) }}
+              </td>
+              <td class="py-3.5 px-4 text-right font-black text-rose-500 text-sm">
+                <div>{{ formatMoney(totals.balance) }}</div>
+                <div class="text-[10px] text-slate-400 font-normal">Tùy đơn có/k VAT</div>
+              </td>
+              <td class="py-3.5 px-4"></td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
@@ -505,7 +614,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import {
   Building2,
   Search,
@@ -522,6 +631,30 @@ const { isDarkMode } = useAdminTheme()
 const suppliers = ref([])
 const isLoading = ref(false)
 const searchQuery = ref('')
+
+const totals = computed(() => {
+  let baseCost = 0
+  let vat = 0
+  let totalCost = 0
+  let totalPaid = 0
+  let balance = 0
+
+  suppliers.value.forEach(s => {
+    baseCost += Number(s.total_base_cost || 0)
+    vat += Number(s.total_vat || 0)
+    totalCost += Number(s.total_cost || 0)
+    totalPaid += Number(s.total_paid || 0)
+    balance += Number(s.balance || 0)
+  })
+
+  return {
+    baseCost,
+    vat,
+    totalCost,
+    totalPaid,
+    balance
+  }
+})
 
 const isModalOpen = ref(false)
 const isEditing = ref(false)

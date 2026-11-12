@@ -60,6 +60,19 @@ class MediaController extends Controller
             $mime = $disk->mimeType($filePath) ?: 'image/jpeg';
             if (str_starts_with($mime, 'image/')) {
                 $filename = basename($filePath);
+                $width = null;
+                $height = null;
+                try {
+                    $fullPath = $disk->path($filePath);
+                    if (file_exists($fullPath)) {
+                        $info = @getimagesize($fullPath);
+                        if ($info && !empty($info[0]) && !empty($info[1])) {
+                            $width = (int) $info[0];
+                            $height = (int) $info[1];
+                        }
+                    }
+                } catch (\Throwable $e) {}
+
                 $mediaList[] = [
                     'id' => md5($filePath),
                     'name' => $filename,
@@ -68,6 +81,8 @@ class MediaController extends Controller
                     'folder' => $currentFolder,
                     'size' => $disk->size($filePath),
                     'mime' => $mime,
+                    'width' => $width,
+                    'height' => $height,
                     'updated_at' => $disk->lastModified($filePath),
                 ];
             }
@@ -85,6 +100,8 @@ class MediaController extends Controller
                     'url' => 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80',
                     'size' => 145000,
                     'mime' => 'image/jpeg',
+                    'width' => 1200,
+                    'height' => 800,
                     'is_stock' => true
                 ],
                 [
@@ -93,6 +110,8 @@ class MediaController extends Controller
                     'url' => 'https://images.unsplash.com/photo-1589365278144-c9e705f843ba?auto=format&fit=crop&w=800&q=80',
                     'size' => 182000,
                     'mime' => 'image/jpeg',
+                    'width' => 1200,
+                    'height' => 800,
                     'is_stock' => true
                 ],
                 [
@@ -101,6 +120,8 @@ class MediaController extends Controller
                     'url' => 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80',
                     'size' => 165000,
                     'mime' => 'image/jpeg',
+                    'width' => 1000,
+                    'height' => 1000,
                     'is_stock' => true
                 ],
                 [
@@ -109,6 +130,8 @@ class MediaController extends Controller
                     'url' => 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
                     'size' => 195000,
                     'mime' => 'image/jpeg',
+                    'width' => 1200,
+                    'height' => 800,
                     'is_stock' => true
                 ],
                 [
@@ -117,6 +140,8 @@ class MediaController extends Controller
                     'url' => '/logo-icon.png',
                     'size' => 56000,
                     'mime' => 'image/png',
+                    'width' => 512,
+                    'height' => 512,
                     'is_stock' => true
                 ]
             ];
@@ -249,6 +274,16 @@ class MediaController extends Controller
         $path = $file->storeAs($targetFolder, $uniqueFilename, 'public');
         $url = '/storage/' . $path;
 
+        $width = null;
+        $height = null;
+        try {
+            $info = @getimagesize($file->getRealPath());
+            if ($info && !empty($info[0]) && !empty($info[1])) {
+                $width = (int) $info[0];
+                $height = (int) $info[1];
+            }
+        } catch (\Throwable $e) {}
+
         return response()->json([
             'success' => true,
             'message' => 'Tải ảnh lên thành công',
@@ -260,6 +295,8 @@ class MediaController extends Controller
                 'folder' => $targetFolder,
                 'size' => $file->getSize(),
                 'mime' => $file->getMimeType(),
+                'width' => $width,
+                'height' => $height,
                 'updated_at' => time(),
             ],
         ], 201);

@@ -714,28 +714,28 @@
             <!-- Totals Highlight Summary Card -->
             <div
               class="p-4 sm:p-5 rounded-2xl border transition-all"
-              :class="isDarkMode ? 'bg-[#151D2A] border-[#2E3A47]' : 'bg-slate-100/70 border-slate-200'"
+              :class="isDarkMode ? 'bg-[#151D2A] border-[#2E3A47]' : 'bg-slate-50 border-slate-200 shadow-sm'"
             >
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                 <!-- 1. Tiền in -->
                 <div
-                  class="p-4 rounded-xl border flex flex-col justify-between transition-all"
-                  :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200 shadow-xs'"
+                  class="p-4 rounded-xl border flex flex-col justify-between transition-all ring-1"
+                  :class="isDarkMode ? 'bg-blue-950/20 border-blue-500/30 ring-blue-500/20 shadow-xs' : 'bg-blue-50/70 border-blue-200 ring-blue-200/50 shadow-xs'"
                 >
                   <div>
-                    <div class="text-[11px] uppercase font-bold tracking-wider" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
+                    <div class="text-[11px] uppercase font-black tracking-wider" :class="isDarkMode ? 'text-blue-400' : 'text-blue-700'">
                       1. Tổng Tiền Hàng (Subtotal)
                     </div>
-                    <div class="text-xl sm:text-2xl font-black mt-1.5" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
+                    <div class="text-xl sm:text-2xl font-black mt-1.5" :class="isDarkMode ? 'text-blue-300' : 'text-blue-900'">
                       {{ formatMoney(calculated.subtotal) }}
                     </div>
                   </div>
-                  <div class="mt-2.5 pt-2 border-t" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
-                    <div v-if="orderForm.vat_rate > 0" class="text-[11px] font-semibold flex items-center gap-1.5" :class="isDarkMode ? 'text-purple-400' : 'text-purple-700'">
-                      <span class="px-1.5 py-0.5 rounded text-[10px] font-bold" :class="isDarkMode ? 'bg-purple-500/20' : 'bg-purple-100'">+VAT {{ orderForm.vat_rate }}%</span>
+                  <div class="mt-2.5 pt-2 border-t" :class="isDarkMode ? 'border-blue-500/20' : 'border-blue-200/60'">
+                    <div v-if="orderForm.vat_rate > 0" class="text-[11px] font-semibold flex items-center gap-1.5" :class="isDarkMode ? 'text-purple-300' : 'text-purple-800'">
+                      <span class="px-1.5 py-0.5 rounded text-[10px] font-black" :class="isDarkMode ? 'bg-purple-500/30 text-purple-300' : 'bg-purple-100 text-purple-800'">+VAT {{ orderForm.vat_rate }}%</span>
                       <span>{{ formatMoney(calculated.vat_amount) }}</span>
                     </div>
-                    <div v-else class="text-[10px]" :class="isDarkMode ? 'text-slate-500' : 'text-slate-400'">
+                    <div v-else class="text-[10px] font-medium" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
                       (Chưa tính thuế VAT)
                     </div>
                   </div>
@@ -744,7 +744,7 @@
                 <!-- 2. Tổng khách trả -->
                 <div
                   class="p-4 rounded-xl border flex flex-col justify-between transition-all ring-1"
-                  :class="isDarkMode ? 'bg-amber-500/10 border-amber-500/30 ring-amber-500/20' : 'bg-amber-50/80 border-amber-300 ring-amber-300/40 shadow-xs'"
+                  :class="isDarkMode ? 'bg-amber-500/10 border-amber-500/30 ring-amber-500/20 shadow-xs' : 'bg-amber-50/80 border-amber-300 ring-amber-300/50 shadow-xs'"
                 >
                   <div>
                     <div class="text-[11px] uppercase font-black tracking-wider" :class="isDarkMode ? 'text-amber-400' : 'text-amber-800'">
@@ -754,7 +754,7 @@
                       {{ formatMoney(calculated.total_amount) }}
                     </div>
                   </div>
-                  <div class="mt-2.5 pt-2 border-t flex items-center justify-between text-[11px]" :class="isDarkMode ? 'border-amber-500/20 text-slate-300' : 'border-amber-200/60 text-slate-600'">
+                  <div class="mt-2.5 pt-2 border-t flex items-center justify-between text-[11px]" :class="isDarkMode ? 'border-amber-500/20 text-slate-300' : 'border-amber-200/60 text-slate-700'">
                     <div>
                       Đã cọc: <strong :class="isDarkMode ? 'text-emerald-400' : 'text-emerald-700'">{{ formatMoney(orderForm.paid_amount) }}</strong>
                     </div>
@@ -769,27 +769,27 @@
 
                 <!-- 3. Nợ xưởng in -->
                 <div
-                  class="p-4 rounded-xl border flex flex-col justify-between transition-all"
-                  :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200 shadow-xs'"
+                  class="p-4 rounded-xl border flex flex-col justify-between transition-all ring-1"
+                  :class="isDarkMode ? 'bg-rose-950/20 border-rose-500/30 ring-rose-500/20 shadow-xs' : 'bg-rose-50/70 border-rose-200 ring-rose-200/50 shadow-xs'"
                 >
                   <div>
-                    <div class="text-[11px] uppercase font-bold tracking-wider" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
+                    <div class="text-[11px] uppercase font-black tracking-wider" :class="isDarkMode ? 'text-rose-400' : 'text-rose-700'">
                       3. Tiền Nợ Nhà In / Xưởng
                     </div>
-                    <div class="text-xl sm:text-2xl font-black mt-1.5" :class="isDarkMode ? 'text-slate-200' : 'text-slate-800'">
+                    <div class="text-xl sm:text-2xl font-black mt-1.5" :class="isDarkMode ? 'text-rose-300' : 'text-rose-900'">
                       {{ formatMoney(calculated.total_supplier_debt) }}
                     </div>
                   </div>
-                  <div class="mt-2.5 pt-2 border-t space-y-1" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
-                    <div v-if="calculated.supplier_vat_total > 0" class="text-[10px] font-semibold flex items-center gap-1" :class="isDarkMode ? 'text-amber-400' : 'text-amber-700'">
+                  <div class="mt-2.5 pt-2 border-t space-y-1" :class="isDarkMode ? 'border-rose-500/20' : 'border-rose-200/60'">
+                    <div v-if="calculated.supplier_vat_total > 0" class="text-[10px] font-bold flex items-center gap-1" :class="isDarkMode ? 'text-amber-300' : 'text-amber-800'">
                       <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                       <span>Gồm {{ formatMoney(calculated.supplier_vat_total) }} VAT xưởng</span>
                     </div>
-                    <div v-if="orderForm.shipping_fee_shop > 0" class="text-[10px] font-medium flex items-center gap-1" :class="isDarkMode ? 'text-sky-400' : 'text-sky-700'">
+                    <div v-if="orderForm.shipping_fee_shop > 0" class="text-[10px] font-medium flex items-center gap-1" :class="isDarkMode ? 'text-sky-300' : 'text-sky-800'">
                       <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
-                      <span>Ship Grab {{ formatMoney(orderForm.shipping_fee_shop) }} (trừ lời)</span>
+                      <span>Ship Grab {{ formatMoney(orderForm.shipping_fee_shop) }}</span>
                     </div>
-                    <div v-if="!calculated.supplier_vat_total && !orderForm.shipping_fee_shop" class="text-[10px]" :class="isDarkMode ? 'text-slate-500' : 'text-slate-400'">
+                    <div v-if="!calculated.supplier_vat_total && !orderForm.shipping_fee_shop" class="text-[10px] font-medium" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
                       (Tiền gia công xưởng in)
                     </div>
                   </div>
@@ -798,7 +798,7 @@
                 <!-- 4. Lợi nhuận gộp -->
                 <div
                   class="p-4 rounded-xl border flex flex-col justify-between transition-all ring-1"
-                  :class="isDarkMode ? 'bg-emerald-500/10 border-emerald-500/30 ring-emerald-500/20' : 'bg-emerald-50/80 border-emerald-300 ring-emerald-300/40 shadow-xs'"
+                  :class="isDarkMode ? 'bg-emerald-500/10 border-emerald-500/30 ring-emerald-500/20 shadow-xs' : 'bg-emerald-50/80 border-emerald-300 ring-emerald-300/40 shadow-xs'"
                 >
                   <div>
                     <div class="text-[11px] uppercase font-black tracking-wider" :class="isDarkMode ? 'text-emerald-400' : 'text-emerald-800'">
@@ -814,8 +814,8 @@
                       :class="calculated.profit_margin >= 30
                         ? (isDarkMode ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-emerald-100 text-emerald-800 border-emerald-300')
                         : (calculated.profit_amount < 0
-                          ? (isDarkMode ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' : 'bg-rose-100 text-rose-800 border-rose-300')
-                          : (isDarkMode ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-amber-100 text-amber-800 border-amber-300'))"
+                      ? (isDarkMode ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' : 'bg-rose-100 text-rose-800 border-rose-300')
+                      : (isDarkMode ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-amber-100 text-amber-800 border-amber-300'))"
                     >
                       Tỷ suất lời: {{ calculated.profit_margin }}%
                     </span>

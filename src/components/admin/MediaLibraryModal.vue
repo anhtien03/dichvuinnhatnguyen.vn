@@ -65,16 +65,31 @@
           </button>
         </div>
 
-        <!-- Search in Library -->
-        <div v-if="activeTab === 'library'" class="relative w-full sm:w-64">
-          <Search class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Tìm theo tên file ảnh..."
-            class="w-full text-xs rounded-xl pl-8 pr-3 py-1.5 border focus:outline-none focus:ring-1 focus:ring-brand-gold"
-            :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
-          />
+        <!-- Search & Resolution Filter in Library -->
+        <div v-if="activeTab === 'library'" class="flex items-center gap-2 w-full sm:w-auto">
+          <!-- Filter by Resolution / Sharpness -->
+          <select
+            v-model="filterResolution"
+            class="text-xs rounded-xl px-2.5 py-1.5 border font-semibold focus:outline-none focus:ring-1 focus:ring-brand-gold cursor-pointer"
+            :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'"
+            title="Lọc hình ảnh theo độ nét"
+          >
+            <option value="all">Tất cả độ nét</option>
+            <option value="high">🟢 Ảnh chuẩn nét (≥ 1200px)</option>
+            <option value="medium">🟡 Ảnh vừa (750 - 1199px)</option>
+            <option value="low">🔴 Ảnh nhỏ / dễ mờ (&lt; 750px)</option>
+          </select>
+
+          <div class="relative w-full sm:w-56">
+            <Search class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Tìm theo tên file ảnh..."
+              class="w-full text-xs rounded-xl pl-8 pr-3 py-1.5 border focus:outline-none focus:ring-1 focus:ring-brand-gold"
+              :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+            />
+          </div>
         </div>
       </div>
 
@@ -257,7 +272,7 @@
                   @click="selectItem(item)"
                   @dblclick="selectAndConfirm(item)"
                   title="Click để xem chi tiết, Nhấn đúp để chọn nhanh"
-                  class="group relative aspect-square rounded-xl overflow-hidden border-2 cursor-pointer transition-all duration-200 bg-slate-100 flex items-center justify-center select-none"
+                  class="group relative aspect-square rounded-xl overflow-hidden border-2 cursor-pointer transition-all duration-200 bg-slate-900/10 flex items-center justify-center select-none"
                   :class="[
                     selectedItem?.id === item.id
                       ? 'border-brand-gold ring-2 ring-brand-gold/50 shadow-md scale-[0.98]'
@@ -269,21 +284,41 @@
                     :alt="item.name"
                     class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
+                    @load="onImageLoad($event, item)"
                     @error="onImgError"
                   />
 
-                  <!-- Selected Checkmark Badge -->
+                  <!-- Quality Badge (Top-left) -->
+                  <div
+                    v-if="item.width && item.height"
+                    class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider shadow-sm backdrop-blur-xs flex items-center gap-1 z-10"
+                    :class="getImageQuality(item.width, item.height).badgeClass"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full bg-white/90"></span>
+                    <span>{{ getImageQuality(item.width, item.height).badgeText }}</span>
+                  </div>
+
+                  <!-- Selected Checkmark Badge (Top-right) -->
                   <div
                     v-if="selectedItem?.id === item.id"
-                    class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-brand-gold text-slate-950 flex items-center justify-center shadow-md font-black"
+                    class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-brand-gold text-slate-950 flex items-center justify-center shadow-md font-black z-10"
                   >
                     <Check class="w-3.5 h-3.5 stroke-[3]" />
+                  </div>
+
+                  <!-- Bottom Dimensions Bar (Dimensions + Size) -->
+                  <div class="absolute inset-x-0 bottom-0 px-2 py-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent flex items-end justify-between text-white pointer-events-none z-10">
+                    <div class="text-[10px] font-mono font-bold leading-tight drop-shadow-xs">
+                      <span v-if="item.width && item.height">{{ item.width }}×{{ item.height }}</span>
+                      <span v-else class="text-[9px] opacity-75 font-normal">Đang nạp px...</span>
+                    </div>
+                    <div class="text-[9px] opacity-90 font-medium">{{ formatSize(item.size) }}</div>
                   </div>
 
                   <!-- Stock Sample Badge -->
                   <div
                     v-if="item.is_stock"
-                    class="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-xs text-[9px] text-white font-medium"
+                    class="absolute top-8 left-1.5 px-1.5 py-0.5 rounded bg-black/70 backdrop-blur-xs text-[8px] text-white font-medium z-10"
                   >
                     Mẫu
                   </div>
@@ -310,10 +345,32 @@
             </div>
 
             <!-- Meta details -->
-            <div class="space-y-1.5">
+            <div class="space-y-2">
               <div class="font-bold truncate text-xs" :class="isDarkMode ? 'text-white' : 'text-slate-900'" :title="selectedItem.name">
                 {{ selectedItem.name }}
               </div>
+
+              <!-- Image Resolution & Sharpness Box -->
+              <div
+                v-if="selectedItem.width && selectedItem.height"
+                class="p-2.5 rounded-xl border space-y-1.5"
+                :class="getImageQuality(selectedItem.width, selectedItem.height).boxClass"
+              >
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Độ phân giải</span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase" :class="getImageQuality(selectedItem.width, selectedItem.height).badgeClass">
+                    {{ getImageQuality(selectedItem.width, selectedItem.height).badgeText }}
+                  </span>
+                </div>
+                <div class="font-mono font-black text-sm flex items-center justify-between">
+                  <span>{{ selectedItem.width }} × {{ selectedItem.height }} px</span>
+                  <span class="text-[10px] font-medium text-slate-400 font-sans">({{ getAspectRatio(selectedItem.width, selectedItem.height) }})</span>
+                </div>
+                <div class="text-[10px] leading-relaxed opacity-90">
+                  {{ getImageQuality(selectedItem.width, selectedItem.height).adviceText }}
+                </div>
+              </div>
+
               <div class="text-[11px] text-slate-400">
                 Thư mục: <strong class="font-mono text-amber-500">/{{ selectedItem.folder || currentFolder }}</strong>
               </div>
@@ -488,6 +545,7 @@ const folderList = ref([])
 const mediaList = ref([])
 const isLoading = ref(true)
 const searchQuery = ref('')
+const filterResolution = ref('all') // 'all' | 'high' | 'medium' | 'low'
 const selectedItem = ref(null)
 
 const isCreatingFolder = ref(false)
@@ -514,10 +572,99 @@ const breadcrumbParts = computed(() => {
   })
 })
 
+// Client image load listener to guarantee dimensions even for third-party / cached images
+function onImageLoad(e, item) {
+  if (!item) return
+  const img = e.target
+  if (img && img.naturalWidth && img.naturalHeight) {
+    if (!item.width || !item.height) {
+      item.width = img.naturalWidth
+      item.height = img.naturalHeight
+    }
+  }
+}
+
+// Calculate image quality category and advice for design / printing
+function getImageQuality(width, height) {
+  const maxDim = Math.max(width || 0, height || 0)
+  const minDim = Math.min(width || 0, height || 0)
+
+  if (maxDim >= 2048 || minDim >= 1440) {
+    return {
+      badgeText: '4K Cực Nét',
+      badgeClass: 'bg-emerald-500 text-white font-bold',
+      boxClass: isDarkMode.value ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-800',
+      adviceText: '💎 Rất nét: Phù hợp in ấn khổ lớn, banner, poster và catalog cao cấp.'
+    }
+  }
+
+  if (maxDim >= 1200 || minDim >= 800) {
+    return {
+      badgeText: 'Chuẩn Nét',
+      badgeClass: 'bg-blue-500 text-white font-bold',
+      boxClass: isDarkMode.value ? 'bg-blue-500/10 border-blue-500/30 text-blue-300' : 'bg-blue-50 border-blue-200 text-blue-800',
+      adviceText: '✨ Chuẩn nét: Phù hợp thiết kế web, sản phẩm, brochure và in ấn văn phòng.'
+    }
+  }
+
+  if (maxDim >= 750 || minDim >= 500) {
+    return {
+      badgeText: 'Nét Vừa',
+      badgeClass: 'bg-amber-500 text-slate-950 font-bold',
+      boxClass: isDarkMode.value ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' : 'bg-amber-50 border-amber-200 text-amber-800',
+      adviceText: '⚠️ Độ nét trung bình: Đủ dùng ảnh minh họa nhỏ, hạn chế phóng to kẻo vỡ nét.'
+    }
+  }
+
+  return {
+    badgeText: 'Ảnh Nhỏ / Mờ',
+    badgeClass: 'bg-rose-500 text-white font-bold',
+    boxClass: isDarkMode.value ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' : 'bg-rose-50 border-rose-200 text-rose-800',
+    adviceText: '🛑 Ảnh nhỏ / Dễ mờ: Độ phân giải thấp (< 750px), sẽ bị vỡ hạt khi phóng to hoặc in ấn.'
+  }
+}
+
+function getAspectRatio(w, h) {
+  if (!w || !h) return 'N/A'
+  const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b))
+  const divisor = gcd(w, h)
+  const rw = w / divisor
+  const rh = h / divisor
+  if (rw <= 16 && rh <= 16) return `${rw}:${rh}`
+  const ratio = (w / h).toFixed(2)
+  if (ratio === '1.00') return '1:1 Vuông'
+  if (ratio === '1.78') return '16:9 Ngang'
+  if (ratio === '1.33') return '4:3 Ngang'
+  if (ratio === '0.75') return '3:4 Dọc'
+  if (ratio === '0.56') return '9:16 Dọc'
+  return `${ratio}:1`
+}
+
 const filteredMedia = computed(() => {
-  if (!searchQuery.value.trim()) return mediaList.value
-  const q = searchQuery.value.toLowerCase().trim()
-  return mediaList.value.filter(m => m.name.toLowerCase().includes(q))
+  let list = mediaList.value
+
+  // Search filter
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.toLowerCase().trim()
+    list = list.filter(m => m.name.toLowerCase().includes(q))
+  }
+
+  // Resolution filter
+  if (filterResolution.value === 'high') {
+    list = list.filter(m => (m.width >= 1200 || m.height >= 1200))
+  } else if (filterResolution.value === 'medium') {
+    list = list.filter(m => {
+      const maxDim = Math.max(m.width || 0, m.height || 0)
+      return maxDim >= 750 && maxDim < 1200
+    })
+  } else if (filterResolution.value === 'low') {
+    list = list.filter(m => {
+      const maxDim = Math.max(m.width || 0, m.height || 0)
+      return maxDim > 0 && maxDim < 750
+    })
+  }
+
+  return list
 })
 
 function formatSize(bytes) {
