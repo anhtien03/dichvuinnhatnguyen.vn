@@ -314,11 +314,14 @@ router.afterEach(() => {
 // Automatically recover when Vite deployment changes chunk hashes or network fails
 router.onError((error, to) => {
   finishNavLoading()
+  const errorMsg = String(error?.message || error || '')
   const isChunkLoadFailed =
-    error.name === 'ChunkLoadError' ||
-    /loading chunk/i.test(error.message || '') ||
-    /failed to fetch dynamically imported module/i.test(error.message || '') ||
-    /importing a module script failed/i.test(error.message || '')
+  error?.name === 'ChunkLoadError' ||
+    /loading chunk/i.test(errorMsg) ||
+    /failed to fetch dynamically imported module/i.test(errorMsg) ||
+    /importing a module script failed/i.test(errorMsg) ||
+    /expected a javascript-or-wasm module script/i.test(errorMsg) ||
+    /mime type of "text\/html"/i.test(errorMsg)
 
   if (isChunkLoadFailed) {
     const targetUrl = to?.fullPath || window.location.href
