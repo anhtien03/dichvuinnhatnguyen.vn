@@ -581,15 +581,19 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
               <div>
-                <label class="block text-[11px] text-slate-400 mb-1">Giảm Giá / Chiết Khấu</label>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="block text-[11px] text-slate-400">Giảm Giá / Chiết Khấu (₫)</label>
+                  <span class="text-[10px] text-emerald-400 font-semibold">Trừ vào lợi nhuận</span>
+                </div>
                 <input
                   v-model.number="orderForm.discount"
                   @input="recalculate"
                   type="number"
                   min="0"
-                  class="w-full text-xs rounded-xl px-3 py-2 border text-right font-bold text-rose-400"
+                  class="w-full text-xs rounded-xl px-3 py-2 border text-right font-bold text-amber-400"
                   :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200'"
                 />
+                <p class="text-[10px] text-slate-400 mt-1">Trừ thẳng vào lợi nhuận xưởng, giữ nguyên bill khách trả.</p>
               </div>
 
               <div>
@@ -719,6 +723,9 @@
                 <div class="text-base font-black text-slate-300">{{ formatMoney(calculated.total_supplier_debt) }}</div>
                 <div v-if="calculated.supplier_vat_total > 0" class="text-[10px] text-amber-400 mt-0.5">
                   (Đã gồm {{ formatMoney(calculated.supplier_vat_total) }} VAT xưởng)
+                </div>
+                <div v-if="orderForm.shipping_fee_shop > 0" class="text-[10px] text-sky-400 mt-0.5">
+                  (Ship Grab {{ formatMoney(orderForm.shipping_fee_shop) }} trừ vào lời)
                 </div>
               </div>
 
@@ -1045,28 +1052,29 @@ const calculated = computed(() => {
 
   const discount = Number(orderForm.discount) || 0
   const vatRate = Number(orderForm.vat_rate) || 0
-  const vatAmount = Math.max(0, (subtotal - discount)) * (vatRate / 100)
+  const vatAmount = subtotal * (vatRate / 100)
   const shipCustomer = Number(orderForm.shipping_fee_customer) || 0
   const shipShop = Number(orderForm.shipping_fee_shop) || 0
   const surcharge = Number(orderForm.surcharge) || 0
 
-  // Total bill for customer
-  const totalAmount = Math.max(0, (subtotal - discount) + vatAmount + shipCustomer + surcharge)
+  // 2. Tổng khách trả (Bill): Tiền in + VAT + Ship thu khách + Phụ thu (KHÔNG trừ chiết khấu)
+  const totalAmount = Math.max(0, subtotal + vatAmount + shipCustomer + surcharge)
 
-  // Total debt to suppliers (including supplier VAT)
-  const totalSupplierDebt = baseCost + supplierVatTotal + shipShop
+  // 3. Tiền nợ xưởng in: Chỉ gồm tiền gia công xưởng in + VAT xưởng (KHÔNG cộng ship Grab)
+  const totalSupplierDebt = baseCost + supplierVatTotal
 
-  // Net Profit calculation
+  // Net Profit calculation: Chiết khấu và ship Grab trừ thẳng vào lợi nhuận
   let profitAmount = 0
   let vatWarning = ''
 
   if (vatRate > 0) {
     // Customer takes VAT: VAT to pay Tax Agency = max(0, vatAmount - supplierVatTotal)
     const taxPayable = Math.max(0, vatAmount - supplierVatTotal)
-    profitAmount = totalAmount - totalSupplierDebt - taxPayable
+    // Lợi nhuận = Doanh thu - Nợ xưởng - Phí ship trả xưởng/Grab - Chiết khấu - Thuế nộp
+    profitAmount = totalAmount - totalSupplierDebt - shipShop - discount - taxPayable
   } else {
-    // Customer does NOT take VAT: Profit is base revenue minus all money paid to suppliers
-    profitAmount = (subtotal - discount + surcharge) - totalSupplierDebt
+    // Customer does NOT take VAT: Profit = (Tiền in + Phụ thu + Ship thu khách) - Nợ xưởng - Phí ship Grab - Chiết khấu
+    profitAmount = (subtotal + shipCustomer + surcharge) - totalSupplierDebt - shipShop - discount
     if (supplierVatTotal > 0) {
       vatWarning = `Khách không lấy VAT nhưng xưởng in bắt lấy VAT (${formatMoney(supplierVatTotal)}). Bạn đang chịu thay khoản thuế này, lợi nhuận bị trừ tương ứng.`
     }
@@ -1184,10 +1192,6 @@ function copyZaloQuote() {
    • Thành tiền: ${lineTotal}`
   }).join('\n')
 
-  let discountText = ''
-  if (orderForm.discount > 0) {
-    discountText = `• Giảm giá: -${formatMoney(orderForm.discount)}\n`
-  }
   let vatText = ''
   if (orderForm.vat_rate > 0) {
     vatText = `• Thuế VAT (${orderForm.vat_rate}%): +${formatMoney(calculated.value.vat_amount)}\n`
@@ -1207,7 +1211,7 @@ Kính gửi: ${customerName} ${orderForm.customer_phone ? '(' + orderForm.custom
 ${itemsText}
 ---------------------------------------
 • Tiền in: ${formatMoney(calculated.value.subtotal)}
-${discountText}${vatText}${shipText}${surchargeText}👉 TỔNG THANH TOÁN: ${formatMoney(calculated.value.total_amount)}
+${vatText}${shipText}${surchargeText}👉 TỔNG THANH TOÁN: ${formatMoney(calculated.value.total_amount)}
 ---------------------------------------
 CÔNG TY THIẾT KẾ IN ẤN NHẬT NGUYÊN
 Hotline / Zalo: 0359 005 469 - 076 759 8368
