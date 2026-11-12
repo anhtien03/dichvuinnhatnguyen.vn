@@ -812,7 +812,164 @@
               </div>
             </div>
 
-            <!-- PHẦN 2: CẤU HÌNH RANK MATH SEO PRO -->
+            <!-- PHẦN 2: THÔNG SỐ QUY CÁCH IN ẤN & KỸ THUẬT (SPECIFICATIONS) -->
+            <div class="space-y-4 pt-4 border-t" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b pb-3" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
+                <div>
+                  <h2 class="text-xs font-black uppercase tracking-wider text-brand-gold flex items-center gap-2">
+                    <Sliders class="w-4 h-4" />
+                    <span>2. Thông Số Quy Cách In Ấn (Specifications)</span>
+                  </h2>
+                  <p class="text-[11px] text-slate-400 mt-0.5">
+                    Tùy chỉnh thông số hiển thị ngoài website cho ấn phẩm này (Màu sắc, Loại giấy/chất liệu, Kỹ thuật in, Cán màng, Kích thước...)
+                  </p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    @click="addCustomSpec('', '')"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-brand-gold text-slate-950 hover:bg-amber-400 transition-all cursor-pointer shadow-xs"
+                  >
+                    <Plus class="w-3.5 h-3.5" />
+                    <span>Thêm Dòng Thông Số</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Gợi ý nạp nhanh các thông số thông dụng -->
+              <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                <span class="text-[11px] text-slate-400 font-semibold mr-1">Thêm nhanh:</span>
+                <button
+                  type="button"
+                  @click="quickAddCustomSpec('Màu sắc', 'In 4 màu CMYK chuẩn nét')"
+                  class="px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-all hover:border-brand-gold cursor-pointer"
+                  :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                >
+                  + Màu sắc
+                </button>
+                <button
+                  type="button"
+                  @click="quickAddCustomSpec('Loại giấy / Chất liệu', 'Decal lưới dán kính chống nắng (nhìn 1 chiều)')"
+                  class="px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-all hover:border-brand-gold cursor-pointer"
+                  :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                >
+                  + Loại giấy / Decal
+                </button>
+                <button
+                  type="button"
+                  @click="quickAddCustomSpec('Kỹ thuật in', 'In kỹ thuật số UV / Mực dầu cao cấp ngoài trời')"
+                  class="px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-all hover:border-brand-gold cursor-pointer"
+                  :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                >
+                  + Kỹ thuật in
+                </button>
+                <button
+                  type="button"
+                  @click="quickAddCustomSpec('Cán màng / Gia công', 'Màng mờ / Màng bóng bảo vệ chống nước')"
+                  class="px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-all hover:border-brand-gold cursor-pointer"
+                  :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                >
+                  + Cán màng
+                </button>
+                <button
+                  type="button"
+                  @click="quickAddCustomSpec('Kích thước chuẩn', 'Theo kích thước thực tế hoặc theo file đặt in')"
+                  class="px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-all hover:border-brand-gold cursor-pointer"
+                  :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                >
+                  + Kích thước
+                </button>
+                <button
+                  type="button"
+                  @click="quickAddCustomSpec('Độ bền ngoài trời', 'Kháng nước, chống nắng 1 - 3 năm không phai màu')"
+                  class="px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-all hover:border-brand-gold cursor-pointer"
+                  :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                >
+                  + Độ bền
+                </button>
+                <button
+                  type="button"
+                  @click="quickAddCustomSpec('Thành phẩm', 'Cắt xén thẳng / Bế demi theo viền')"
+                  class="px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-all hover:border-brand-gold cursor-pointer"
+                  :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'"
+                >
+                  + Thành phẩm
+                </button>
+              </div>
+
+              <!-- Bảng danh sách thông số quy cách in -->
+              <div class="rounded-xl border overflow-hidden" :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200'">
+                <div v-if="!form.specs?.custom_specs || form.specs.custom_specs.length === 0" class="p-6 text-center text-slate-400 space-y-2">
+                  <Sliders class="w-8 h-8 mx-auto opacity-30" />
+                  <p class="text-xs">Chưa có thông số quy cách riêng cho sản phẩm này.</p>
+                  <p class="text-[11px] text-slate-500">Bấm các nút thêm nhanh ở trên hoặc "Thêm Dòng Thông Số" để tùy chỉnh (Ví dụ: Màu sắc - 2 màu, Loại giấy - Decal lưới...).</p>
+                </div>
+
+                <div v-else class="divide-y" :class="isDarkMode ? 'divide-[#2E3A47]' : 'divide-slate-100'">
+                  <div
+                    v-for="(spec, idx) in form.specs.custom_specs"
+                    :key="idx"
+                    class="p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 hover:bg-black/5 transition-colors"
+                  >
+                    <!-- Tên quy cách -->
+                    <div class="sm:w-1/3">
+                      <input
+                        v-model="spec.name"
+                        type="text"
+                        placeholder="Tên thông số (Vd: Màu sắc, Loại giấy...)"
+                        class="w-full rounded-lg px-3 py-1.5 text-xs font-bold border focus:outline-none focus:ring-1 focus:ring-brand-gold"
+                        :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-900'"
+                      />
+                    </div>
+
+                    <!-- Giá trị quy cách -->
+                    <div class="flex-1">
+                      <input
+                        v-model="spec.value"
+                        type="text"
+                        placeholder="Giá trị quy cách (Vd: 2 màu, Decal lưới chống nắng...)"
+                        class="w-full rounded-lg px-3 py-1.5 text-xs font-medium border focus:outline-none focus:ring-1 focus:ring-brand-gold"
+                        :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200 text-slate-800'"
+                      />
+                    </div>
+
+                    <!-- Nút xóa -->
+                    <button
+                      type="button"
+                      @click="removeCustomSpec(idx)"
+                      class="self-end sm:self-auto p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                      title="Xóa dòng này"
+                    >
+                      <Trash2 class="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tùy chọn Ẩn / Hiện Báo Giá Riêng -->
+              <div class="p-3.5 rounded-xl border flex items-center justify-between gap-4" :class="isDarkMode ? 'bg-[#1C2434]/60 border-[#2E3A47]' : 'bg-slate-50 border-slate-200'">
+                <div>
+                  <span class="block text-xs font-bold" :class="isDarkMode ? 'text-slate-200' : 'text-slate-800'">
+                    Chế độ báo giá riêng cho ấn phẩm này:
+                  </span>
+                  <span class="text-[11px] text-slate-400">
+                    Bật tùy chọn này nếu sản phẩm cần kỹ thuật viên báo giá qua Zalo / Hotline thay vì tính giá tự động.
+                  </span>
+                </div>
+
+                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input
+                    type="checkbox"
+                    v-model="form.specs.hide_pricing"
+                    class="sr-only peer"
+                  />
+                  <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                </label>
+              </div>
+            </div>
+
+            <!-- PHẦN 3: CẤU HÌNH RANK MATH SEO PRO -->
             <div class="space-y-4 pt-4 border-t" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
               <RankMathSeoBox
                 :title="form.name"
@@ -1131,7 +1288,10 @@ import {
   Table,
   Link2,
   Minus,
-  Eraser
+  Eraser,
+  Sliders,
+  Plus,
+  Trash2
 } from 'lucide-vue-next'
 import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
@@ -1570,8 +1730,47 @@ const form = ref({
   meta_title: '',
   meta_description: '',
   meta_keywords: '',
-  canonical_url: ''
+  canonical_url: '',
+  specs: {
+    hide_pricing: false,
+    custom_specs: [],
+    sizes: [],
+    materials: [],
+    finishings: [],
+    quantities: []
+  }
 })
+
+function addCustomSpec(name = '', value = '') {
+  if (!form.value.specs) {
+    form.value.specs = { hide_pricing: false, custom_specs: [] }
+  }
+  if (!Array.isArray(form.value.specs.custom_specs)) {
+    form.value.specs.custom_specs = []
+  }
+  form.value.specs.custom_specs.push({ name, value })
+}
+
+function removeCustomSpec(idx) {
+  if (form.value.specs?.custom_specs) {
+    form.value.specs.custom_specs.splice(idx, 1)
+  }
+}
+
+function quickAddCustomSpec(name, defaultValue) {
+  if (!form.value.specs) {
+    form.value.specs = { hide_pricing: false, custom_specs: [] }
+  }
+  if (!Array.isArray(form.value.specs.custom_specs)) {
+    form.value.specs.custom_specs = []
+  }
+  const existing = form.value.specs.custom_specs.find(s => s.name.toLowerCase() === name.toLowerCase())
+  if (existing) {
+    existing.value = defaultValue
+  } else {
+    form.value.specs.custom_specs.push({ name, value: defaultValue })
+  }
+}
 
 async function onSeoContentUpdate(newHtml) {
   form.value.description = newHtml || ''
@@ -1687,6 +1886,12 @@ async function loadProductDetail(id) {
     const res = await api.getProductBySlug(id)
     if (res.data) {
       const p = res.data
+      let pSpecs = p.specs
+      if (typeof pSpecs === 'string') {
+        try { pSpecs = JSON.parse(pSpecs) } catch (e) { pSpecs = {} }
+      }
+      pSpecs = (pSpecs && typeof pSpecs === 'object') ? pSpecs : {}
+
       form.value = {
         name: p.name || '',
         slug: p.slug || '',
@@ -1703,7 +1908,15 @@ async function loadProductDetail(id) {
         meta_title: p.meta_title || '',
         meta_description: p.meta_description || '',
         meta_keywords: p.meta_keywords || '',
-        canonical_url: p.canonical_url || ''
+        canonical_url: p.canonical_url || '',
+        specs: {
+          hide_pricing: Boolean(pSpecs.hide_pricing),
+          custom_specs: Array.isArray(pSpecs.custom_specs) ? pSpecs.custom_specs : [],
+          sizes: Array.isArray(pSpecs.sizes) ? pSpecs.sizes : [],
+          materials: Array.isArray(pSpecs.materials) ? pSpecs.materials : [],
+          finishings: Array.isArray(pSpecs.finishings) ? pSpecs.finishings : [],
+          quantities: Array.isArray(pSpecs.quantities) ? pSpecs.quantities : []
+        }
       }
       await nextTick()
       syncVisualFromModel()
@@ -1742,7 +1955,8 @@ async function handleSubmit() {
       meta_title: form.value.meta_title || null,
       meta_description: form.value.meta_description || null,
       meta_keywords: form.value.meta_keywords || null,
-      canonical_url: form.value.canonical_url || null
+      canonical_url: form.value.canonical_url || null,
+      specs: form.value.specs || null
     }
 
     if (isEditMode.value) {

@@ -233,28 +233,47 @@
             <span class="text-slate-500 font-medium">Danh mục sản phẩm:</span>
             <span class="font-bold text-brand-blue text-right">{{ product.categoryName }}</span>
           </div>
-          <div class="flex items-center justify-between py-2.5 border-b border-slate-100">
-            <span class="text-slate-500 font-medium">Kích thước chuẩn:</span>
-            <span class="font-bold text-slate-900 text-right">
-              {{ availableSizesSummary || 'Theo kích thước chuẩn hoặc tùy chỉnh' }}
-            </span>
-          </div>
-          <div class="flex items-center justify-between py-2.5 border-b border-slate-100">
-            <span class="text-slate-500 font-medium">Chất liệu giấy / vật liệu:</span>
-            <span class="font-bold text-slate-900 text-right">
-              {{ availableMaterialsSummary || 'Giấy Fort, Couche, Ivory, Kraft theo yêu cầu' }}
-            </span>
-          </div>
-          <div class="flex items-center justify-between py-2.5 border-b border-slate-100">
-            <span class="text-slate-500 font-medium">Công nghệ in áp dụng:</span>
-            <span class="font-bold text-slate-900 text-right">In Offset công nghiệp 4 màu CMYK / In Kỹ thuật số</span>
-          </div>
-          <div class="flex items-center justify-between py-2.5 border-b border-slate-100">
-            <span class="text-slate-500 font-medium">Gia công thành phẩm:</span>
-            <span class="font-bold text-slate-900 text-right">
-              {{ availableFinishingsSummary || 'Cắt bế, cấn gấp, dán nắp, ép kim theo file' }}
-            </span>
-          </div>
+
+          <!-- Khi sản phẩm có cấu hình quy cách riêng (custom_specs) -->
+          <template v-if="customSpecsList.length > 0">
+            <div
+              v-for="(spec, sIdx) in customSpecsList"
+              :key="sIdx"
+              class="flex items-center justify-between py-2.5 border-b border-slate-100"
+            >
+              <span class="text-slate-500 font-medium">{{ spec.name }}:</span>
+              <span class="font-bold text-slate-900 text-right">{{ spec.value }}</span>
+            </div>
+          </template>
+
+          <!-- Khi chưa cấu hình quy cách riêng -->
+          <template v-else>
+            <div class="flex items-center justify-between py-2.5 border-b border-slate-100">
+              <span class="text-slate-500 font-medium">Kích thước chuẩn:</span>
+              <span class="font-bold text-slate-900 text-right">
+                {{ availableSizesSummary || 'Theo kích thước chuẩn hoặc tùy chỉnh' }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between py-2.5 border-b border-slate-100">
+              <span class="text-slate-500 font-medium">Chất liệu giấy / vật liệu:</span>
+              <span class="font-bold text-slate-900 text-right">
+                {{ availableMaterialsSummary || defaultMaterialSummary }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between py-2.5 border-b border-slate-100">
+              <span class="text-slate-500 font-medium">Công nghệ in áp dụng:</span>
+              <span class="font-bold text-slate-900 text-right">
+                {{ defaultTechSummary }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between py-2.5 border-b border-slate-100">
+              <span class="text-slate-500 font-medium">Gia công thành phẩm:</span>
+              <span class="font-bold text-slate-900 text-right">
+                {{ availableFinishingsSummary || 'Cắt bế, cấn gấp, hoàn thiện theo file' }}
+              </span>
+            </div>
+          </template>
+
           <div class="flex items-center justify-between py-2.5 border-b border-slate-100">
             <span class="text-slate-500 font-medium">Thời gian hoàn thành:</span>
             <span class="font-bold text-emerald-700 text-right">{{ product.turnaround || '4h - 24h làm việc' }}</span>
@@ -769,6 +788,36 @@ const availableFinishingsSummary = computed(() => {
     return fins.map(f => f.label).join(', ')
   }
   return ''
+})
+
+const customSpecsList = computed(() => {
+  const cs = product.value?.specs?.custom_specs
+  if (Array.isArray(cs)) {
+    return cs.filter(s => s && (s.name || s.value))
+  }
+  return []
+})
+
+const defaultMaterialSummary = computed(() => {
+  const nameLower = (product.value?.name || '').toLowerCase()
+  if (nameLower.includes('decal') || nameLower.includes('tem') || nameLower.includes('sticker')) {
+    return 'Decal chuyên dụng (Decal lưới dán kính, decal sữa, decal trong...)'
+  }
+  if (nameLower.includes('túi')) {
+    return 'Giấy Kraft nâu, Couche, Ivory theo yêu cầu'
+  }
+  if (nameLower.includes('hộp')) {
+    return 'Giấy Ivory, Duplex bồi carton sóng cao cấp'
+  }
+  return 'Giấy Fort, Couche, Ivory, Kraft theo yêu cầu'
+})
+
+const defaultTechSummary = computed(() => {
+  const nameLower = (product.value?.name || '').toLowerCase()
+  if (nameLower.includes('decal') || nameLower.includes('bạt') || nameLower.includes('standee')) {
+    return 'In Kỹ thuật số UV / In phun khổ lớn chất lượng cao'
+  }
+  return 'In Offset công nghiệp 4 màu CMYK / In Kỹ thuật số'
 })
 
 function formatCurrency(val) {
