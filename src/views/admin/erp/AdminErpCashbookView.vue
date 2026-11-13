@@ -350,6 +350,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../../services/api'
 import { useAdminTheme } from '../../../composables/useAdminTheme'
+import { swalToast, swalError, swalDelete } from '../../../utils/swal'
 
 const { isDarkMode } = useAdminTheme()
 
@@ -423,21 +424,24 @@ async function submitEntry() {
   try {
     await api.createErpCashbook(entryForm)
     isModalOpen.value = false
+    swalToast('Đã lưu phiếu thu/chi thành công')
     fetchEntries()
     fetchStats()
   } catch (err) {
-    alert(err.message || 'Lỗi khi lưu phiếu')
+    swalError('Lỗi khi lưu phiếu', err.message || 'Không thể lưu phiếu')
   }
 }
 
 async function deleteEntry(entry) {
-  if (confirm(`Bạn có chắc muốn xóa phiếu [${entry.code}]?`)) {
+  const confirmed = await swalDelete(`phiếu [${entry.code}]`)
+  if (confirmed) {
     try {
       await api.deleteErpCashbook(entry.id)
+      swalToast(`Đã xóa phiếu [${entry.code}]`)
       fetchEntries()
       fetchStats()
     } catch (err) {
-      alert(err.message || 'Lỗi khi xóa')
+      swalError('Lỗi khi xóa', err.message || 'Không thể xóa phiếu')
     }
   }
 }

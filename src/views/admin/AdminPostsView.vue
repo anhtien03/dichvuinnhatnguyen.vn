@@ -317,6 +317,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
+import { swalToast, swalDelete } from '../../utils/swal'
 
 const { isDarkMode } = useAdminTheme()
 
@@ -332,13 +333,7 @@ const toastMessage = ref('')
 const toastType = ref('success')
 
 function showToast(msg, type = 'success') {
-  toastMessage.value = msg
-  toastType.value = type
-  setTimeout(() => {
-    if (toastMessage.value === msg) {
-      toastMessage.value = ''
-    }
-  }, 4000)
+  swalToast(msg, type === 'error' ? 'error' : 'success')
 }
 
 function resetFilters() {
@@ -411,8 +406,20 @@ async function togglePublishStatus(post) {
   }
 }
 
-function confirmDeletePost(post) {
-  postToDelete.value = post
+async function confirmDeletePost(post) {
+  const confirmed = await swalDelete(`bài viết "${post.title}"`)
+  if (!confirmed) return
+  try {
+    isDeleting.value = true
+    await api.deleteAdminPost(post.id)
+    showToast('Đã xóa bài viết thành công')
+    await fetchPosts()
+  } catch (err) {
+    console.error('Failed to delete post', err)
+    showToast('Lỗi khi xóa bài viết', 'error')
+  } finally {
+    isDeleting.value = false
+  }
 }
 
 async function executeDeletePost() {

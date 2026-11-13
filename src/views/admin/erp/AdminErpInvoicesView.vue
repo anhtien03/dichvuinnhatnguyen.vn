@@ -221,6 +221,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../../services/api'
 import { useAdminTheme } from '../../../composables/useAdminTheme'
+import { swalToast, swalError, swalWarning } from '../../../utils/swal'
 
 const { isDarkMode } = useAdminTheme()
 
@@ -277,15 +278,16 @@ async function submitInvoiceUpdate() {
     }
     await api.updateErpOrder(currentOrder.value.id, payload)
     isModalOpen.value = false
+    swalToast('Đã cập nhật hóa đơn')
     fetchInvoices()
   } catch (err) {
-    alert(err.message || 'Lỗi khi cập nhật')
+    swalError('Lỗi khi cập nhật', err.message || 'Không thể cập nhật hóa đơn')
   }
 }
 
 function exportCSV() {
   if (orders.value.length === 0) {
-    alert('Không có dữ liệu để xuất')
+    swalWarning('Trống', 'Không có dữ liệu hóa đơn để xuất file CSV!')
     return
   }
   const headers = ['Mã Đơn', 'Khách Hàng', 'MST', 'Tiền Hàng', 'Thuế VAT', 'Tổng Tiền', 'Số HĐĐT', 'Ngày Xuất']

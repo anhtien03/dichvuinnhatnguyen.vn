@@ -829,6 +829,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../../services/api'
 import { useAdminTheme } from '../../../composables/useAdminTheme'
+import { swalToast, swalError, swalDelete } from '../../../utils/swal'
 
 const { isDarkMode } = useAdminTheme()
 
@@ -1016,25 +1017,28 @@ async function submitCustomer() {
       await api.createErpCustomer(customerForm)
     }
     isModalOpen.value = false
+    swalToast('Đã lưu thông tin khách hàng')
     fetchCustomers()
     if (activeTab.value === 'commission') {
       fetchCommissionStatements()
     }
   } catch (err) {
-    alert(err.message || 'Lỗi khi lưu khách hàng')
+    swalError('Lỗi khi lưu khách hàng', err.message || 'Không thể lưu')
   }
 }
 
 async function deleteCustomer(c) {
-  if (confirm(`Bạn có chắc muốn xóa khách hàng [${c.name}]?`)) {
+  const confirmed = await swalDelete(`khách hàng [${c.name}]`)
+  if (confirmed) {
     try {
       await api.deleteErpCustomer(c.id)
+      swalToast(`Đã xóa khách hàng [${c.name}]`)
       fetchCustomers()
       if (activeTab.value === 'commission') {
         fetchCommissionStatements()
       }
     } catch (err) {
-      alert(err.message || 'Lỗi khi xóa')
+      swalError('Lỗi khi xóa', err.message || 'Không thể xóa khách hàng')
     }
   }
 }

@@ -1309,7 +1309,7 @@ Cam kết in sắc nét, đúng tiến độ và hỗ trợ kiểm tra file tậ
     isCopied.value = true
     setTimeout(() => { isCopied.value = false }, 3000)
   }).catch(() => {
-    alert('Vui lòng cấp quyền clipboard để sao chép báo giá!')
+    swalWarning('Không thể sao chép', 'Vui lòng cấp quyền clipboard để sao chép báo giá!')
   })
 }
 
@@ -1493,7 +1493,7 @@ function editOrder(order) {
 // Submit Order Form
 async function submitOrderForm() {
   if (orderForm.items.length === 0) {
-    alert('Vui lòng thêm ít nhất 1 sản phẩm in!')
+    swalWarning('Thiếu sản phẩm', 'Vui lòng thêm ít nhất 1 sản phẩm in!')
     return
   }
 

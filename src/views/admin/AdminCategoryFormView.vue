@@ -481,6 +481,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
+import { swalToast } from '../../utils/swal'
 import { slugify } from '../../composables/useSEO'
 import MediaLibraryModal from '../../components/admin/MediaLibraryModal.vue'
 import RankMathSeoBox from '../../components/admin/RankMathSeoBox.vue'
@@ -522,11 +523,7 @@ const form = reactive({
 })
 
 function showToast(msg, type = 'success') {
-  toastMessage.value = msg
-  toastType.value = type
-  setTimeout(() => {
-    toastMessage.value = ''
-  }, 4000)
+  swalToast(msg, type === 'error' ? 'error' : 'success')
 }
 
 function handleNameInput() {

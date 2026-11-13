@@ -1295,6 +1295,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
+import { swalToast, swalError } from '../../utils/swal'
 import { slugify } from '../../composables/useSEO'
 import MediaLibraryModal from '../../components/admin/MediaLibraryModal.vue'
 import RankMathSeoBox from '../../components/admin/RankMathSeoBox.vue'
@@ -1707,7 +1708,7 @@ async function handleDescImageUpload(e) {
       }
     }
   } catch (err) {
-    alert('Lỗi tải ảnh mô tả: ' + (err.data?.message || err.message))
+    swalError('Lỗi tải ảnh mô tả', err.data?.message || err.message)
   } finally {
     isUploadingDescImage.value = false
     if (descFileInputRef.value) descFileInputRef.value.value = ''
@@ -1856,7 +1857,7 @@ async function handleQuickUpload(e) {
       form.value.image = res.data.url
     }
   } catch (err) {
-    alert('Lỗi tải ảnh lên: ' + (err.data?.message || err.message))
+    swalError('Lỗi tải ảnh lên', err.data?.message || err.message)
   } finally {
     if (quickFileInputRef.value) quickFileInputRef.value.value = ''
   }
@@ -1962,9 +1963,11 @@ async function handleSubmit() {
     if (isEditMode.value) {
       await api.updateAdminProduct(route.params.id, payload)
       successMessage.value = 'Đã cập nhật ấn phẩm & cấu hình SEO thành công! Đang chuyển hướng...'
+      swalToast('Đã cập nhật ấn phẩm thành công!')
     } else {
       await api.createAdminProduct(payload)
       successMessage.value = 'Đã tạo ấn phẩm mới & tối ưu SEO thành công! Đang chuyển hướng...'
+      swalToast('Đã tạo ấn phẩm mới thành công!')
     }
 
     setTimeout(() => {
@@ -1972,6 +1975,7 @@ async function handleSubmit() {
     }, 600)
   } catch (err) {
     errorMessage.value = err.message || 'Có lỗi xảy ra khi lưu ấn phẩm. Vui lòng thử lại.'
+    swalError('Lỗi lưu ấn phẩm', errorMessage.value)
   } finally {
     isSaving.value = false
   }

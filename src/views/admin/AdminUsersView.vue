@@ -386,6 +386,7 @@ import {
 } from 'lucide-vue-next'
 import { api, getAdminUser } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
+import { swalToast, swalError, swalConfirm, swalDelete } from '../../utils/swal'
 
 const { isDarkMode } = useAdminTheme()
 const currentUser = ref(getAdminUser())
@@ -495,7 +496,7 @@ async function loadData() {
     users.value = usersRes.data || []
     roles.value = rolesRes.data || []
   } catch (err) {
-    alert('Lỗi tải dữ liệu nhân sự: ' + (err.message || 'Vui lòng thử lại.'))
+    swalError('Lỗi tải dữ liệu nhân sự', err.message || 'Vui lòng thử lại.')
   } finally {
     isLoading.value = false
   }
@@ -536,36 +537,48 @@ async function saveUser() {
   try {
     if (isEditing.value) {
       await api.updateAdminUser(editingUserId.value, userForm.value)
+      swalToast('Đã cập nhật thông tin nhân viên')
     } else {
       await api.createAdminUser(userForm.value)
+      swalToast('Đã thêm nhân viên mới')
     }
     isModalOpen.value = false
     await loadData()
   } catch (err) {
-    alert('Thao tác không thành công: ' + (err.message || 'Vui lòng kiểm tra lại.'))
+    swalError('Thao tác không thành công', err.message || 'Vui lòng kiểm tra lại.')
   } finally {
     isSubmitting.value = false
   }
 }
 
 async function toggleUserActive(u) {
-  if (confirm(`Bạn có chắc muốn ${u.is_active ? 'tạm khóa' : 'mở khóa'} tài khoản [${u.name}]?`)) {
+  const confirmed = await swalConfirm({
+    title: `${u.is_active ? 'Tạm khóa' : 'Mở khóa'} tài khoản?`,
+    text: `Bạn có chắc muốn ${u.is_active ? 'tạm khóa' : 'mở khóa'} tài khoản [${u.name}]?`,
+    icon: 'warning',
+    confirmText: u.is_active ? 'Tạm khóa' : 'Mở khóa',
+    danger: u.is_active
+  })
+  if (confirmed) {
     try {
       const res = await api.toggleAdminUserActive(u.id)
       u.is_active = res.is_active
+      swalToast(`Đã ${u.is_active ? 'mở khóa' : 'tạm khóa'} tài khoản ${u.name}`)
     } catch (err) {
-      alert('Lỗi cập nhật trạng thái: ' + (err.message || 'Thử lại sau.'))
+      swalError('Lỗi cập nhật trạng thái', err.message || 'Thử lại sau.')
     }
   }
 }
 
 async function confirmDeleteUser(u) {
-  if (confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN nhân viên [${u.name}] (${u.email})? Thao tác này không thể hoàn tác.`)) {
+  const confirmed = await swalDelete(`nhân viên [${u.name}] (${u.email})`)
+  if (confirmed) {
     try {
       await api.deleteAdminUser(u.id)
+      swalToast(`Đã xóa nhân viên ${u.name}`)
       await loadData()
     } catch (err) {
-      alert('Không thể xóa: ' + (err.message || 'Thử lại sau.'))
+      swalError('Không thể xóa', err.message || 'Thử lại sau.')
     }
   }
 }

@@ -954,6 +954,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
+import { swalToast, swalConfirm } from '../../utils/swal'
 
 const { isDarkMode } = useAdminTheme()
 const route = useRoute()
@@ -1260,10 +1261,15 @@ function toggleHidePricing() {
   }
 }
 
-function applyFormPreset(tmpl) {
-  if (!confirm(`Bạn có chắc muốn áp dụng "${tmpl.name}" cho sản phẩm này? Các mốc hiện tại sẽ được thay thế bằng mẫu chuẩn.`)) {
-    return
-  }
+async function applyFormPreset(tmpl) {
+  const confirmed = await swalConfirm({
+    title: 'Áp dụng bảng giá mẫu?',
+    text: `Bạn có chắc muốn áp dụng "${tmpl.name}" cho sản phẩm này? Các mốc hiện tại sẽ được thay thế bằng mẫu chuẩn.`,
+    icon: 'question',
+    confirmText: 'Áp dụng ngay',
+    cancelText: 'Hủy'
+  })
+  if (!confirmed) return
 
   pricingSpecs.quantities = JSON.parse(JSON.stringify(tmpl.specs.quantities))
   pricingSpecs.sizes = JSON.parse(JSON.stringify(tmpl.specs.sizes))
@@ -1391,7 +1397,7 @@ async function savePricingConfig() {
 function showAlert(msg, type = 'success') {
   alertMessage.value = msg
   alertType.value = type
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  swalToast(msg, type === 'error' ? 'error' : 'success')
 }
 
 function formatCurrency(num) {

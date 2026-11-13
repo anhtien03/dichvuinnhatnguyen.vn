@@ -625,6 +625,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../../services/api'
 import { useAdminTheme } from '../../../composables/useAdminTheme'
+import { swalToast, swalError, swalDelete } from '../../../utils/swal'
 
 const { isDarkMode } = useAdminTheme()
 
@@ -748,19 +749,22 @@ async function submitSupplier() {
       await api.createErpSupplier(supplierForm)
     }
     isModalOpen.value = false
+    swalToast('Đã lưu thông tin xưởng in')
     fetchSuppliers()
   } catch (err) {
-    alert(err.message || 'Lỗi khi lưu xưởng')
+    swalError('Lỗi khi lưu xưởng', err.message || 'Không thể lưu')
   }
 }
 
 async function deleteSupplier(s) {
-  if (confirm(`Bạn có chắc muốn xóa xưởng [${s.name}]?`)) {
+  const confirmed = await swalDelete(`xưởng in [${s.name}]`)
+  if (confirmed) {
     try {
       await api.deleteErpSupplier(s.id)
+      swalToast(`Đã xóa xưởng [${s.name}]`)
       fetchSuppliers()
     } catch (err) {
-      alert(err.message || 'Lỗi khi xóa')
+      swalError('Lỗi khi xóa', err.message || 'Không thể xóa xưởng')
     }
   }
 }
@@ -778,9 +782,10 @@ async function submitPayment() {
   try {
     await api.payErpSupplier(currentSupplier.value.id, paymentForm)
     isPaymentModalOpen.value = false
+    swalToast('Đã ghi nhận thanh toán công nợ')
     fetchSuppliers()
   } catch (err) {
-    alert(err.message || 'Lỗi khi thanh toán')
+    swalError('Lỗi khi thanh toán', err.message || 'Không thể thanh toán')
   }
 }
 

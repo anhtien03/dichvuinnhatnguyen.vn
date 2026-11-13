@@ -432,6 +432,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
+import { swalToast } from '../../utils/swal'
 import MediaLibraryModal from '../../components/admin/MediaLibraryModal.vue'
 
 const { isDarkMode } = useAdminTheme()
@@ -539,11 +540,7 @@ function getCardBgClass(color) {
 }
 
 function showToast(msg, type = 'success') {
-  toastMessage.value = msg
-  toastType.value = type
-  setTimeout(() => {
-    toastMessage.value = ''
-  }, 4000)
+  swalToast(msg, type === 'error' ? 'error' : 'success')
 }
 
 function inspectImage(url, file = null) {

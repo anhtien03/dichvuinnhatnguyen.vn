@@ -256,6 +256,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
+import { swalToast, swalDelete } from '../../utils/swal'
 
 const { isDarkMode } = useAdminTheme()
 
@@ -341,13 +342,7 @@ function getCardBgClass(color) {
 }
 
 function showToast(msg, type = 'success') {
-  toastMessage.value = msg
-  toastType.value = type
-  setTimeout(() => {
-    if (toastMessage.value === msg) {
-      toastMessage.value = ''
-    }
-  }, 4000)
+  swalToast(msg, type === 'error' ? 'error' : 'success')
 }
 
 // Fetch banners
@@ -379,8 +374,20 @@ async function toggleActiveStatus(banner) {
 }
 
 // Delete Banner
-function confirmDeleteBanner(banner) {
-  bannerToDelete.value = banner
+async function confirmDeleteBanner(banner) {
+  const confirmed = await swalDelete(`banner "${banner.title || 'không tên'}"`)
+  if (!confirmed) return
+  try {
+    isDeleting.value = true
+    await api.deleteAdminBanner(banner.id)
+    showToast('Đã xóa banner thành công')
+    await fetchBanners()
+  } catch (err) {
+    console.error('Failed to delete banner', err)
+    showToast('Lỗi khi xóa banner', 'error')
+  } finally {
+    isDeleting.value = false
+  }
 }
 
 async function executeDeleteBanner() {

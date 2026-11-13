@@ -333,6 +333,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
+import { swalToast, swalSuccess, swalError } from '../../utils/swal'
 
 const { isDarkMode } = useAdminTheme()
 
@@ -431,7 +432,7 @@ async function loadData() {
       selectRole(defaultRole)
     }
   } catch (err) {
-    alert('Lỗi tải dữ liệu quyền hạn: ' + (err.message || 'Thử lại sau.'))
+    swalError('Lỗi tải dữ liệu quyền hạn', err.message || 'Thử lại sau.')
   } finally {
     isLoading.value = false
   }
@@ -445,9 +446,9 @@ async function saveRolePermissions() {
     await api.updateRolePermissions(selectedRole.value.id, selectedPermissionIds.value)
     // Update local role's permissions
     selectedRole.value.permissions = allPermissionsList.value.filter(p => selectedPermissionIds.value.includes(p.id))
-    alert(`Đã lưu thành công ${selectedPermissionIds.value.length} quyền cho vai trò [${selectedRole.value.name}]!`)
+    swalSuccess('Đã lưu phân quyền!', `Đã cập nhật ${selectedPermissionIds.value.length} quyền cho vai trò [${selectedRole.value.name}].`)
   } catch (err) {
-    alert('Lỗi lưu quyền: ' + (err.message || 'Thử lại sau.'))
+    swalError('Lỗi lưu quyền', err.message || 'Thử lại sau.')
   } finally {
     isSaving.value = false
   }
@@ -467,12 +468,13 @@ async function createCustomRole() {
   try {
     const res = await api.createAdminRole(newRole.value)
     isRoleModalOpen.value = false
+    swalToast('Đã tạo vai trò mới thành công')
     await loadData()
     if (res.data) {
       selectRole(res.data)
     }
   } catch (err) {
-    alert('Không thể tạo vai trò: ' + (err.message || 'Kiểm tra lại dữ liệu.'))
+    swalError('Không thể tạo vai trò', err.message || 'Kiểm tra lại dữ liệu.')
   } finally {
     isSaving.value = false
   }
