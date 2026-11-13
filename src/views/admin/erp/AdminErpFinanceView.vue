@@ -149,6 +149,13 @@
       </div>
     </div>
 
+    <!-- Per-account Breakdown -->
+    <AccountBreakdownPanel
+      :accounts="accountStats"
+      :from-date="fromDate"
+      :to-date="toDate"
+    />
+
     <!-- 12-Month Performance Chart Table -->
     <div class="p-6 rounded-3xl border space-y-4" :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200'">
       <div class="flex items-center justify-between">
@@ -200,6 +207,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../../services/api'
 import { useAdminTheme } from '../../../composables/useAdminTheme'
+import AccountBreakdownPanel from '../../../components/admin/erp/AccountBreakdownPanel.vue'
 
 const { isDarkMode } = useAdminTheme()
 
@@ -221,19 +229,29 @@ const partners = reactive({
 })
 
 const chartData = ref([])
+const accountStats = ref([])
 
 async function fetchProfitSharing() {
   try {
-    const res = await api.getErpProfitSharing({
-      from_date: fromDate.value,
-      to_date: toDate.value
-    })
-    if (res.data) {
-      Object.assign(financeData, res.data)
-      if (res.data.partners) {
-        partners.truong_hung = res.data.partners.truong_hung
-        partners.minh_nguyen = res.data.partners.minh_nguyen
+    const [profitRes, cashbookRes] = await Promise.all([
+      api.getErpProfitSharing({
+        from_date: fromDate.value,
+        to_date: toDate.value
+      }),
+      api.getErpCashbookStats({
+        from_date: fromDate.value,
+        to_date: toDate.value
+      })
+    ])
+    if (profitRes.data) {
+      Object.assign(financeData, profitRes.data)
+      if (profitRes.data.partners) {
+        partners.truong_hung = profitRes.data.partners.truong_hung
+        partners.minh_nguyen = profitRes.data.partners.minh_nguyen
       }
+    }
+    if (cashbookRes.data?.accounts) {
+      accountStats.value = cashbookRes.data.accounts
     }
   } catch (err) {
     console.error('Failed to load profit sharing', err)

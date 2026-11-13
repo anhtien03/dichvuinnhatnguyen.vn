@@ -30,25 +30,65 @@
       </div>
     </div>
 
-    <!-- KPI Summary Cards -->
+    <!-- Period Filter + KPI Summary Cards -->
+    <div class="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl border" :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200'">
+      <div class="flex items-center gap-2 text-xs font-bold" :class="isDarkMode ? 'text-slate-300' : 'text-slate-700'">
+        <span>Kỳ thống kê:</span>
+        <input
+          v-model="selectedMonth"
+          type="month"
+          @change="onMonthChange"
+          class="text-xs rounded-xl px-3 py-1.5 border"
+          :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200'"
+        />
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <input
+          v-model="fromDate"
+          type="date"
+          class="text-xs rounded-xl px-3 py-1.5 border"
+          :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200'"
+        />
+        <span class="text-xs text-slate-400">đến</span>
+        <input
+          v-model="toDate"
+          type="date"
+          class="text-xs rounded-xl px-3 py-1.5 border"
+          :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-white' : 'bg-slate-50 border-slate-200'"
+        />
+        <button
+          @click="applyPeriodFilter"
+          class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brand-gold text-slate-950 hover:bg-amber-400 transition-all cursor-pointer"
+        >
+          Xem kỳ này
+        </button>
+      </div>
+    </div>
+
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div class="p-5 rounded-2xl border" :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200'">
         <div class="flex items-center justify-between text-xs text-slate-400 font-bold uppercase">
-          <span>Tổng Thu Trong Kỳ</span>
+          <span>Tổng Tiền Vào (Thực Thu)</span>
           <ArrowDownLeft class="w-4 h-4 text-emerald-400" />
         </div>
         <div class="text-2xl font-black text-emerald-400 mt-2">
-          {{ formatMoney(stats.total_receipts) }}
+          +{{ formatMoney(stats.combined_total_in ?? stats.total_receipts) }}
+        </div>
+        <div class="text-[11px] text-slate-400 mt-1">
+          Phiếu thu sổ quỹ: {{ formatMoney(stats.total_receipts) }}
         </div>
       </div>
 
       <div class="p-5 rounded-2xl border" :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200'">
         <div class="flex items-center justify-between text-xs text-slate-400 font-bold uppercase">
-          <span>Tổng Chi Trong Kỳ</span>
+          <span>Tổng Tiền Ra (Thực Chi)</span>
           <ArrowUpRight class="w-4 h-4 text-rose-400" />
         </div>
         <div class="text-2xl font-black text-rose-400 mt-2">
-          {{ formatMoney(stats.total_payments) }}
+          −{{ formatMoney(stats.combined_total_out ?? stats.total_payments) }}
+        </div>
+        <div class="text-[11px] text-slate-400 mt-1">
+          Phiếu chi sổ quỹ: {{ formatMoney(stats.total_payments) }}
         </div>
       </div>
 
@@ -57,11 +97,21 @@
           <span>Dòng Tiền Tồn Ròng</span>
           <Wallet class="w-4 h-4 text-brand-gold" />
         </div>
-        <div class="text-2xl font-black mt-2" :class="stats.net_balance >= 0 ? 'text-brand-gold' : 'text-red-400'">
-          {{ formatMoney(stats.net_balance) }}
+        <div class="text-2xl font-black mt-2" :class="(stats.combined_net_balance ?? stats.net_balance) >= 0 ? 'text-brand-gold' : 'text-red-400'">
+          {{ formatMoney(stats.combined_net_balance ?? stats.net_balance) }}
+        </div>
+        <div class="text-[11px] text-slate-400 mt-1">
+          Riêng sổ quỹ: {{ formatMoney(stats.net_balance) }}
         </div>
       </div>
     </div>
+
+    <!-- Per-account Breakdown -->
+    <AccountBreakdownPanel
+      :accounts="stats.accounts"
+      :from-date="stats.from_date || fromDate"
+      :to-date="stats.to_date || toDate"
+    />
 
     <!-- Filters Row -->
     <div class="p-4 rounded-2xl border grid grid-cols-1 sm:grid-cols-12 gap-3" :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47]' : 'bg-white border-slate-200'">
@@ -351,14 +401,27 @@ import {
 import { api } from '../../../services/api'
 import { useAdminTheme } from '../../../composables/useAdminTheme'
 import { swalToast, swalError, swalDelete } from '../../../utils/swal'
+import AccountBreakdownPanel from '../../../components/admin/erp/AccountBreakdownPanel.vue'
 
 const { isDarkMode } = useAdminTheme()
 
+const now = new Date()
+const pad2 = (n) => String(n).padStart(2, '0')
+const selectedMonth = ref(`${now.getFullYear()}-${pad2(now.getMonth() + 1)}`)
+const fromDate = ref(`${now.getFullYear()}-${pad2(now.getMonth() + 1)}-01`)
+const toDate = ref(`${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate())}`)
+
 const entries = ref([])
 const stats = reactive({
+  from_date: '',
+  to_date: '',
   total_receipts: 0,
   total_payments: 0,
-  net_balance: 0
+  net_balance: 0,
+  combined_total_in: 0,
+  combined_total_out: 0,
+  combined_net_balance: 0,
+  accounts: []
 })
 
 const isLoading = ref(false)
@@ -385,6 +448,8 @@ async function fetchEntries() {
     if (typeFilter.value) params.type = typeFilter.value
     if (categoryFilter.value) params.category = categoryFilter.value
     if (searchQuery.value.trim()) params.search = searchQuery.value.trim()
+    if (fromDate.value) params.from_date = fromDate.value
+    if (toDate.value) params.to_date = toDate.value
 
     const res = await api.getErpCashbook(params)
     if (res.data) {
@@ -399,13 +464,30 @@ async function fetchEntries() {
 
 async function fetchStats() {
   try {
-    const res = await api.getErpCashbookStats()
+    const params = {}
+    if (fromDate.value) params.from_date = fromDate.value
+    if (toDate.value) params.to_date = toDate.value
+    const res = await api.getErpCashbookStats(params)
     if (res.data) {
       Object.assign(stats, res.data)
     }
   } catch (err) {
     console.error('Failed to load cashbook stats', err)
   }
+}
+
+function onMonthChange() {
+  if (!selectedMonth.value) return
+  const [y, m] = selectedMonth.value.split('-').map(Number)
+  fromDate.value = `${y}-${pad2(m)}-01`
+  const lastDay = new Date(y, m, 0).getDate()
+  toDate.value = `${y}-${pad2(m)}-${pad2(lastDay)}`
+  applyPeriodFilter()
+}
+
+function applyPeriodFilter() {
+  fetchStats()
+  fetchEntries()
 }
 
 function openCreateModal(t) {

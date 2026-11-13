@@ -133,6 +133,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/admin/erp/cashbook', [ErpCashbookController::class, 'index'])->middleware('permission:cashbook.view');
         Route::post('/admin/erp/cashbook', [ErpCashbookController::class, 'store'])->middleware('permission:cashbook.create');
         Route::get('/admin/erp/cashbook/statistics', [ErpCashbookController::class, 'statistics'])->middleware('permission:cashbook.view');
+        Route::get('/admin/erp/cashbook/account-ledger', [ErpCashbookController::class, 'accountLedger'])->middleware('permission:cashbook.view');
         Route::get('/admin/erp/cashbook/{id}', [ErpCashbookController::class, 'show'])->middleware('permission:cashbook.view');
         Route::put('/admin/erp/cashbook/{id}', [ErpCashbookController::class, 'update'])->middleware('permission:cashbook.manage');
         Route::delete('/admin/erp/cashbook/{id}', [ErpCashbookController::class, 'destroy'])->middleware('permission:cashbook.manage');

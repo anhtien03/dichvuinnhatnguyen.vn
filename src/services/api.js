@@ -242,6 +242,10 @@ export const api = {
     const query = new URLSearchParams(params).toString()
     return apiRequest(`/admin/erp/cashbook/statistics${query ? '?' + query : ''}`)
   },
+  getErpCashbookAccountLedger: (params = {}) => {
+    const query = new URLSearchParams(params).toString()
+    return apiRequest(`/admin/erp/cashbook/account-ledger${query ? '?' + query : ''}`)
+  },
   updateErpCashbook: (id, data) => apiRequest(`/admin/erp/cashbook/${id}`, { method: 'PUT', body: data }),
   deleteErpCashbook: (id) => apiRequest(`/admin/erp/cashbook/${id}`, { method: 'DELETE' }),
 

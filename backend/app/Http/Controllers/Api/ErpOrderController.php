@@ -318,7 +318,7 @@ class ErpOrderController extends Controller
                     'payment_method' => $validated['payment_method'] ?? 'bank_acb',
                     'funding_owner' => 'company',
                     'note' => 'Khách đặt cọc / thanh toán khi tạo đơn',
-                    'paid_at' => now(),
+                    'paid_at' => !empty($validated['order_date']) ? \Carbon\Carbon::parse($validated['order_date']) : now(),
                     'created_by' => auth()->id(),
                 ]);
             }
