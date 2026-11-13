@@ -1,0 +1,161 @@
+/* Custom TailAdmin Pro Theme for SweetAlert2 */
+
+.swal2-container.swal-backdrop-blur {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Base Popup Card */
+.swal-pro-popup {
+  border-radius: 1.25rem !important;
+  padding: 1.75rem 1.5rem 1.5rem !important;
+  font-family: inherit !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35) !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  max-width: 420px !important;
+}
+
+.swal-pro-dark {
+  background-color: #24303F !important;
+  border-color: #2E3A47 !important;
+  color: #F1F5F9 !important;
+}
+
+.swal-pro-light {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+}
+
+/* Title & Text */
+.swal-pro-title {
+  font-size: 1.125rem !important;
+  font-weight: 800 !important;
+  line-height: 1.4 !important;
+  padding: 0.25rem 0.5rem 0 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.swal-pro-dark .swal-pro-title {
+  color: #FFFFFF !important;
+}
+
+.swal-pro-light .swal-pro-title {
+  color: #0F172A !important;
+}
+
+.swal-pro-html {
+  font-size: 0.8125rem !important;
+  line-height: 1.6 !important;
+  margin-top: 0.5rem !important;
+}
+
+.swal-pro-dark .swal-pro-html {
+  color: #94A3B8 !important;
+}
+
+.swal-pro-light .swal-pro-html {
+  color: #475569 !important;
+}
+
+/* Icon sizing */
+.swal-pro-popup .swal2-icon {
+  margin: 0.25rem auto 1rem !important;
+  transform: scale(0.88);
+}
+
+/* Actions / Buttons */
+.swal-pro-actions {
+  margin-top: 1.5rem !important;
+  gap: 0.625rem !important;
+  width: 100% !important;
+  padding: 0 0.25rem !important;
+}
+
+.swal-btn-confirm,
+.swal-btn-cancel {
+  border-radius: 0.75rem !important;
+  padding: 0.625rem 1.25rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 700 !important;
+  transition: all 0.15s ease !important;
+  cursor: pointer !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.swal-btn-confirm:active,
+.swal-btn-cancel:active {
+  transform: scale(0.97);
+}
+
+.swal-btn-primary {
+  background-color: #F59E0B !important;
+  color: #0F172A !important;
+}
+
+.swal-btn-primary:hover {
+  background-color: #D97706 !important;
+}
+
+.swal-btn-blue {
+  background-color: #2563EB !important;
+  color: #FFFFFF !important;
+}
+
+.swal-btn-blue:hover {
+  background-color: #1D4ED8 !important;
+}
+
+.swal-btn-danger {
+  background-color: #EF4444 !important;
+  color: #FFFFFF !important;
+}
+
+.swal-btn-danger:hover {
+  background-color: #DC2626 !important;
+}
+
+.swal-pro-dark .swal-btn-cancel {
+  background-color: #1A222C !important;
+  color: #CBD5E1 !important;
+  border: 1px solid #2E3A47 !important;
+}
+
+.swal-pro-dark .swal-btn-cancel:hover {
+  background-color: #333A48 !important;
+  color: #FFFFFF !important;
+}
+
+.swal-pro-light .swal-btn-cancel {
+  background-color: #F1F5F9 !important;
+  color: #475569 !important;
+  border: 1px solid #E2E8F0 !important;
+}
+
+.swal-pro-light .swal-btn-cancel:hover {
+  background-color: #E2E8F0 !important;
+  color: #0F172A !important;
+}
+
+/* Toast Notification */
+.swal-pro-toast {
+  border-radius: 0.875rem !important;
+  padding: 0.75rem 1rem !important;
+  box-shadow: 0 15px 30px -5px rgba(15, 23, 42, 0.25) !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+}
+
+.swal-pro-toast .swal2-title {
+  font-size: 0.8125rem !important;
+  font-weight: 700 !important;
+  margin: 0 0.5rem !important;
+}
+
+.swal-pro-toast .swal2-timer-progress-bar {
+  background: linear-gradient(90deg, #F59E0B, #3B82F6) !important;
+  height: 3px !important;
+}

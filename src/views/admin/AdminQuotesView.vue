@@ -343,6 +343,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
+import { swalToast, swalError, swalDelete } from '../../utils/swal'
 
 const router = useRouter()
 const { isDarkMode } = useAdminTheme()
@@ -445,8 +446,9 @@ async function handleQuickStatusChange(quote, newStatus) {
   try {
     await api.updateAdminQuote(quote.id, { status: newStatus })
     quote.status = newStatus
+    swalToast('Đã cập nhật trạng thái báo giá')
   } catch (err) {
-    alert('Lỗi cập nhật trạng thái: ' + err.message)
+    swalError('Lỗi cập nhật trạng thái', err.message)
     loadQuotes()
   }
 }
@@ -481,23 +483,24 @@ async function handleSaveQuote() {
     const res = await api.updateAdminQuote(editingQuote.value.id, editForm.value)
     Object.assign(editingQuote.value, res.data)
     editingQuote.value = null
+    swalToast('Đã lưu thông tin báo giá')
     loadQuotes()
   } catch (err) {
-    alert('Lỗi khi lưu thông tin: ' + err.message)
+    swalError('Lỗi khi lưu thông tin', err.message)
   } finally {
     isSaving.value = false
   }
 }
 
 async function handleDelete(quote) {
-  if (!confirm(`Bạn có chắc chắn muốn xóa đơn báo giá [${quote.code}] của khách ${quote.customer_name}?`)) {
-    return
-  }
+  const confirmed = await swalDelete(`đơn báo giá [${quote.code}] của ${quote.customer_name}`)
+  if (!confirmed) return
   try {
     await api.deleteAdminQuote(quote.id)
+    swalToast('Đã xóa đơn báo giá')
     loadQuotes()
   } catch (err) {
-    alert('Lỗi khi xóa: ' + err.message)
+    swalError('Lỗi khi xóa', err.message)
   }
 }
 

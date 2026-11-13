@@ -793,6 +793,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../../services/api'
 import { useAdminTheme } from '../../../composables/useAdminTheme'
+import { swalToast, swalSuccess, swalError, swalWarning } from '../../../utils/swal'
 
 const { isDarkMode } = useAdminTheme()
 const route = useRoute()
@@ -1191,7 +1192,7 @@ Cam kết in sắc nét, đúng tiến độ và hỗ trợ kiểm tra file tậ
 // Submit Order Form
 async function submitOrder() {
   if (!orderForm.customer_name || !orderForm.customer_phone) {
-    alert('Vui lòng điền đầy đủ Tên và SĐT khách hàng!')
+    swalWarning('Thiếu thông tin khách hàng', 'Vui lòng điền đầy đủ Tên và SĐT khách hàng!')
     return
   }
 
@@ -1241,16 +1242,16 @@ async function submitOrder() {
     if (isEditing.value) {
       const res = await api.updateErpOrder(editingId.value, payload)
       const finalCode = res?.data?.code || editingCode.value
-      alert(`✅ Cập nhật đơn hàng thành công (${finalCode})!`)
+      await swalSuccess(`Cập nhật đơn hàng thành công!`, `Mã đơn: ${finalCode}`)
     } else {
       const res = await api.createErpOrder(payload)
       const finalCode = res?.data?.code || editingCode.value
-      alert(`✅ Tạo đơn hàng in ấn mới thành công (${finalCode})!`)
+      await swalSuccess(`Tạo đơn hàng mới thành công!`, `Mã đơn: ${finalCode}`)
     }
 
     router.push('/he-thong-admin/orders')
   } catch (err) {
-    alert('Lỗi: ' + (err.response?.data?.message || err.message))
+    swalError('Lỗi lưu đơn hàng', err.response?.data?.message || err.message)
   } finally {
     isSubmitting.value = false
   }
@@ -1311,7 +1312,7 @@ async function loadOrderData(id) {
       }
     }
   } catch (err) {
-    alert('Không thể tải thông tin đơn hàng: ' + err.message)
+    await swalError('Không thể tải thông tin đơn hàng', err.message)
     router.push('/he-thong-admin/orders')
   }
 }

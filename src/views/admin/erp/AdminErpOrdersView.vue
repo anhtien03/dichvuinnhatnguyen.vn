@@ -1025,6 +1025,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../../services/api'
 import { useAdminTheme } from '../../../composables/useAdminTheme'
+import { swalToast, swalError, swalWarning, swalDelete } from '../../../utils/swal'
 
 const { isDarkMode } = useAdminTheme()
 
@@ -1544,9 +1545,10 @@ async function submitOrderForm() {
     }
 
     isModalOpen.value = false
+    swalToast('Đã lưu đơn hàng thành công')
     fetchOrders()
   } catch (err) {
-    alert(err.message || 'Có lỗi xảy ra khi lưu đơn hàng')
+    swalError('Lỗi lưu đơn hàng', err.message || 'Có lỗi xảy ra khi lưu đơn hàng')
   } finally {
     isSubmitting.value = false
   }
@@ -1557,19 +1559,22 @@ async function handleStageChange(order, newStage) {
   try {
     await api.updateErpOrderStage(order.id, newStage)
     order.production_stage = newStage
+    swalToast('Đã chuyển trạng thái sản xuất')
   } catch (err) {
-    alert('Không thể chuyển trạng thái: ' + err.message)
+    swalError('Không thể chuyển trạng thái', err.message)
   }
 }
 
 // Delete
 async function confirmDelete(order) {
-  if (confirm(`Bạn có chắc muốn xóa vĩnh viễn đơn hàng [${order.code}]?`)) {
+  const confirmed = await swalDelete(`đơn hàng [${order.code}]`)
+  if (confirmed) {
     try {
       await api.deleteErpOrder(order.id)
+      swalToast(`Đã xóa đơn hàng [${order.code}]`)
       fetchOrders()
     } catch (err) {
-      alert('Không thể xóa: ' + err.message)
+      swalError('Không thể xóa', err.message)
     }
   }
 }
@@ -1614,9 +1619,10 @@ async function submitPayment() {
   try {
     await api.addErpOrderPayment(currentPaymentOrder.value.id, paymentForm)
     isPaymentModalOpen.value = false
+    swalToast('Đã ghi nhận thanh toán')
     fetchOrders()
   } catch (err) {
-    alert('Không thể ghi nhận: ' + err.message)
+    swalError('Không thể ghi nhận', err.message)
   }
 }
 

@@ -181,6 +181,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
+import { swalToast, swalError, swalDelete } from '../../utils/swal'
 
 const { isDarkMode } = useAdminTheme()
 
@@ -201,13 +202,14 @@ async function loadCategories() {
 }
 
 async function handleDelete(cat) {
-  if (!confirm(`Bạn có chắc muốn xóa danh mục "${cat.name}"?`)) return
+  const confirmed = await swalDelete(`danh mục "${cat.name}"`)
+  if (!confirmed) return
   try {
     await api.deleteAdminCategory(cat.id)
-    alertMessage.value = `Đã xóa danh mục "${cat.name}" thành công!`
+    swalToast(`Đã xóa danh mục "${cat.name}"!`)
     await loadCategories()
   } catch (err) {
-    alert('Lỗi xóa danh mục: ' + err.message)
+    swalError('Lỗi xóa danh mục', err.message)
   }
 }
 

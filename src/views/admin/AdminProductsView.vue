@@ -278,6 +278,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
+import { swalToast, swalSuccess, swalError, swalConfirm, swalDelete } from '../../utils/swal'
 
 const { isDarkMode } = useAdminTheme()
 
@@ -294,10 +295,17 @@ async function handleGoogleIndex(prod) {
   const url = `https://dichvuinnhatnguyen.vn/san-pham/${prod.slug}`
   try {
     const res = await api.publishGoogleIndexingUrl(url, 'URL_UPDATED')
-    alert(`✅ ${res.message || 'Đã gửi yêu cầu Index tới Google thành công!'}\nURL: ${url}`)
+    swalSuccess('Đã gửi yêu cầu Index tới Google!', res.message || `URL: ${url}`)
   } catch (err) {
     const msg = err.response?.data?.message || err.message
-    if (confirm(`⚠️ ${msg}\n\nBạn có muốn mở ngay Google Search Console để kiểm tra URL này không?`)) {
+    const ok = await swalConfirm({
+      title: 'Không thể gửi Index tự động',
+      text: `${msg}\n\nBạn có muốn mở ngay Google Search Console để kiểm tra URL này không?`,
+      icon: 'warning',
+      confirmText: 'Mở Search Console',
+      cancelText: 'Đóng'
+    })
+    if (ok) {
       window.open(`https://search.google.com/search-console/inspect?resource_id=https%3A%2F%2Fdichvuinnhatnguyen.vn%2F&id=${encodeURIComponent(url)}`, '_blank')
     }
   } finally {
@@ -351,9 +359,9 @@ async function toggleActiveStatus(product) {
       is_active: newStatus
     })
     product.is_active = newStatus
-    alertMessage.value = `Đã ${newStatus ? 'hiển thị' : 'ẩn'} ấn phẩm "${product.name}".`
+    swalToast(`Đã ${newStatus ? 'hiển thị' : 'ẩn'} "${product.name}"`)
   } catch (err) {
-    alert('Lỗi cập nhật trạng thái: ' + err.message)
+    swalError('Lỗi cập nhật trạng thái', err.message)
   }
 }
 
@@ -364,25 +372,26 @@ async function togglePopularStatus(product) {
       is_popular: newPopular
     })
     product.is_popular = newPopular
-    alertMessage.value = newPopular
-      ? `★ Đã thêm "${product.name}" vào mục Ấn Phẩm Bán Chạy ngoài Trang chủ!`
-      : `Đã gỡ "${product.name}" khỏi mục Ấn Phẩm Bán Chạy.`
+    swalToast(
+      newPopular
+        ? `★ Đã thêm "${product.name}" vào Bán Chạy`
+        : `Đã gỡ "${product.name}" khỏi Bán Chạy`
+    )
   } catch (err) {
-    alert('Lỗi cập nhật trạng thái bán chạy: ' + err.message)
+    swalError('Lỗi cập nhật trạng thái', err.message)
   }
 }
 
 async function handleDelete(product) {
-  if (!confirm(`Bạn có chắc muốn xóa ấn phẩm "${product.name}"? Thao tác này không thể hoàn tác.`)) {
-    return
-  }
+  const confirmed = await swalDelete(`ấn phẩm "${product.name}"`)
+  if (!confirmed) return
 
   try {
     await api.deleteAdminProduct(product.id)
     products.value = products.value.filter(p => p.id !== product.id)
-    alertMessage.value = `Đã xóa ấn phẩm "${product.name}" thành công!`
+    swalToast(`Đã xóa "${product.name}" thành công!`)
   } catch (err) {
-    alert('Không thể xóa ấn phẩm: ' + err.message)
+    swalError('Không thể xóa ấn phẩm', err.message)
   }
 }
 

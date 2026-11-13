@@ -596,6 +596,7 @@ import {
 } from 'lucide-vue-next'
 import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
+import { swalToast, swalSuccess, swalError, swalWarning } from '../../utils/swal'
 
 const { isDarkMode } = useAdminTheme()
 
@@ -638,7 +639,7 @@ const manualPingResult = ref(null)
 function copyToClipboard(text, alertMsg = 'Đã sao chép vào bộ nhớ tạm!') {
   if (!text) return
   navigator.clipboard.writeText(text).then(() => {
-    alert(alertMsg)
+    swalToast(alertMsg)
   }).catch(() => {
     prompt('Hãy copy nội dung sau:', text)
   })
@@ -690,7 +691,7 @@ async function saveIndexingConfig() {
       }, 3500)
     }
   } catch (err) {
-    alert('Lỗi lưu cấu hình: ' + (err.response?.data?.message || err.message))
+    swalError('Lỗi lưu cấu hình', err.response?.data?.message || err.message)
   } finally {
     isSavingIndexing.value = false
   }
@@ -707,10 +708,10 @@ async function testIndexingConnection() {
       })
     }
     const res = await api.testGoogleIndexingConnection()
-    alert('✅ ' + (res.message || 'Kết nối Google Indexing API thành công!'))
+    swalSuccess('Kết nối thành công!', res.message || 'Kết nối Google Indexing API thành công!')
     await loadIndexingConfig()
   } catch (err) {
-    alert('❌ ' + (err.response?.data?.message || err.message || 'Kiểm tra thất bại'))
+    swalError('Kiểm tra thất bại', err.response?.data?.message || err.message || 'Không thể kết nối Google API')
   } finally {
     isTestingIndexing.value = false
   }
@@ -718,7 +719,7 @@ async function testIndexingConnection() {
 
 async function sendManualPing() {
   if (!manualPingUrl.value.trim()) {
-    alert('Vui lòng nhập đường dẫn URL cần bắn Index!')
+    swalWarning('Thiếu URL', 'Vui lòng nhập đường dẫn URL cần bắn Index!')
     return
   }
   isPingingUrl.value = true
@@ -795,12 +796,12 @@ async function handleSave() {
     }
     applyGoogleTags(form.value)
     saveSuccess.value = true
-    alert('✅ Đã lưu cài đặt và cập nhật mã xác minh Google Search Console thành công! (Dữ liệu đã được lưu vĩnh viễn, F5 không bị mất)')
+    swalSuccess('Đã lưu cài đặt thành công!', 'Mã xác minh Google Search Console và GA4 đã được lưu vĩnh viễn.')
     setTimeout(() => {
       saveSuccess.value = false
     }, 4000)
   } catch (err) {
-    alert('Lỗi lưu cài đặt: ' + (err.message || 'Không thể lưu'))
+    swalError('Lỗi lưu cài đặt', err.message || 'Không thể lưu')
   } finally {
     isSaving.value = false
   }
