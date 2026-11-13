@@ -41,9 +41,9 @@
             </div>
           </div>
 
-          <!-- 2. Body (Khu vực hình ảnh) -->
+          <!-- 2. Body (Khu vực hình ảnh - Tỉ lệ 800x600 chuẩn 4:3 sắc nét) -->
           <router-link :to="'/san-pham/' + (item.slug || item.id)" class="block w-full flex-1 flex flex-col justify-between">
-            <div class="relative w-full h-[200px] sm:h-[220px] bg-slate-100 overflow-hidden">
+            <div class="relative w-full aspect-[4/3] bg-slate-100 overflow-hidden">
               <img
                 :src="item.image || '/logo.png'"
                 :alt="item.name"

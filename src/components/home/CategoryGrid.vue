@@ -32,7 +32,7 @@
       </div>
 
       <!-- Categories 20-item Grid (10 cột x 2 hàng chuẩn theo thiết kế tham khảo) -->
-      <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-10 gap-3 sm:gap-4 lg:gap-5 xl:gap-6">
+      <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-10 gap-2.5 sm:gap-4 lg:gap-5 xl:gap-6">
         <router-link
           v-for="item in printItems"
           :key="item.id"
@@ -43,15 +43,15 @@
         >
           <!-- Khung vuông bo tròn mềm mại chứa Icon -->
           <div
-            class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-50/90 border border-slate-200/80 shadow-sm flex items-center justify-center text-slate-700 transition-all duration-300 group-hover:bg-brand-blue group-hover:text-white group-hover:border-brand-blue group-hover:shadow-md group-hover:-translate-y-1"
+            class="w-13 h-13 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-xl sm:rounded-2xl bg-slate-50/90 border border-slate-200/80 shadow-sm flex items-center justify-center text-slate-700 transition-all duration-300 group-hover:bg-brand-blue group-hover:text-white group-hover:border-brand-blue group-hover:shadow-md group-hover:-translate-y-1"
             :class="hoveredItem?.id === item.id ? 'bg-brand-blue text-white border-brand-blue shadow-md -translate-y-1' : ''"
           >
-            <component :is="item.icon" class="w-7 h-7 sm:w-8 sm:h-8 stroke-[1.6]" />
+            <component :is="item.icon" class="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 stroke-[1.6]" />
           </div>
 
           <!-- Tên ấn phẩm bên dưới -->
           <span
-            class="mt-2 text-[11px] sm:text-xs font-medium text-slate-700 text-center group-hover:text-brand-blue group-hover:font-bold transition-colors leading-tight line-clamp-1"
+            class="mt-1.5 sm:mt-2 text-[10px] sm:text-xs font-medium text-slate-700 text-center group-hover:text-brand-blue group-hover:font-bold transition-colors leading-tight line-clamp-1"
             :class="hoveredItem?.id === item.id ? 'text-brand-blue font-bold' : ''"
           >
             {{ item.name }}

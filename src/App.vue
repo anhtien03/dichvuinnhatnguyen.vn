@@ -11,7 +11,7 @@
   </div>
 
   <!-- Public client layout -->
-  <div v-else class="min-h-screen flex flex-col font-sans bg-slate-50 text-slate-800">
+  <div v-else class="min-h-screen flex flex-col font-sans bg-slate-50 text-slate-800 overflow-x-hidden max-w-full">
     <!-- Top utility bar with hotlines & working hours -->
     <TopBar />
 

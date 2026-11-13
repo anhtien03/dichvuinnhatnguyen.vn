@@ -2,14 +2,14 @@
   <header class="sticky top-0 z-40 bg-white shadow-md transition-all">
     <!-- 1. Main Header Bar (Logo, Search, Direct Hotline) -->
     <div class="border-b border-slate-100 bg-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-24 sm:h-28 gap-4 py-2">
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16 sm:h-20 lg:h-28 gap-2 sm:gap-4 py-1.5 sm:py-2">
           <!-- Logo -->
           <router-link to="/" class="flex items-center shrink-0 group py-1">
             <img
               src="/logo.png"
               alt="Nhật Nguyên Design & Printing"
-              class="h-16 sm:h-20 lg:h-[86px] w-auto object-contain transition-transform group-hover:scale-[1.02]"
+              class="h-11 sm:h-16 lg:h-[86px] w-auto max-w-[170px] sm:max-w-none object-contain transition-transform group-hover:scale-[1.02]"
             />
           </router-link>
 
@@ -128,8 +128,8 @@
             </transition>
           </div>
 
-          <!-- Right: Hotline Box & Mobile Hamburger -->
-          <div class="flex items-center space-x-2 sm:space-x-3">
+          <!-- Right: Hotline Box & Mobile Controls -->
+          <div class="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
             <!-- Desktop Hotline Contact Highlight (Gọn gàng 2 số xưởng in) -->
             <div class="hidden lg:flex items-center gap-2.5 bg-slate-50 border border-slate-200/90 px-3.5 py-1.5 rounded-xl">
               <div class="w-8 h-8 rounded-lg bg-brand-blue/10 text-brand-blue flex items-center justify-center shrink-0">
@@ -157,11 +157,21 @@
               </div>
             </div>
 
+            <!-- Mobile Quick Call Button -->
+            <a
+              :href="'tel:' + siteSettings.hotlines[0].number.replace(/\s+/g, '')"
+              class="p-2 sm:p-2.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl md:hidden transition-colors flex items-center justify-center"
+              aria-label="Gọi hotline"
+              title="Gọi hotline tư vấn nhanh"
+            >
+              <PhoneCall class="w-5 h-5" />
+            </a>
+
             <!-- Mobile Search Icon -->
             <button
               type="button"
               @click="isSearchOpen = true"
-              class="p-2.5 text-slate-600 hover:text-brand-blue hover:bg-slate-100 rounded-xl md:hidden"
+              class="p-2 sm:p-2.5 text-slate-600 hover:text-brand-blue hover:bg-slate-100 rounded-xl md:hidden transition-colors"
               aria-label="Tìm kiếm"
             >
               <Search class="w-5 h-5" />
@@ -171,7 +181,7 @@
             <button
               type="button"
               @click="isMobileMenuOpen = true"
-              class="p-2.5 text-slate-700 hover:text-brand-blue hover:bg-slate-100 rounded-xl lg:hidden"
+              class="p-2 sm:p-2.5 text-slate-700 hover:text-brand-blue hover:bg-slate-100 rounded-xl lg:hidden transition-colors"
               aria-label="Menu"
             >
               <Menu class="w-6 h-6" />
