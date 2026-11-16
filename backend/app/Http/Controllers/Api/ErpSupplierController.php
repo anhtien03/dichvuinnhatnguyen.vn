@@ -102,60 +102,6 @@ class ErpSupplierController extends Controller
         $supplier->total_paid = $paid;
         $supplier->balance = $cost - $paid;
 
-        // Per-item payment tracking + FIFO allocation for legacy unlinked payments
-        $directPaidByItem = ErpSupplierPayment::where('supplier_id', $id)
-            ->whereNotNull('order_item_id')
-            ->select('order_item_id', DB::raw('SUM(amount) as total'))
-            ->groupBy('order_item_id')
-            ->pluck('total', 'order_item_id');
-
-        $unlinkedPaidPool = (float) ErpSupplierPayment::where('supplier_id', $id)
-            ->whereNull('order_item_id')
-            ->sum('amount');
-
-        // Allocate unlinked payments oldest-first (ascending ID)
-        $itemsAsc = $supplier->orderItems->sortBy('id')->values();
-        $itemPaidMap = [];
-        foreach ($itemsAsc as $item) {
-            $itemCost = (float) $item->cost_total + (float) ($item->vat_input_amount ?? ($item->cost_total * ($item->vat_input_rate ?? 0) / 100));
-            $directPaid = (float) ($directPaidByItem[$item->id] ?? 0);
-            $stillNeeded = max(0.0, $itemCost - $directPaid);
-            $allocated = 0.0;
-            if ($unlinkedPaidPool > 0 && $stillNeeded > 0) {
-                $allocated = min($unlinkedPaidPool, $stillNeeded);
-                $unlinkedPaidPool -= $allocated;
-            }
-            $totalItemPaid = $directPaid + $allocated;
-            $remaining = max(0.0, $itemCost - $totalItemPaid);
-            $status = 'unpaid';
-            if ($itemCost <= 0 || $remaining <= 0.5) {
-                $remaining = 0.0;
-                $status = 'paid';
-            } elseif ($totalItemPaid > 0) {
-                $status = 'partial';
-            }
-            $itemPaidMap[$item->id] = [
-                'item_total_cost' => round($itemCost, 2),
-                'paid_amount' => round($totalItemPaid, 2),
-                'remaining_amount' => round($remaining, 2),
-                'payment_status' => $status,
-            ];
-        }
-
-        $supplier->orderItems->transform(function ($item) use ($itemPaidMap) {
-            $meta = $itemPaidMap[$item->id] ?? [
-                'item_total_cost' => 0,
-                'paid_amount' => 0,
-                'remaining_amount' => 0,
-                'payment_status' => 'unpaid',
-            ];
-            $item->item_total_cost = $meta['item_total_cost'];
-            $item->paid_amount = $meta['paid_amount'];
-            $item->remaining_amount = $meta['remaining_amount'];
-            $item->payment_status = $meta['payment_status'];
-            return $item;
-        });
-
         return response()->json([
             'status' => 'success',
             'data' => $supplier
@@ -203,7 +149,6 @@ class ErpSupplierController extends Controller
         $supplier = ErpSupplier::findOrFail($id);
 
         $validated = $request->validate([
-            'order_item_id' => 'nullable|integer|exists:erp_order_items,id',
             'amount' => 'required|numeric|min:1',
             'payment_method' => 'nullable|string|in:bank_acb,bank_mb,bank_minh_nguyen,bank_truong_hung,cash,other',
             'funding_owner' => 'nullable|string|in:company,truong_hung,minh_nguyen',
@@ -211,15 +156,8 @@ class ErpSupplierController extends Controller
             'paid_at' => 'nullable|date',
         ]);
 
-        if (!empty($validated['order_item_id'])) {
-            ErpOrderItem::where('id', $validated['order_item_id'])
-                ->where('supplier_id', $supplier->id)
-                ->firstOrFail();
-        }
-
         $payment = ErpSupplierPayment::create([
             'supplier_id' => $supplier->id,
-            'order_item_id' => $validated['order_item_id'] ?? null,
             'amount' => $validated['amount'],
             'payment_method' => $validated['payment_method'] ?? 'bank_acb',
             'funding_owner' => $validated['funding_owner'] ?? 'company',

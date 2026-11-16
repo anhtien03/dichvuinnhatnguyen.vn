@@ -557,7 +557,6 @@
                     <th class="py-2.5 px-3 text-center">Thuế VAT Xưởng</th>
                     <th class="py-2.5 px-3 text-right">Tiền Thuế</th>
                     <th class="py-2.5 px-3 text-right font-black text-brand-gold">Tổng Tiền (Vốn+VAT)</th>
-                    <th class="py-2.5 px-3 text-center">Trạng Thái Trả</th>
                     <th class="py-2.5 px-3 text-center">Thanh Toán</th>
                   </tr>
                 </thead>
@@ -594,41 +593,26 @@
                     <td class="py-2.5 px-3 text-center whitespace-nowrap">
                       <span
                         v-if="it.payment_status === 'paid'"
-                        class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
+                        class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
                       >
-                        ✓ Đã trả đủ
+                        ✓ Đã trả
                       </span>
-                      <div v-else-if="it.payment_status === 'partial'" class="space-y-0.5">
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/25">
-                          Trả 1 phần
-                        </span>
-                        <div class="text-[10px] text-rose-400 font-bold">
+                      <div v-else class="flex flex-col items-center gap-0.5">
+                        <button
+                          type="button"
+                          @click="openItemPaymentModal(detailSupplier, it)"
+                          class="px-3 py-1 rounded-lg text-[11px] font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all cursor-pointer shadow-sm"
+                        >
+                          Thanh toán
+                        </button>
+                        <span v-if="it.payment_status === 'partial'" class="text-[10px] font-semibold text-amber-400">
                           Còn: {{ formatMoney(it.remaining_amount) }}
-                        </div>
+                        </span>
                       </div>
-                      <span
-                        v-else
-                        class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-400 border border-rose-500/25"
-                      >
-                        Chưa trả
-                      </span>
-                    </td>
-                    <td class="py-2.5 px-3 text-center whitespace-nowrap">
-                      <button
-                        v-if="it.payment_status !== 'paid'"
-                        type="button"
-                        @click="openItemPaymentModal(detailSupplier, it)"
-                        class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all cursor-pointer shadow-sm"
-                      >
-                        Thanh toán
-                      </button>
-                      <span v-else class="text-[11px] font-semibold text-emerald-400">
-                        Đã thanh toán
-                      </span>
                     </td>
                   </tr>
                   <tr v-if="!detailSupplier?.order_items || detailSupplier.order_items.length === 0">
-                    <td colspan="9" class="py-8 text-center text-slate-400 italic">
+                    <td colspan="8" class="py-8 text-center text-slate-400 italic">
                       Chưa có đơn hàng nào gán cho xưởng này.
                     </td>
                   </tr>
