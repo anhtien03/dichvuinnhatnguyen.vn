@@ -102,90 +102,10 @@
             </div>
           </template>
 
-          <!-- Khi chưa cấu hình quy cách riêng (hiển thị linh hoạt theo loại sản phẩm) -->
+          <!-- Khi chưa cấu hình quy cách riêng -->
           <template v-else>
-            <!-- 1. Màu sắc -->
-            <div class="py-3 flex items-center justify-between gap-4">
-              <span class="font-bold text-slate-800">Màu sắc:</span>
-              <div class="flex items-center gap-1.5 text-right font-medium text-slate-600">
-                <span>In chuẩn màu kỹ thuật số / Offset sắc nét</span>
-                <span class="relative group/tip inline-flex items-center cursor-help">
-                  <span class="w-4 h-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 text-[10px] font-bold flex items-center justify-center">?</span>
-                  <span class="absolute bottom-full right-0 mb-2 hidden group-hover/tip:block w-56 p-2.5 bg-slate-900 text-white text-[11px] rounded-xl shadow-xl z-20 pointer-events-none leading-relaxed font-normal">
-                    Chuẩn sắc nét hệ màu CMYK, đảm bảo hình ảnh chân thực và chuẩn màu thương hiệu.
-                  </span>
-                </span>
-              </div>
-            </div>
-
-            <!-- 2. Loại chất liệu -->
-            <div class="py-3 flex items-center justify-between gap-4">
-              <span class="font-bold text-slate-800">Loại chất liệu:</span>
-              <div class="flex items-center gap-1.5 text-right font-medium text-slate-600">
-                <span>{{ product.specs?.materials?.[0]?.label || defaultMaterialName }}</span>
-                <span class="relative group/tip inline-flex items-center cursor-help">
-                  <span class="w-4 h-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 text-[10px] font-bold flex items-center justify-center">?</span>
-                  <span class="absolute bottom-full right-0 mb-2 hidden group-hover/tip:block w-56 p-2.5 bg-slate-900 text-white text-[11px] rounded-xl shadow-xl z-20 pointer-events-none leading-relaxed font-normal">
-                    Chất liệu tiêu chuẩn đanh cứng, bề mặt bám mực in tối ưu và bền màu lâu dài.
-                  </span>
-                </span>
-              </div>
-            </div>
-
-            <!-- 3. Cán màng / Gia công -->
-            <div class="py-3 flex items-center justify-between gap-4">
-              <span class="font-bold text-slate-800">Cán màng / Gia công:</span>
-              <div class="flex items-center gap-1.5 text-right font-medium text-slate-600">
-                <span>{{ product.specs?.finishings?.[0]?.label || 'Màng mờ / Màng bóng bảo vệ theo yêu cầu' }}</span>
-                <span class="relative group/tip inline-flex items-center cursor-help">
-                  <span class="w-4 h-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 text-[10px] font-bold flex items-center justify-center">?</span>
-                  <span class="absolute bottom-full right-0 mb-2 hidden group-hover/tip:block w-56 p-2.5 bg-slate-900 text-white text-[11px] rounded-xl shadow-xl z-20 pointer-events-none leading-relaxed font-normal">
-                    Gia công bảo vệ bề mặt chống trầy xước, tăng độ dai và chống ẩm mốc, kháng nước.
-                  </span>
-                </span>
-              </div>
-            </div>
-
-            <!-- 4. Kỹ thuật in -->
-            <div class="py-3 flex items-center justify-between gap-4">
-              <span class="font-bold text-slate-800">Kỹ thuật in:</span>
-              <div class="flex items-center gap-1.5 text-right font-medium text-slate-600">
-                <span>{{ defaultPrintingTech }}</span>
-                <span class="relative group/tip inline-flex items-center cursor-help">
-                  <span class="w-4 h-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 text-[10px] font-bold flex items-center justify-center">?</span>
-                  <span class="absolute bottom-full right-0 mb-2 hidden group-hover/tip:block w-56 p-2.5 bg-slate-900 text-white text-[11px] rounded-xl shadow-xl z-20 pointer-events-none leading-relaxed font-normal">
-                    Sản xuất bằng hệ thống máy in công nghiệp hiện đại, kiểm tra màu nghiêm ngặt.
-                  </span>
-                </span>
-              </div>
-            </div>
-
-            <!-- 5. KTTP (Kích thước) -->
-            <div class="py-3 flex items-center justify-between gap-4">
-              <span class="font-bold text-slate-800">Kích thước (KTTP):</span>
-              <div class="flex items-center gap-1.5 text-right font-medium text-slate-600">
-                <span>{{ product.specs?.sizes?.[0]?.label || 'Kích thước chuẩn hoặc gia công theo file' }}</span>
-                <span class="relative group/tip inline-flex items-center cursor-help">
-                  <span class="w-4 h-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 text-[10px] font-bold flex items-center justify-center">?</span>
-                  <span class="absolute bottom-full right-0 mb-2 hidden group-hover/tip:block w-56 p-2.5 bg-slate-900 text-white text-[11px] rounded-xl shadow-xl z-20 pointer-events-none leading-relaxed font-normal">
-                    Kích thước thành phẩm thực tế sau khi gia công hoàn thiện hoặc bế theo file thiết kế.
-                  </span>
-                </span>
-              </div>
-            </div>
-
-            <!-- 6. Thành phẩm -->
-            <div class="py-3 flex items-center justify-between gap-4">
-              <span class="font-bold text-slate-800">Thành phẩm:</span>
-              <div class="flex items-center gap-1.5 text-right font-medium text-slate-600">
-                <span>Cắt xén, bế khuôn, hoàn thiện theo yêu cầu</span>
-                <span class="relative group/tip inline-flex items-center cursor-help">
-                  <span class="w-4 h-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 text-[10px] font-bold flex items-center justify-center">?</span>
-                  <span class="absolute bottom-full right-0 mb-2 hidden group-hover/tip:block w-56 p-2.5 bg-slate-900 text-white text-[11px] rounded-xl shadow-xl z-20 pointer-events-none leading-relaxed font-normal">
-                    Được cắt xén chuẩn xác, bế demi hoặc đục lỗ xỏ dây theo đúng yêu cầu khách hàng.
-                  </span>
-                </span>
-              </div>
+            <div class="py-4 text-center sm:text-left text-slate-500 leading-relaxed">
+              Quy cách in đang được cập nhật — vui lòng liên hệ hotline hoặc Zalo bên dưới để được tư vấn thông số chi tiết theo yêu cầu.
             </div>
           </template>
         </div>
@@ -431,28 +351,6 @@ const customSpecsList = computed(() => {
     return cs.filter(s => s && (s.name || s.value))
   }
   return []
-})
-
-const defaultMaterialName = computed(() => {
-  const nameLower = (props.product?.name || '').toLowerCase()
-  if (nameLower.includes('decal') || nameLower.includes('tem') || nameLower.includes('sticker')) {
-    return 'Decal chuyên dụng (Decal lưới dán kính, decal sữa, decal trong...)'
-  }
-  if (nameLower.includes('túi')) {
-    return 'Giấy Kraft nâu, Couche, Ivory theo mẫu xưởng'
-  }
-  if (nameLower.includes('hộp')) {
-    return 'Giấy Ivory, Duplex bồi carton sóng cao cấp'
-  }
-  return 'Chất liệu theo yêu cầu phù hợp ấn phẩm'
-})
-
-const defaultPrintingTech = computed(() => {
-  const nameLower = (props.product?.name || '').toLowerCase()
-  if (nameLower.includes('decal') || nameLower.includes('bạt') || nameLower.includes('standee')) {
-    return 'In Kỹ thuật số UV / In phun công nghiệp chất lượng cao'
-  }
-  return 'In Offset công nghiệp CMYK / In Kỹ thuật số sắc nét'
 })
 
 watch(() => props.product, (newVal) => {
