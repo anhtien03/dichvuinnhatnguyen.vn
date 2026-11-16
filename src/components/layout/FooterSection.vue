@@ -34,7 +34,7 @@
             </li>
             <li class="pt-1">
               <router-link to="/yeu-cau-bao-gia" class="text-brand-blue font-bold hover:underline">
-                › Đặt in theo quy cách riêng &rarr;
+                › Gửi yêu cầu báo giá theo quy cách &rarr;
               </router-link>
             </li>
           </ul>
@@ -67,7 +67,7 @@
             <li>
               <router-link to="/lien-he" class="text-slate-600 hover:text-brand-blue font-medium transition-colors flex items-center gap-1.5">
                 <span class="text-brand-gold font-bold">›</span>
-                <span>Quy trình giao hàng & Thanh toán</span>
+                <span>Quy trình tư vấn & Giao nhận tại xưởng</span>
               </router-link>
             </li>
           </ul>

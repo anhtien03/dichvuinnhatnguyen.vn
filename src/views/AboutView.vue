@@ -369,7 +369,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
           <div class="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:border-brand-gold/50 flex items-center justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group/sales">
             <div>
-              <span class="text-xs text-brand-gold font-bold uppercase tracking-wider block">Tư vấn đặt hàng & Báo giá</span>
+              <span class="text-xs text-brand-gold font-bold uppercase tracking-wider block">Tư vấn quy cách & Báo giá</span>
               <div class="text-lg font-black mt-0.5 flex items-center gap-2">
                 <span>Minh Nguyên</span>
                 <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>

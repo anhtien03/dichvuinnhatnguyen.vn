@@ -669,7 +669,7 @@
           @click="scrollToCalculator"
           class="px-4 py-2.5 rounded-xl bg-brand-gold hover:bg-brand-gold-hover text-slate-950 font-black text-xs shadow-md transition-all cursor-pointer"
         >
-          Tính giá & Đặt in
+          Ước tính giá & Báo giá
         </button>
       </div>
     </div>

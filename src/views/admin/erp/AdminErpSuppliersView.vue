@@ -393,7 +393,7 @@
     <!-- PAY SUPPLIER MODAL -->
     <div
       v-if="isPaymentModalOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
     >
       <div
         class="relative w-full max-w-md rounded-3xl border shadow-2xl p-6 space-y-4"
@@ -404,11 +404,25 @@
         </button>
 
         <h3 class="text-base font-black text-brand-gold">
-          Thanh Toán Tiền Xưởng
+          {{ paymentTargetItem ? 'Thanh Toán Theo Đơn Gia Công' : 'Thanh Toán Tiền Xưởng' }}
         </h3>
         <p class="text-xs text-slate-400">
-          Đối tác: <span class="font-bold text-white">{{ currentSupplier?.name }}</span> - Nợ hiện tại: <span class="font-bold text-red-400">{{ formatMoney(currentSupplier?.balance) }}</span>
+          Đối tác: <span class="font-bold" :class="isDarkMode ? 'text-white' : 'text-slate-900'">{{ currentSupplier?.name }}</span> - Nợ xưởng: <span class="font-bold text-red-400">{{ formatMoney(currentSupplier?.balance) }}</span>
         </p>
+
+        <div
+          v-if="paymentTargetItem"
+          class="p-3 rounded-xl border text-xs space-y-1"
+          :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-amber-50 border-amber-200'"
+        >
+          <div class="font-bold text-brand-gold">
+            {{ paymentTargetItem.order?.code || ('Đơn #' + paymentTargetItem.order_id) }} — {{ paymentTargetItem.product_name }}
+          </div>
+          <div class="flex justify-between text-[11px] text-slate-400">
+            <span>Tổng tiền món: {{ formatMoney(paymentTargetItem.item_total_cost) }}</span>
+            <span>Còn nợ: <strong class="text-rose-400">{{ formatMoney(paymentTargetItem.remaining_amount) }}</strong></span>
+          </div>
+        </div>
 
         <form @submit.prevent="submitPayment" class="space-y-3">
           <div>
@@ -474,7 +488,7 @@
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
     >
       <div
-        class="relative w-full max-w-4xl max-h-[90vh] flex flex-col rounded-3xl border shadow-2xl overflow-hidden"
+        class="relative w-full max-w-5xl max-h-[90vh] flex flex-col rounded-3xl border shadow-2xl overflow-hidden"
         :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
       >
         <!-- Modal Header -->
@@ -532,7 +546,7 @@
               <span class="text-[11px] font-normal normal-case text-amber-400">Tự động tính thuế VAT theo từng đơn/món có hoặc không có VAT</span>
             </div>
 
-            <div class="rounded-xl border overflow-hidden" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
+            <div class="rounded-xl border overflow-x-auto" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
               <table class="w-full text-left text-xs">
                 <thead class="uppercase font-bold tracking-wider border-b" :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47] text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-600'">
                   <tr>
@@ -543,6 +557,8 @@
                     <th class="py-2.5 px-3 text-center">Thuế VAT Xưởng</th>
                     <th class="py-2.5 px-3 text-right">Tiền Thuế</th>
                     <th class="py-2.5 px-3 text-right font-black text-brand-gold">Tổng Tiền (Vốn+VAT)</th>
+                    <th class="py-2.5 px-3 text-center">Trạng Thái Trả</th>
+                    <th class="py-2.5 px-3 text-center">Thanh Toán</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y" :class="isDarkMode ? 'divide-[#2E3A47]' : 'divide-slate-100'">
@@ -573,11 +589,46 @@
                       {{ formatMoney(it.vat_input_amount || (it.cost_total * (it.vat_input_rate || 0) / 100)) }}
                     </td>
                     <td class="py-2.5 px-3 text-right font-black" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
-                      {{ formatMoney(it.cost_total + (it.vat_input_amount || (it.cost_total * (it.vat_input_rate || 0) / 100))) }}
+                      {{ formatMoney(it.item_total_cost ?? (it.cost_total + (it.vat_input_amount || (it.cost_total * (it.vat_input_rate || 0) / 100)))) }}
+                    </td>
+                    <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                      <span
+                        v-if="it.payment_status === 'paid'"
+                        class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
+                      >
+                        ✓ Đã trả đủ
+                      </span>
+                      <div v-else-if="it.payment_status === 'partial'" class="space-y-0.5">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/25">
+                          Trả 1 phần
+                        </span>
+                        <div class="text-[10px] text-rose-400 font-bold">
+                          Còn: {{ formatMoney(it.remaining_amount) }}
+                        </div>
+                      </div>
+                      <span
+                        v-else
+                        class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-400 border border-rose-500/25"
+                      >
+                        Chưa trả
+                      </span>
+                    </td>
+                    <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                      <button
+                        v-if="it.payment_status !== 'paid'"
+                        type="button"
+                        @click="openItemPaymentModal(detailSupplier, it)"
+                        class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all cursor-pointer shadow-sm"
+                      >
+                        Thanh toán
+                      </button>
+                      <span v-else class="text-[11px] font-semibold text-emerald-400">
+                        Đã thanh toán
+                      </span>
                     </td>
                   </tr>
                   <tr v-if="!detailSupplier?.order_items || detailSupplier.order_items.length === 0">
-                    <td colspan="7" class="py-8 text-center text-slate-400 italic">
+                    <td colspan="9" class="py-8 text-center text-slate-400 italic">
                       Chưa có đơn hàng nào gán cho xưởng này.
                     </td>
                   </tr>
@@ -672,7 +723,9 @@ const supplierForm = reactive({
 
 const isPaymentModalOpen = ref(false)
 const currentSupplier = ref(null)
+const paymentTargetItem = ref(null)
 const paymentForm = reactive({
+  order_item_id: null,
   amount: 0,
   payment_method: 'bank_acb',
   note: ''
@@ -771,9 +824,22 @@ async function deleteSupplier(s) {
 
 function openPaymentModal(s) {
   currentSupplier.value = s
+  paymentTargetItem.value = null
+  paymentForm.order_item_id = null
   paymentForm.amount = Math.max(0, s.balance || 0)
   paymentForm.payment_method = 'bank_acb'
   paymentForm.note = 'Thanh toán tiền xưởng'
+  isPaymentModalOpen.value = true
+}
+
+function openItemPaymentModal(s, item) {
+  currentSupplier.value = s
+  paymentTargetItem.value = item
+  paymentForm.order_item_id = item.id
+  paymentForm.amount = Math.max(0, Math.round(item.remaining_amount ?? item.item_total_cost ?? 0))
+  paymentForm.payment_method = 'bank_acb'
+  const orderCode = item.order?.code || ('Đơn #' + item.order_id)
+  paymentForm.note = `Thanh toán ${orderCode} - ${item.product_name}`
   isPaymentModalOpen.value = true
 }
 
@@ -784,6 +850,12 @@ async function submitPayment() {
     isPaymentModalOpen.value = false
     swalToast('Đã ghi nhận thanh toán công nợ')
     fetchSuppliers()
+    if (isDetailModalOpen.value && detailSupplier.value?.id === currentSupplier.value.id) {
+      const res = await api.getErpSupplier(currentSupplier.value.id)
+      if (res.data) {
+        detailSupplier.value = res.data
+      }
+    }
   } catch (err) {
     swalError('Lỗi khi thanh toán', err.message || 'Không thể thanh toán')
   }

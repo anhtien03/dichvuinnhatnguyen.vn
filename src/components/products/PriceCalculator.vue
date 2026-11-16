@@ -304,7 +304,7 @@
       <!-- 4. Số lượng đặt in -->
       <div v-if="product.specs?.quantities && product.specs.quantities.length > 0">
         <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-700 mb-2.5">
-          4. Số lượng đặt in:
+          4. Số lượng cần báo giá:
         </label>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <button
@@ -362,7 +362,7 @@
             class="w-full py-3.5 px-4 rounded-xl bg-brand-gold hover:bg-brand-gold-hover text-slate-950 font-black text-sm text-center shadow-lg transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 cursor-pointer"
           >
             <Send class="w-4 h-4" />
-            <span>Gửi thông tin đặt in</span>
+            <span>Gửi yêu cầu báo giá</span>
           </button>
 
           <a

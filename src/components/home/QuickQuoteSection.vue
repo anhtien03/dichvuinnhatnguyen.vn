@@ -134,7 +134,7 @@
                   :to="{ path: '/yeu-cau-bao-gia', query: { product: currentProduct.slug, qty: currentQuantityObj.count } }"
                   class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-brand-gold hover:bg-brand-gold-hover text-slate-950 text-xs font-extrabold text-center shadow-md transition-all"
                 >
-                  Đặt in theo giá này
+                  Nhận báo giá mức này
                 </router-link>
               </div>
             </div>

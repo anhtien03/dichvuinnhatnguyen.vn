@@ -13,6 +13,7 @@ class ErpSupplierPayment extends Model
 
     protected $fillable = [
         'supplier_id',
+        'order_item_id',
         'amount',
         'payment_method',
         'funding_owner',
@@ -29,6 +30,11 @@ class ErpSupplierPayment extends Model
     public function supplier()
     {
         return $this->belongsTo(ErpSupplier::class, 'supplier_id');
+    }
+
+    public function orderItem()
+    {
+        return $this->belongsTo(ErpOrderItem::class, 'order_item_id');
     }
 
     public function creator()
