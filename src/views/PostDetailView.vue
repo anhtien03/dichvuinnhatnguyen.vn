@@ -299,7 +299,7 @@
 
                   <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto shrink-0">
                     <a
-                      href="https://zalo.me/0767598368"
+                      href="https://zalo.me/0368644812"
                       target="_blank"
                       rel="noopener noreferrer"
                       class="w-full sm:w-auto px-5 py-3 rounded-full bg-brand-gold hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm shadow-lg text-center transition-all flex items-center justify-center gap-2"
@@ -308,11 +308,11 @@
                       <span>Chat Zalo Báo Giá</span>
                     </a>
                     <a
-                      href="tel:0767598368"
+                      href="tel:0368644812"
                       class="w-full sm:w-auto px-5 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm border border-white/20 text-center transition-all flex items-center justify-center gap-2"
                     >
                       <Phone class="w-4 h-4 text-brand-gold" />
-                      <span>076.759.8368</span>
+                      <span>0368.644.812</span>
                     </a>
                   </div>
                 </div>
@@ -387,9 +387,9 @@
                     Nhật Nguyên là xưởng sản xuất trực tiếp tại TP.HCM chuyên in decal DTF, tem nhãn cuộn, bao bì hộp giấy, danh thiếp và ấn phẩm quảng cáo. Sở hữu dàn máy in kỹ thuật số công nghiệp hiện đại, nhận in mọi số lượng với giá gốc tại xưởng.
                   </p>
                   <div class="pt-1 flex items-center justify-center sm:justify-start gap-4 text-xs font-bold text-brand-blue">
-                    <a href="tel:0767598368" class="hover:underline flex items-center gap-1">
+                    <a href="tel:0368644812" class="hover:underline flex items-center gap-1">
                       <Phone class="w-3 h-3 text-brand-gold" />
-                      <span>076.759.8368</span>
+                      <span>0368.644.812</span>
                     </a>
                     <router-link to="/gioi-thieu" class="hover:underline flex items-center gap-1 text-slate-600">
                       <span>Tìm hiểu về xưởng &rsaquo;</span>
@@ -504,12 +504,12 @@
 
               <div class="p-3 bg-white/10 rounded-2xl space-y-1 border border-white/10">
                 <div class="text-[11px] text-blue-200">Hotline & Zalo Trực Tiếp:</div>
-                <div class="text-lg font-black text-brand-gold tracking-wider">076.759.8368</div>
+                <div class="text-lg font-black text-brand-gold tracking-wider">0368.644.812</div>
               </div>
 
               <div class="space-y-2 pt-1">
                 <a
-                  href="https://zalo.me/0767598368"
+                  href="https://zalo.me/0368644812"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="w-full py-3 rounded-xl bg-brand-gold hover:bg-amber-400 text-slate-950 font-black text-xs text-center block shadow transition-all"
@@ -751,7 +751,7 @@ function formatPlainTextToHtml(text) {
     }
 
     // If it mentions Hotline / Zalo contact, make it an attractive contact note
-    if (trimmed.includes('076.759.8368') || trimmed.includes('Hotline')) {
+    if (trimmed.includes('0368.644.812') || trimmed.includes('076.759.8368') || trimmed.includes('Hotline')) {
       htmlParts.push(`
         <div class="article-contact-box">
           <div class="contact-icon">📞</div>

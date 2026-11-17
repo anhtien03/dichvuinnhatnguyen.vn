@@ -43,7 +43,7 @@
         <strong>XƯỞNG IN ẤN NHẬT NGUYÊN</strong><br>
         📍 Xưởng: Đông Hưng Thuận 40, P. Đông Hưng Thuận, Quận 12, TP.HCM<br>
         📍 VP: 167 Hà Huy Giáp, P. An Phú Đông, Quận 12, TP.HCM<br>
-        📞 Hotline/Zalo: 0359 005 469 - 076 759 8368<br>
+        📞 Hotline/Zalo: 0359 005 469 - 0368 644 812<br>
         🌐 Website: https://dichvuinnhatnguyen.vn
       </div>
     </div>

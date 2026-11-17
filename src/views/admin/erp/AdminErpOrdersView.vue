@@ -1301,7 +1301,7 @@ ${itemsText}
 ${vatText}${shipText}${surchargeText}👉 TỔNG THANH TOÁN: ${formatMoney(calculated.value.total_amount)}
 ---------------------------------------
 CÔNG TY THIẾT KẾ IN ẤN NHẬT NGUYÊN
-Hotline / Zalo: 0359 005 469 - 076 759 8368
+Hotline / Zalo: 0359 005 469 - 0368 644 812
 Địa chỉ: Đông Hưng Thuận 40, P. Đông Hưng Thuận, Q.12, TP.HCM
 Cam kết in sắc nét, đúng tiến độ và hỗ trợ kiểm tra file tận tình!`
 

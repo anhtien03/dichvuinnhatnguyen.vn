@@ -103,7 +103,7 @@ class DatabaseSeeder extends Seeder
         SiteSetting::set('brand_name', 'NHẬT NGUYÊN PRINTING', 'general');
         SiteSetting::set('slogan', 'Nhanh - Đẹp - Giá Tốt | Xưởng In Trực Tiếp Không Qua Trung Gian', 'general');
         SiteSetting::set('hotline_1', '0359 005 469', 'contact');
-        SiteSetting::set('hotline_2', '076 759 8368', 'contact');
+        SiteSetting::set('hotline_2', '0368 644 812', 'contact');
         SiteSetting::set('zalo', 'https://zalo.me/0359005469', 'contact');
         SiteSetting::set('email', 'nhatnguyenprinting@gmail.com', 'contact');
         SiteSetting::set('address_factory', 'Đông Hưng Thuận 40, P. Đông Hưng Thuận, Quận 12, TP.HCM', 'contact');

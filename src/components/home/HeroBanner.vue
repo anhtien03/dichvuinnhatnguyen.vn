@@ -49,16 +49,16 @@
           </div>
         </div>
 
-        <!-- Cột 2 (6/12): BANNER LỚN Ở GIỮA (Tràn trọn vẹn 100% bề ngang, hiển thị to rõ) -->
-        <div class="lg:col-span-6 rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden relative group bg-slate-900 min-h-[300px] sm:min-h-[350px] lg:min-h-0 flex flex-col justify-between">
+        <!-- Cột 2 (6/12): BANNER LỚN Ở GIỮA (Trên mobile giữ đúng tỷ lệ gốc không bị zoom/cắt chữ; trên desktop kéo khớp chiều cao 3 cột) -->
+        <div class="lg:col-span-6 rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden relative group bg-slate-900 lg:min-h-0 flex flex-col justify-between">
           <router-link
             :to="mainBanner?.link_url || '/yeu-cau-bao-gia'"
-            class="block w-full h-full relative flex-1 cursor-pointer"
+            class="block w-full lg:h-full relative lg:flex-1 cursor-pointer"
           >
             <img
               :src="mainBanner?.image_url || '/banner-chinh.jpg'"
               :alt="mainBanner?.title || 'Xưởng In Nhật Nguyên'"
-              class="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-700"
+              class="w-full h-auto lg:h-full lg:object-cover object-center group-hover:scale-[1.02] transition-transform duration-700 block"
               loading="eager"
             />
           </router-link>

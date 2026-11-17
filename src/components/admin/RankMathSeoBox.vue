@@ -756,7 +756,7 @@ function autoOptimizeSEO() {
   <li><strong>Hỗ trợ thiết kế &amp; duyệt mẫu:</strong> Tư vấn quy cách tận tâm, chỉnh sửa file chuẩn in và hỗ trợ đơn hàng cần lấy gấp trong ngày.</li>
   <li><strong>Giao hàng đúng hẹn:</strong> Đóng gói kỹ lưỡng, giao nhanh nội thành TP.HCM và gửi chành xe/chuyển phát toàn quốc.</li>
 </ul>
-<p>Liên hệ ngay Hotline/Zalo <strong>076.759.8368</strong> để nhận bảng báo giá <strong>${kw}</strong> ưu đãi nhất hôm nay cùng chính sách bảo hành bản in uy tín từ In Nhật Nguyên.</p>`
+<p>Liên hệ ngay Hotline/Zalo <strong>0368.644.812</strong> để nhận bảng báo giá <strong>${kw}</strong> ưu đãi nhất hôm nay cùng chính sách bảo hành bản in uy tín từ In Nhật Nguyên.</p>`
 
     newContent = [introBlock, newContent, h2Block, detailBlock].filter(Boolean).join('\n')
     emit('update:content', newContent)
