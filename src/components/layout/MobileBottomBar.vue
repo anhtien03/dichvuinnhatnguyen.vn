@@ -35,7 +35,7 @@
 
       <!-- Gọi điện -->
       <a
-        :href="'tel:' + siteSettings.hotlines[0].number.replace(/\s+/g, '')"
+        href="tel:0767598368"
         class="flex flex-col items-center justify-center text-emerald-600 hover:text-emerald-700"
       >
         <PhoneCall class="w-5 h-5 mb-0.5" />

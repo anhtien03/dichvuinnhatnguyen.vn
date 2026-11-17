@@ -16,16 +16,16 @@
         <span class="hidden lg:inline text-slate-300 font-medium">Hotline:</span>
         <div class="flex items-center space-x-2 sm:space-x-3 divide-x divide-white/20">
           <a
-            v-for="(h, idx) in siteSettings.hotlines"
+            v-for="(h, idx) in siteSettings.hotlines.slice(0, 2)"
             :key="idx"
             :href="'tel:' + h.number.replace(/\s+/g, '')"
             class="font-extrabold text-brand-gold hover:text-white transition-colors items-center gap-1 whitespace-nowrap"
-            :class="idx === 0 ? 'flex pl-0 text-[11px] sm:text-xs' : (idx === 1 ? 'hidden sm:flex pl-2 sm:pl-3' : 'hidden md:flex pl-2 sm:pl-3')"
+            :class="idx === 0 ? 'flex pl-0 text-[11px] sm:text-xs' : 'hidden sm:flex pl-2 sm:pl-3'"
             :title="h.label + ' - ' + h.nvkd"
           >
             <Phone class="w-3 h-3 text-brand-gold shrink-0" />
             <span>{{ h.number }}</span>
-            <span v-if="h.label && idx === 0" class="hidden xl:inline text-[10px] font-normal text-slate-300">({{ h.label }})</span>
+            <span v-if="h.label" class="hidden xl:inline text-[10px] font-normal text-slate-300">({{ h.label }})</span>
           </a>
         </div>
         <!-- Zalo Chat Button -->

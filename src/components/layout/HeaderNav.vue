@@ -14,19 +14,19 @@
           </router-link>
 
           <!-- Search Input Box (Desktop: Nhập trực tiếp, Dropdown gợi ý ngay bên dưới, không Popup) -->
-          <div class="hidden md:flex items-center flex-1 max-w-lg mx-6 relative" ref="searchContainerRef">
+          <div class="hidden md:flex items-center flex-1 max-w-xl mx-4 lg:mx-8 relative" ref="searchContainerRef">
             <form
               @submit.prevent="executeSearch"
-              class="w-full flex items-center bg-slate-50 hover:bg-white focus-within:bg-white border border-slate-200 focus-within:border-brand-blue rounded-xl transition-all shadow-inner overflow-hidden pr-1.5"
+              class="w-full flex items-center bg-slate-50/90 hover:bg-white focus-within:bg-white border border-slate-200/90 focus-within:border-brand-blue rounded-2xl transition-all shadow-2xs overflow-hidden p-1"
             >
-              <div class="pl-3.5 pr-2 text-brand-blue flex items-center justify-center shrink-0">
+              <div class="pl-3 pr-2 text-brand-blue flex items-center justify-center shrink-0">
                 <Search class="w-4 h-4" />
               </div>
               <input
                 v-model="searchQuery"
                 type="text"
                 placeholder="Tìm ấn phẩm (namecard, tờ rơi, decal, túi giấy...)"
-                class="w-full py-2.5 text-xs text-slate-800 placeholder-slate-400 bg-transparent focus:outline-none"
+                class="w-full py-2 text-xs text-slate-800 placeholder-slate-400 bg-transparent focus:outline-none"
                 @focus="handleSearchFocus"
                 @input="handleSearchInput"
               />
@@ -42,9 +42,9 @@
               <button
                 type="submit"
                 :disabled="isSearching"
-                class="px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:text-brand-blue bg-white hover:bg-slate-100 border border-slate-200 rounded-lg shadow-2xs transition-all shrink-0 cursor-pointer min-w-[70px] flex items-center justify-center gap-1.5"
+                class="px-4 py-2 text-xs font-bold text-white bg-brand-blue hover:bg-brand-blue-dark rounded-xl shadow-xs transition-all shrink-0 cursor-pointer min-w-[84px] flex items-center justify-center gap-1.5"
               >
-                <Loader2 v-if="isSearching" class="w-3.5 h-3.5 text-brand-blue animate-spin" />
+                <Loader2 v-if="isSearching" class="w-3.5 h-3.5 text-white animate-spin" />
                 <span v-else>Tìm kiếm</span>
               </button>
             </form>
@@ -128,36 +128,79 @@
             </transition>
           </div>
 
-          <!-- Right: Hotline Box & Mobile Controls -->
+          <!-- Right: Hotline Dropdown & Quick Quote CTA (Desktop) + Mobile Controls -->
           <div class="flex items-center space-x-1.5 sm:space-x-3 shrink-0 ml-auto">
-            <!-- Desktop Hotline Contact Highlight (Gọn gàng 2 số xưởng in) -->
-            <div class="hidden lg:flex items-center gap-2.5 bg-slate-50 border border-slate-200/90 px-3.5 py-1.5 rounded-xl">
-              <div class="w-8 h-8 rounded-lg bg-brand-blue/10 text-brand-blue flex items-center justify-center shrink-0">
-                <PhoneCall class="w-4 h-4 text-brand-blue" />
+            <!-- Desktop Hotline Dropdown Card -->
+            <div class="hidden lg:block relative group">
+              <div
+                class="flex items-center gap-2.5 bg-slate-50/90 hover:bg-white border border-slate-200/90 hover:border-brand-blue/40 px-3.5 py-1.5 rounded-2xl shadow-2xs transition-all cursor-pointer"
+              >
+                <div class="w-8 h-8 rounded-xl bg-brand-blue/10 text-brand-blue flex items-center justify-center shrink-0">
+                  <PhoneCall class="w-4 h-4 text-brand-blue" />
+                </div>
+                <div class="text-left leading-tight">
+                  <span class="flex items-center gap-1.5 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Hotline Tư Vấn
+                  </span>
+                  <div class="flex items-center gap-1.5 text-xs font-black text-slate-900 mt-0.5">
+                    <span>{{ siteSettings.hotlines[0].number }}</span>
+                    <ChevronDown class="w-3.5 h-3.5 text-slate-400 group-hover:text-brand-blue group-hover:rotate-180 transition-transform duration-200" />
+                  </div>
+                </div>
               </div>
-              <div class="text-left leading-tight">
-                <span class="text-[10px] text-slate-400 font-semibold block uppercase tracking-wider">Hotline</span>
-                <div class="flex items-center gap-1.5 text-xs font-black text-slate-800 whitespace-nowrap">
-                  <template v-for="(h, idx) in siteSettings.hotlines" :key="idx">
-                    <span v-if="idx > 0" class="text-slate-300 font-normal">•</span>
-                    <a
-                      :href="'tel:' + h.number.replace(/\s+/g, '')"
-                      class="hover:text-brand-blue transition-colors"
-                      :title="h.label + (h.nvkd ? ' - ' + h.nvkd : '')"
-                    >
-                      {{ h.number }}
-                    </a>
-                  </template>
+
+              <!-- Hover Dropdown with all 3 hotlines + Zalo -->
+              <div class="absolute right-0 top-full pt-2 w-72 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                <div class="rounded-2xl bg-white border border-slate-200 shadow-2xl p-3 space-y-2">
+                  <div class="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
+                    Chọn Hotline / Zalo Hỗ Trợ
+                  </div>
+                  <div
+                    v-for="(h, idx) in siteSettings.hotlines"
+                    :key="idx"
+                    class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 hover:bg-blue-50/50 border border-slate-100 transition-colors"
+                  >
+                    <div class="min-w-0">
+                      <div class="text-xs font-black text-slate-900">{{ h.number }}</div>
+                      <div class="text-[11px] text-slate-500 truncate">{{ h.nvkd || h.label }}</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <a
+                        :href="'tel:' + h.number.replace(/\s+/g, '')"
+                        class="px-2.5 py-1 rounded-lg bg-brand-gold hover:bg-brand-gold-hover text-slate-950 font-bold text-[11px] transition-colors"
+                      >
+                        Gọi
+                      </a>
+                      <a
+                        :href="'https://zalo.me/' + h.number.replace(/\s+/g, '')"
+                        target="_blank"
+                        rel="noopener"
+                        class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] transition-colors"
+                      >
+                        Zalo
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
+            <!-- Desktop Primary CTA: Báo Giá Nhanh -->
+            <router-link
+              to="/yeu-cau-bao-gia"
+              class="hidden lg:inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-brand-gold hover:bg-brand-gold-hover text-slate-950 font-black text-xs shadow-sm hover:shadow-md transition-all transform hover:-translate-y-0.5 shrink-0"
+            >
+              <Calculator class="w-4 h-4" />
+              <span>Báo Giá Nhanh</span>
+            </router-link>
+
             <!-- Mobile Quick Call Button -->
             <a
-              :href="'tel:' + siteSettings.hotlines[0].number.replace(/\s+/g, '')"
+              href="tel:0767598368"
               class="p-2 sm:p-2.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl md:hidden transition-colors flex items-center justify-center"
               aria-label="Gọi hotline"
-              title="Gọi hotline tư vấn nhanh"
+              title="Gọi hotline: 076 759 8368"
             >
               <PhoneCall class="w-5 h-5" />
             </a>
@@ -576,13 +619,20 @@
             <span>Yêu cầu báo giá nhanh</span>
           </router-link>
 
-          <a
-            :href="'tel:' + siteSettings.hotlines[0].number.replace(/\s+/g, '')"
-            class="w-full py-2.5 px-4 rounded-xl bg-brand-blue hover:bg-brand-blue-dark text-white font-bold text-xs text-center flex items-center justify-center gap-2 shadow-sm"
-          >
-            <Phone class="w-4 h-4" />
-            <span>Gọi ngay: {{ siteSettings.hotlines[0].number }}</span>
-          </a>
+          <div class="space-y-1.5">
+            <a
+              v-for="(h, idx) in siteSettings.hotlines"
+              :key="idx"
+              :href="'tel:' + h.number.replace(/\s+/g, '')"
+              class="w-full py-2 px-3 rounded-xl bg-brand-blue hover:bg-brand-blue-dark text-white font-bold text-xs flex items-center justify-between gap-2 shadow-sm"
+            >
+              <span class="flex items-center gap-1.5">
+                <Phone class="w-3.5 h-3.5 text-brand-gold shrink-0" />
+                <span>{{ h.number }}</span>
+              </span>
+              <span class="text-[10px] font-medium text-blue-100 truncate">{{ h.nvkd || h.label }}</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>
