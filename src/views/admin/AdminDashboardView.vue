@@ -427,23 +427,23 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-100'">
           <div>
             <h3 class="text-base font-bold" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
-              Biến Động Yêu Cầu Báo Giá Tuần Này
+              Biến Động Đơn Hàng & Khách Hàng Mới
             </h3>
             <p class="text-xs mt-0.5" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
-              Dữ liệu đơn gửi mới so với đơn chốt chạy máy in
+              Dữ liệu thực tế từ đơn hàng ERP và khách hàng phát sinh
             </p>
           </div>
 
           <!-- Legend & Time filter -->
-          <div class="flex items-center gap-4">
+          <div class="flex flex-wrap items-center gap-4">
             <div class="flex items-center gap-3 text-xs">
               <span class="flex items-center gap-1.5 font-medium" :class="isDarkMode ? 'text-slate-300' : 'text-slate-600'">
                 <span class="w-3 h-3 rounded-full bg-brand-gold inline-block"></span>
-                Đơn gửi mới
+                Đơn hàng mới ({{ totalOrdersInRange }})
               </span>
               <span class="flex items-center gap-1.5 font-medium" :class="isDarkMode ? 'text-slate-300' : 'text-slate-600'">
                 <span class="w-3 h-3 rounded-full bg-[#3C50E0] inline-block"></span>
-                Đã chốt in
+                Khách hàng mới ({{ totalCustomersInRange }})
               </span>
             </div>
 
@@ -474,9 +474,26 @@
           </div>
         </div>
 
-        <!-- Sleek Responsive SVG Area Curve Chart -->
+        <!-- Sleek Responsive SVG Area Curve Chart (Dynamic Real Data) -->
         <div class="pt-6">
           <div class="relative w-full h-64">
+            <!-- Hover Tooltip -->
+            <div
+              v-if="hoveredPoint"
+              class="absolute top-1 right-2 z-10 px-3 py-2 rounded-xl border text-xs shadow-lg pointer-events-none"
+              :class="isDarkMode ? 'bg-[#1C2434] border-[#2E3A47] text-white' : 'bg-white border-slate-200 text-slate-800'"
+            >
+              <div class="font-bold mb-1">{{ hoveredPoint.label }}</div>
+              <div class="flex items-center gap-2 text-brand-gold font-semibold">
+                <span class="w-2 h-2 rounded-full bg-brand-gold"></span>
+                <span>Đơn hàng mới: {{ hoveredPoint.orders }}</span>
+              </div>
+              <div class="flex items-center gap-2 text-blue-400 font-semibold">
+                <span class="w-2 h-2 rounded-full bg-[#3C50E0]"></span>
+                <span>Khách hàng mới: {{ hoveredPoint.customers }}</span>
+              </div>
+            </div>
+
             <svg class="w-full h-full overflow-visible" viewBox="0 0 700 240" preserveAspectRatio="none">
               <defs>
                 <!-- Series 1 Gradient (Gold) -->
@@ -497,52 +514,59 @@
               <line x1="0" y1="160" x2="700" y2="160" stroke="currentColor" :stroke-opacity="isDarkMode ? 0.08 : 0.06" stroke-dasharray="4 4" />
               <line x1="0" y1="210" x2="700" y2="210" stroke="currentColor" :stroke-opacity="isDarkMode ? 0.15 : 0.1" />
 
-              <!-- Series 2 Area (Blue - Approved) -->
+              <!-- Series 2 Area (Blue - Customers) -->
+              <path v-if="customersAreaPath" :d="customersAreaPath" fill="url(#blueGradient)" />
               <path
-                d="M 20,180 C 120,160 180,140 240,150 C 320,160 400,110 480,120 C 560,130 620,90 680,85 L 680,210 L 20,210 Z"
-                fill="url(#blueGradient)"
-              />
-              <path
-                d="M 20,180 C 120,160 180,140 240,150 C 320,160 400,110 480,120 C 560,130 620,90 680,85"
+                v-if="customersLinePath"
+                :d="customersLinePath"
                 fill="none"
                 stroke="#3C50E0"
                 stroke-width="3"
                 stroke-linecap="round"
               />
 
-              <!-- Series 1 Area (Gold - New Quotes) -->
+              <!-- Series 1 Area (Gold - Orders) -->
+              <path v-if="ordersAreaPath" :d="ordersAreaPath" fill="url(#goldGradient)" />
               <path
-                d="M 20,140 C 120,110 180,70 240,90 C 320,110 400,50 480,60 C 560,70 620,30 680,25 L 680,210 L 20,210 Z"
-                fill="url(#goldGradient)"
-              />
-              <path
-                d="M 20,140 C 120,110 180,70 240,90 C 320,110 400,50 480,60 C 560,70 620,30 680,25"
+                v-if="ordersLinePath"
+                :d="ordersLinePath"
                 fill="none"
                 stroke="#F8AC22"
                 stroke-width="3.5"
                 stroke-linecap="round"
               />
 
-              <!-- Highlight Data Dots -->
-              <circle cx="240" cy="90" r="5" fill="#F8AC22" stroke="#fff" stroke-width="2" />
-              <circle cx="480" cy="60" r="5" fill="#F8AC22" stroke="#fff" stroke-width="2" />
-              <circle cx="680" cy="25" r="6" fill="#F8AC22" stroke="#fff" stroke-width="2.5" />
-
-              <circle cx="240" cy="150" r="4.5" fill="#3C50E0" stroke="#fff" stroke-width="2" />
-              <circle cx="480" cy="120" r="4.5" fill="#3C50E0" stroke="#fff" stroke-width="2" />
-              <circle cx="680" cy="85" r="5.5" fill="#3C50E0" stroke="#fff" stroke-width="2" />
+              <!-- Interactive Data Dots -->
+              <g v-for="(pt, idx) in chartCoordinates" :key="idx">
+                <circle
+                  :cx="pt.x"
+                  :cy="pt.customerY"
+                  r="4.5"
+                  fill="#3C50E0"
+                  stroke="#fff"
+                  stroke-width="2"
+                  class="cursor-pointer"
+                  @mouseenter="hoveredPoint = pt"
+                  @mouseleave="hoveredPoint = null"
+                />
+                <circle
+                  :cx="pt.x"
+                  :cy="pt.orderY"
+                  r="5.5"
+                  fill="#F8AC22"
+                  stroke="#fff"
+                  stroke-width="2"
+                  class="cursor-pointer"
+                  @mouseenter="hoveredPoint = pt"
+                  @mouseleave="hoveredPoint = null"
+                />
+              </g>
             </svg>
           </div>
 
-          <!-- X-Axis Day Labels -->
+          <!-- X-Axis Labels -->
           <div class="flex justify-between text-[11px] font-semibold mt-2 px-2" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
-            <span>Thứ 2</span>
-            <span>Thứ 3</span>
-            <span>Thứ 4</span>
-            <span>Thứ 5</span>
-            <span>Thứ 6</span>
-            <span>Thứ 7</span>
-            <span>Chủ Nhật (Hôm nay)</span>
+            <span v-for="(pt, idx) in activeSeries" :key="idx">{{ pt.label }}</span>
           </div>
         </div>
       </div>
@@ -561,65 +585,32 @@
             Phân Bổ Ấn Phẩm Đặt In
           </h3>
           <p class="text-xs pb-4 border-b" :class="isDarkMode ? 'text-slate-400 border-[#2E3A47]' : 'text-slate-500 border-slate-100'">
-            Nhóm ấn phẩm khách hàng yêu cầu nhiều nhất
+            Top sản phẩm đặt in nhiều nhất từ đơn hàng ERP
           </p>
 
-          <div class="mt-5 space-y-4 text-xs">
-            <!-- Item 1 -->
-            <div>
-              <div class="flex items-center justify-between mb-1.5 font-semibold">
-                <span class="flex items-center gap-2" :class="isDarkMode ? 'text-white' : 'text-slate-800'">
-                  <span class="w-2.5 h-2.5 rounded-full bg-brand-gold"></span>
-                  Bao Bì & Túi Giấy
+          <div v-if="topProducts.length > 0" class="mt-5 space-y-4 text-xs">
+            <div v-for="(item, idx) in topProducts" :key="item.name">
+              <div class="flex items-center justify-between gap-2 mb-1.5 font-semibold">
+                <span class="flex items-center gap-2 min-w-0" :class="isDarkMode ? 'text-white' : 'text-slate-800'">
+                  <span class="w-2.5 h-2.5 rounded-full shrink-0" :class="topProductColors[idx % topProductColors.length].dot"></span>
+                  <span class="truncate" :title="item.name">{{ item.name }}</span>
                 </span>
-                <span class="font-bold text-brand-gold">38% (18 đơn)</span>
+                <span class="font-bold shrink-0 whitespace-nowrap" :class="topProductColors[idx % topProductColors.length].text">
+                  {{ item.percent }}% ({{ item.orders_count }} đơn)
+                </span>
               </div>
               <div class="w-full h-2 rounded-full overflow-hidden" :class="isDarkMode ? 'bg-[#1C2434]' : 'bg-slate-100'">
-                <div class="h-full bg-brand-gold rounded-full transition-all duration-500" style="width: 38%"></div>
+                <div
+                  class="h-full rounded-full transition-all duration-500"
+                  :class="topProductColors[idx % topProductColors.length].bar"
+                  :style="{ width: Math.max(4, item.percent) + '%' }"
+                ></div>
               </div>
             </div>
+          </div>
 
-            <!-- Item 2 -->
-            <div>
-              <div class="flex items-center justify-between mb-1.5 font-semibold">
-                <span class="flex items-center gap-2" :class="isDarkMode ? 'text-white' : 'text-slate-800'">
-                  <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                  Tem Nhãn & Decal
-                </span>
-                <span class="font-bold text-blue-500">28% (13 đơn)</span>
-              </div>
-              <div class="w-full h-2 rounded-full overflow-hidden" :class="isDarkMode ? 'bg-[#1C2434]' : 'bg-slate-100'">
-                <div class="h-full bg-blue-500 rounded-full transition-all duration-500" style="width: 28%"></div>
-              </div>
-            </div>
-
-            <!-- Item 3 -->
-            <div>
-              <div class="flex items-center justify-between mb-1.5 font-semibold">
-                <span class="flex items-center gap-2" :class="isDarkMode ? 'text-white' : 'text-slate-800'">
-                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                  Ấn Phẩm Văn Phòng (Namecard)
-                </span>
-                <span class="font-bold text-emerald-500">20% (9 đơn)</span>
-              </div>
-              <div class="w-full h-2 rounded-full overflow-hidden" :class="isDarkMode ? 'bg-[#1C2434]' : 'bg-slate-100'">
-                <div class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 20%"></div>
-              </div>
-            </div>
-
-            <!-- Item 4 -->
-            <div>
-              <div class="flex items-center justify-between mb-1.5 font-semibold">
-                <span class="flex items-center gap-2" :class="isDarkMode ? 'text-white' : 'text-slate-800'">
-                  <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
-                  Tờ Rơi & Catalogue
-                </span>
-                <span class="font-bold text-purple-500">14% (6 đơn)</span>
-              </div>
-              <div class="w-full h-2 rounded-full overflow-hidden" :class="isDarkMode ? 'bg-[#1C2434]' : 'bg-slate-100'">
-                <div class="h-full bg-purple-500 rounded-full transition-all duration-500" style="width: 14%"></div>
-              </div>
-            </div>
+          <div v-else class="mt-8 py-6 text-center text-xs text-slate-400 italic">
+            Chưa có dữ liệu đơn hàng ERP để thống kê.
           </div>
         </div>
 
@@ -1072,7 +1063,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import {
   ClipboardList,
   Clock,
@@ -1102,6 +1093,80 @@ const { isDarkMode } = useAdminTheme()
 const stats = ref(null)
 const isLoading = ref(false)
 const chartRange = ref('week')
+const hoveredPoint = ref(null)
+
+const topProductColors = [
+  { dot: 'bg-brand-gold', bar: 'bg-brand-gold', text: 'text-brand-gold' },
+  { dot: 'bg-blue-500', bar: 'bg-blue-500', text: 'text-blue-500' },
+  { dot: 'bg-emerald-500', bar: 'bg-emerald-500', text: 'text-emerald-500' },
+  { dot: 'bg-purple-500', bar: 'bg-purple-500', text: 'text-purple-500' },
+  { dot: 'bg-rose-500', bar: 'bg-rose-500', text: 'text-rose-500' }
+]
+
+const topProducts = computed(() => stats.value?.top_products || [])
+
+const activeSeries = computed(() => {
+  const series = stats.value?.chart_series?.[chartRange.value]
+  if (Array.isArray(series) && series.length > 0) return series
+  return []
+})
+
+const totalOrdersInRange = computed(() =>
+  activeSeries.value.reduce((sum, p) => sum + (p.orders || 0), 0)
+)
+
+const totalCustomersInRange = computed(() =>
+  activeSeries.value.reduce((sum, p) => sum + (p.customers || 0), 0)
+)
+
+const chartCoordinates = computed(() => {
+  const list = activeSeries.value
+  if (list.length === 0) return []
+  const maxVal = Math.max(1, ...list.flatMap(p => [p.orders || 0, p.customers || 0]))
+  const minX = 24
+  const maxX = 676
+  const topY = 30
+  const bottomY = 205
+  const stepX = list.length > 1 ? (maxX - minX) / (list.length - 1) : 0
+
+  return list.map((p, idx) => {
+    const x = list.length === 1 ? 350 : Math.round(minX + idx * stepX)
+    const orderY = Math.round(bottomY - ((p.orders || 0) / maxVal) * (bottomY - topY))
+    const customerY = Math.round(bottomY - ((p.customers || 0) / maxVal) * (bottomY - topY))
+    return {
+      ...p,
+      x,
+      orderY,
+      customerY
+    }
+  })
+})
+
+function buildSmoothPath(points, yKey) {
+  if (!points || points.length === 0) return ''
+  if (points.length === 1) return `M ${points[0].x},${points[0][yKey]}`
+  let d = `M ${points[0].x},${points[0][yKey]}`
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i]
+    const p1 = points[i + 1]
+    const cx = Math.round((p0.x + p1.x) / 2)
+    d += ` C ${cx},${p0[yKey]} ${cx},${p1[yKey]} ${p1.x},${p1[yKey]}`
+  }
+  return d
+}
+
+function buildAreaPath(points, yKey) {
+  if (!points || points.length < 2) return ''
+  const line = buildSmoothPath(points, yKey)
+  const last = points[points.length - 1]
+  const first = points[0]
+  return `${line} L ${last.x},210 L ${first.x},210 Z`
+}
+
+const ordersLinePath = computed(() => buildSmoothPath(chartCoordinates.value, 'orderY'))
+const ordersAreaPath = computed(() => buildAreaPath(chartCoordinates.value, 'orderY'))
+const customersLinePath = computed(() => buildSmoothPath(chartCoordinates.value, 'customerY'))
+const customersAreaPath = computed(() => buildAreaPath(chartCoordinates.value, 'customerY'))
 
 function cleanPhone(phone) {
   if (!phone) return ''

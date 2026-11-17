@@ -4,7 +4,8 @@ export const siteSettings = {
   slogan: 'Nhanh - Đẹp - Giá Tốt | Xưởng In Trực Tiếp Không Qua Trung Gian',
   hotlines: [
     { number: '0359 005 469', label: 'Kinh doanh', nvkd: 'NVKD Minh Nguyên' },
-    { number: '0368 644 812', label: 'Kinh doanh', nvkd: 'NVKD Trường Hưng' }
+    { number: '0368 644 812', label: 'Kinh doanh', nvkd: 'NVKD Trường Hưng' },
+    { number: '076 759 8368', label: 'Kinh doanh', nvkd: 'Tư vấn & Kỹ thuật' }
   ],
   zalo: 'https://zalo.me/0359005469',
   email: 'nhatnguyenprinting@gmail.com',

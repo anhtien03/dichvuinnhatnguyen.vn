@@ -15,26 +15,17 @@
       <div class="flex items-center space-x-2 sm:space-x-4 shrink-0">
         <span class="hidden lg:inline text-slate-300 font-medium">Hotline:</span>
         <div class="flex items-center space-x-2 sm:space-x-3 divide-x divide-white/20">
-          <!-- Primary Hotline (Always visible) -->
           <a
-            :href="'tel:' + siteSettings.hotlines[0].number.replace(/\s+/g, '')"
-            class="font-extrabold text-brand-gold hover:text-white transition-colors flex items-center gap-1 pl-0 text-[11px] sm:text-xs whitespace-nowrap"
-            :title="siteSettings.hotlines[0].label + ' - ' + siteSettings.hotlines[0].nvkd"
+            v-for="(h, idx) in siteSettings.hotlines"
+            :key="idx"
+            :href="'tel:' + h.number.replace(/\s+/g, '')"
+            class="font-extrabold text-brand-gold hover:text-white transition-colors items-center gap-1 whitespace-nowrap"
+            :class="idx === 0 ? 'flex pl-0 text-[11px] sm:text-xs' : (idx === 1 ? 'hidden sm:flex pl-2 sm:pl-3' : 'hidden md:flex pl-2 sm:pl-3')"
+            :title="h.label + ' - ' + h.nvkd"
           >
             <Phone class="w-3 h-3 text-brand-gold shrink-0" />
-            <span>{{ siteSettings.hotlines[0].number }}</span>
-            <span v-if="siteSettings.hotlines[0].label" class="hidden xl:inline text-[10px] font-normal text-slate-300">({{ siteSettings.hotlines[0].label }})</span>
-          </a>
-          <!-- Secondary Hotline (Only on sm: and up) -->
-          <a
-            v-if="siteSettings.hotlines[1]"
-            :href="'tel:' + siteSettings.hotlines[1].number.replace(/\s+/g, '')"
-            class="hidden sm:flex font-extrabold text-brand-gold hover:text-white transition-colors items-center gap-1.5 pl-2 sm:pl-3 whitespace-nowrap"
-            :title="siteSettings.hotlines[1].label + ' - ' + siteSettings.hotlines[1].nvkd"
-          >
-            <Phone class="w-3 h-3 text-brand-gold shrink-0" />
-            <span>{{ siteSettings.hotlines[1].number }}</span>
-            <span v-if="siteSettings.hotlines[1].label" class="hidden xl:inline text-[10px] font-normal text-slate-300">({{ siteSettings.hotlines[1].label }})</span>
+            <span>{{ h.number }}</span>
+            <span v-if="h.label && idx === 0" class="hidden xl:inline text-[10px] font-normal text-slate-300">({{ h.label }})</span>
           </a>
         </div>
         <!-- Zalo Chat Button -->

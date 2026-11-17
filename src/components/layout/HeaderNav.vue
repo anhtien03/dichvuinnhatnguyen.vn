@@ -137,22 +137,17 @@
               </div>
               <div class="text-left leading-tight">
                 <span class="text-[10px] text-slate-400 font-semibold block uppercase tracking-wider">Hotline</span>
-                <div class="flex items-center gap-1.5 text-xs font-black text-slate-800">
-                  <a
-                    :href="'tel:' + siteSettings.hotlines[0].number.replace(/\s+/g, '')"
-                    class="hover:text-brand-blue transition-colors"
-                    :title="siteSettings.hotlines[0].label"
-                  >
-                    {{ siteSettings.hotlines[0].number }}
-                  </a>
-                  <span class="text-slate-300 font-normal">•</span>
-                  <a
-                    :href="'tel:' + siteSettings.hotlines[1].number.replace(/\s+/g, '')"
-                    class="hover:text-brand-blue transition-colors"
-                    :title="siteSettings.hotlines[1].label"
-                  >
-                    {{ siteSettings.hotlines[1].number }}
-                  </a>
+                <div class="flex items-center gap-1.5 text-xs font-black text-slate-800 whitespace-nowrap">
+                  <template v-for="(h, idx) in siteSettings.hotlines" :key="idx">
+                    <span v-if="idx > 0" class="text-slate-300 font-normal">•</span>
+                    <a
+                      :href="'tel:' + h.number.replace(/\s+/g, '')"
+                      class="hover:text-brand-blue transition-colors"
+                      :title="h.label + (h.nvkd ? ' - ' + h.nvkd : '')"
+                    >
+                      {{ h.number }}
+                    </a>
+                  </template>
                 </div>
               </div>
             </div>
