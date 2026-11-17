@@ -14,7 +14,7 @@
           </router-link>
 
           <!-- Search Input Box (Desktop: Nhập trực tiếp, Dropdown gợi ý ngay bên dưới, không Popup) -->
-          <div class="hidden md:flex items-center flex-1 max-w-xl mx-4 lg:mx-8 relative" ref="searchContainerRef">
+          <div class="hidden md:flex items-center flex-1 max-w-xl mx-auto px-4 lg:px-6 relative" ref="searchContainerRef">
             <form
               @submit.prevent="executeSearch"
               class="w-full flex items-center bg-slate-50/90 hover:bg-white focus-within:bg-white border border-slate-200/90 focus-within:border-brand-blue rounded-2xl transition-all shadow-2xs overflow-hidden p-1"
@@ -128,8 +128,8 @@
             </transition>
           </div>
 
-          <!-- Right: Hotline Dropdown & Quick Quote CTA (Desktop) + Mobile Controls -->
-          <div class="flex items-center space-x-1.5 sm:space-x-3 shrink-0 ml-auto">
+          <!-- Right: Hotline Dropdown (Desktop) + Mobile Controls -->
+          <div class="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
             <!-- Desktop Hotline Dropdown Card -->
             <div class="hidden lg:block relative group">
               <div
@@ -185,15 +185,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- Desktop Primary CTA: Báo Giá Nhanh -->
-            <router-link
-              to="/yeu-cau-bao-gia"
-              class="hidden lg:inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-brand-gold hover:bg-brand-gold-hover text-slate-950 font-black text-xs shadow-sm hover:shadow-md transition-all transform hover:-translate-y-0.5 shrink-0"
-            >
-              <Calculator class="w-4 h-4" />
-              <span>Báo Giá Nhanh</span>
-            </router-link>
 
             <!-- Mobile Quick Call Button -->
             <a
