@@ -1,6 +1,6 @@
 <template>
   <div class="bg-brand-blue-dark text-white text-[11px] sm:text-xs py-1.5 sm:py-2 border-b border-brand-blue/60 select-none overflow-hidden">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4">
+    <div class="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4">
       <!-- Left: Working Hours (Compact on mobile) -->
       <div class="flex items-center text-slate-200 min-w-0 shrink">
         <span class="flex items-center gap-1.5 truncate">
