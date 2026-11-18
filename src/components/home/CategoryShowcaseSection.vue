@@ -74,10 +74,11 @@
               :alt="prod.name"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
+              decoding="async"
             />
             <span
               v-if="prod.category?.name"
-              class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-md bg-slate-950/75 backdrop-blur-xs text-white font-bold text-[10px]"
+              class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-md bg-slate-950/85 text-white font-bold text-[10px]"
             >
               {{ prod.category.name }}
             </span>
@@ -132,7 +133,8 @@ function formatCurrency(val) {
 
 function stripHtml(html) {
   if (!html) return ''
-  return String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+  const text = String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+  return text.length > 160 ? text.slice(0, 160).trim() + '...' : text
 }
 
 const hasProducts = computed(() => products.value.length > 0)

@@ -87,13 +87,15 @@ export async function apiRequest(endpoint, options = {}) {
   const method = (options.method || 'GET').toUpperCase()
   if (method !== 'GET') {
     publicCache.clear()
+    inFlightRequests.clear()
   }
 
   return data
 }
 
-// Client In-Memory Cache (TTL 90s for public homepage catalog data)
+// Client In-Memory Cache + In-Flight Deduplication (TTL 90s for public homepage catalog data)
 const publicCache = new Map()
+const inFlightRequests = new Map()
 const CACHE_TTL = 90 * 1000 // 90 giây
 
 function cachedPublicRequest(endpoint, params = {}) {
@@ -104,10 +106,19 @@ function cachedPublicRequest(endpoint, params = {}) {
   if (hit && (now - hit.time < CACHE_TTL)) {
     return Promise.resolve(hit.data)
   }
-  return apiRequest(fullPath).then(res => {
-    publicCache.set(fullPath, { time: Date.now(), data: res })
-    return res
-  })
+  if (inFlightRequests.has(fullPath)) {
+    return inFlightRequests.get(fullPath)
+  }
+  const reqPromise = apiRequest(fullPath)
+    .then(res => {
+      publicCache.set(fullPath, { time: Date.now(), data: res })
+      return res
+    })
+    .finally(() => {
+      inFlightRequests.delete(fullPath)
+    })
+  inFlightRequests.set(fullPath, reqPromise)
+  return reqPromise
 }
 
 // API Endpoints

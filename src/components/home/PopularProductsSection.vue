@@ -65,6 +65,7 @@
                 :alt="item.name"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 loading="lazy"
+                decoding="async"
               />
 
               <div v-if="item.tag" class="absolute bottom-2.5 right-2.5 bg-[#F59E0B] text-[#0A192F] text-[10px] font-black px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 z-10">
@@ -134,7 +135,8 @@ function formatCurrency(val) {
 
 function stripHtml(html) {
   if (!html) return ''
-  return String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+  const text = String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+  return text.length > 160 ? text.slice(0, 160).trim() + '...' : text
 }
 
 onMounted(async () => {

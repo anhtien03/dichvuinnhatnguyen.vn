@@ -55,9 +55,10 @@
               :alt="post.title"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               loading="lazy"
+              decoding="async"
             />
             <!-- Category Tag -->
-            <span class="absolute top-3.5 left-3.5 px-3 py-1 rounded-lg bg-brand-blue text-white text-xs font-bold shadow-md shadow-brand-blue/30 backdrop-blur-sm">
+            <span class="absolute top-3.5 left-3.5 px-3 py-1 rounded-lg bg-brand-blue text-white text-xs font-bold shadow-md shadow-brand-blue/30">
               {{ post.category || 'Cẩm nang in ấn' }}
             </span>
           </div>
