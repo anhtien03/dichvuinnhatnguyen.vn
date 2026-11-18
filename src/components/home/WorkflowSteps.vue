@@ -7,7 +7,7 @@
           src="/quy-trinh/tieu-de.webp"
           alt="Quy trình đặt in tại In Nhanh Nhật Nguyên"
           class="w-full max-w-3xl sm:max-w-4xl lg:max-w-5xl h-auto object-contain mx-auto"
-          loading="lazy"
+          decoding="async"
         />
 
         <!-- Thanh chỉ báo bước chuyển tiếp (Progress Dots) -->
@@ -42,24 +42,18 @@
             class="relative flex flex-col h-full group"
             @mouseenter="setStep(idx)"
           >
-            <!-- Card từng bước -->
+            <!-- Card từng bước (tối ưu GPU transform/opacity, tránh repaint nặng) -->
             <div
-              class="h-full rounded-2xl p-2 sm:p-3.5 border transition-all duration-500 flex flex-col items-center justify-center text-center cursor-pointer transform-gpu relative overflow-hidden"
+              class="h-full rounded-2xl p-2 sm:p-3.5 border transition-transform duration-300 flex flex-col items-center justify-center text-center cursor-pointer relative overflow-hidden"
               :class="activeStep === idx 
-                ? 'bg-gradient-to-b from-amber-50/50 via-white to-white border-brand-gold ring-2 ring-brand-gold/40 shadow-xl shadow-brand-gold/20 -translate-y-2' 
-                : 'bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-md hover:-translate-y-1 opacity-85 hover:opacity-100'"
+                ? 'bg-amber-50/40 border-brand-gold ring-2 ring-brand-gold/40 shadow-lg -translate-y-1.5' 
+                : 'bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5'"
             >
-              <!-- Tia sáng quét qua (Shimmer Sweep Effect) khi active -->
-              <div 
-                v-if="activeStep === idx"
-                class="absolute inset-0 -translate-x-full animate-shimmer-sweep bg-gradient-to-r from-transparent via-white/60 to-transparent pointer-events-none"
-              ></div>
-
               <!-- Badge bước -->
               <div 
-                class="absolute top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all duration-300 z-10"
+                class="absolute top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 z-10"
                 :class="activeStep === idx 
-                  ? 'bg-brand-gold text-slate-900 shadow-xs scale-105' 
+                  ? 'bg-brand-gold text-slate-900 shadow-xs' 
                   : 'bg-slate-100 text-slate-400 group-hover:text-slate-600'"
               >
                 Bước 0{{ idx + 1 }}
@@ -70,16 +64,16 @@
                 <img
                   :src="st.image"
                   :alt="st.title"
-                  class="h-full w-auto max-w-full object-contain mx-auto transition-all duration-500 filter"
-                  :class="activeStep === idx ? 'scale-108 drop-shadow-md' : 'scale-100 drop-shadow-xs'"
-                  loading="lazy"
+                  class="h-full w-auto max-w-full object-contain mx-auto transition-transform duration-300"
+                  :class="activeStep === idx ? 'scale-105' : 'scale-100'"
+                  decoding="async"
                 />
               </div>
 
               <!-- Vệt sáng chân card (Active Bottom Glow Bar) -->
               <div 
-                class="absolute bottom-0 left-0 right-0 h-1 transition-all duration-500"
-                :class="activeStep === idx ? 'bg-gradient-to-r from-brand-gold/20 via-brand-gold to-brand-gold/20 opacity-100' : 'opacity-0'"
+                class="absolute bottom-0 left-0 right-0 h-1 transition-opacity duration-300"
+                :class="activeStep === idx ? 'bg-brand-gold opacity-100' : 'opacity-0'"
               ></div>
             </div>
 

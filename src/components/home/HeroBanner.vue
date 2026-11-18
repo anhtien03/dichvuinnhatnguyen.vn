@@ -60,6 +60,8 @@
               :alt="mainBanner?.title || 'Xưởng In Nhật Nguyên'"
               class="w-full h-auto lg:h-full lg:object-cover object-center group-hover:scale-[1.02] transition-transform duration-700 block"
               loading="eager"
+              decoding="async"
+              fetchpriority="high"
             />
           </router-link>
         </div>

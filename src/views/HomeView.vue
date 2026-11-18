@@ -4,32 +4,22 @@
     <HeroBanner />
 
     <!-- Category Grid -->
-    <div v-reveal>
-      <CategoryGrid />
-    </div>
+    <CategoryGrid />
 
     <!-- Category Showcase Section (Bộ Sưu Tập Ấn Phẩm Chuyên Nghiệp) -->
-    <div v-reveal>
-      <CategoryShowcaseSection />
-    </div>
+    <CategoryShowcaseSection />
 
     <!-- Popular Products Section (Ấn phẩm phổ biến) -->
-    <div v-reveal>
-      <PopularProductsSection />
-    </div>
+    <PopularProductsSection />
 
     <!-- Tạm thời ẩn công cụ tính giá nhanh theo yêu cầu -->
     <!-- <QuickQuoteSection /> -->
 
     <!-- 4-Step Production Workflow -->
-    <div v-reveal>
-      <WorkflowSteps />
-    </div>
+    <WorkflowSteps />
 
     <!-- Printing Handbook / Articles (Cẩm nang về in ấn) -->
-    <div v-reveal>
-      <PrintingHandbookSection />
-    </div>
+    <PrintingHandbookSection />
   </div>
 </template>
 
