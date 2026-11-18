@@ -104,7 +104,7 @@
           <!-- Cột Trái (7/12): Tiêu đề, chữ gõ động & Mô tả -->
           <div class="lg:col-span-7 space-y-3 text-left">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-brand-blue text-[11px] font-bold uppercase tracking-wider">
-              <span class="w-1.5 h-1.5 rounded-full bg-brand-gold animate-ping"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
               IN NHANH CHUYÊN NGHIỆP 
             </div>
 
@@ -206,7 +206,7 @@ async function loadBanners() {
 
 async function loadProducts() {
   try {
-    const res = await api.getProducts()
+    const res = await api.getProducts({ compact: 1 })
     if (res?.data) {
       loadedProducts.value = Array.isArray(res.data) ? res.data : (res.data.data || [])
     }

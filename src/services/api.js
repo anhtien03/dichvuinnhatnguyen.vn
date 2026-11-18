@@ -88,210 +88,282 @@ export async function apiRequest(endpoint, options = {}) {
   if (method !== 'GET') {
     publicCache.clear()
     inFlightRequests.clear()
+    clearSessionPublicCache()
   }
 
   return data
 }
 
-// Client In-Memory Cache + In-Flight Deduplication (TTL 90s for public homepage catalog data)
+// Client In-Memory + SessionStorage SWR Cache (chỉ lưu dữ liệu công khai trang chủ)
 const publicCache = new Map()
 const inFlightRequests = new Map()
-const CACHE_TTL = 90 * 1000 // 90 giây
+const CACHE_TTL = 90 * 1000 // 90 giây trong RAM
+const SESSION_CACHE_TTL = 5 * 60 * 1000 // 5 phút qua F5
+const SESSION_PREFIX = 'inn_pub_v1:'
 
-function cachedPublicRequest(endpoint, params = {}) {
-  const query = new URLSearchParams(params).toString()
-  const fullPath = `${endpoint}${query ? '?' + query : ''}`
-  const now = Date.now()
-  const hit = publicCache.get(fullPath)
-  if (hit && (now - hit.time < CACHE_TTL)) {
-    return Promise.resolve(hit.data)
-  }
-  if (inFlightRequests.has(fullPath)) {
-    return inFlightRequests.get(fullPath)
-  }
-  const reqPromise = apiRequest(fullPath)
-    .then(res => {
-      publicCache.set(fullPath, { time: Date.now(), data: res })
-      return res
-    })
-    .finally(() => {
-      inFlightRequests.delete(fullPath)
-    })
-  inFlightRequests.set(fullPath, reqPromise)
-  return reqPromise
-}
-
-// API Endpoints
-export const api = {
-  // Public (Áp dụng cache tức thì khi chuyển trang qua lại, F5 sẽ xóa cache)
-  getCategories: () => cachedPublicRequest('/categories'),
-  getCategoryBySlug: (slug) => apiRequest(`/categories/${slug}`),
-  getProducts: (params = {}) => cachedPublicRequest('/products', params),
-  getProductBySlug: (slug) => apiRequest(`/products/${slug}`),
-  getBanners: (params = {}) => cachedPublicRequest('/banners', params),
-  getPosts: (params = {}) => cachedPublicRequest('/posts', params),
-  getPostBySlug: (slug) => apiRequest(`/posts/${slug}`),
-  submitQuote: (formData) => apiRequest('/quotes', { method: 'POST', body: formData }),
-  getSettings: () => apiRequest('/settings'),
-
-  // Auth
-  login: (credentials) => apiRequest('/auth/login', { method: 'POST', body: credentials }),
-  logout: () => apiRequest('/auth/logout', { method: 'POST' }),
-  getMe: () => apiRequest('/auth/me'),
-
-  // Admin Dashboard
-  getDashboardStats: () => apiRequest('/admin/dashboard-stats'),
-
-  // Admin Quotes
-  getAdminQuotes: (params = {}) => {
+  function buildPublicPath(endpoint, params = {}) {
     const query = new URLSearchParams(params).toString()
-    return apiRequest(`/admin/quotes${query ? '?' + query : ''}`)
-  },
-  getAdminQuoteDetail: (id) => apiRequest(`/admin/quotes/${id}`),
-  updateAdminQuote: (id, data) => apiRequest(`/admin/quotes/${id}`, { method: 'PUT', body: data }),
-  deleteAdminQuote: (id) => apiRequest(`/admin/quotes/${id}`, { method: 'DELETE' }),
+      return `${endpoint}${query ? '?' + query : ''}`
+    }
 
-  // Admin Products
-  createAdminProduct: (data) => apiRequest('/admin/products', { method: 'POST', body: data }),
-  updateAdminProduct: (id, data) => apiRequest(`/admin/products/${id}`, { method: 'PUT', body: data }),
-  deleteAdminProduct: (id) => apiRequest(`/admin/products/${id}`, { method: 'DELETE' }),
+    function readSessionCache(fullPath) {
+      try {
+        const raw = sessionStorage.getItem(SESSION_PREFIX + fullPath)
+        if (!raw) return null
+        const parsed = JSON.parse(raw)
+        if (!parsed || typeof parsed.time !== 'number') return null
+        if (Date.now() - parsed.time > SESSION_CACHE_TTL) {
+          sessionStorage.removeItem(SESSION_PREFIX + fullPath)
+          return null
+        }
+        return parsed
+      } catch {
+        return null
+      }
+    }
 
-  // Admin Categories
-  createAdminCategory: (data) => apiRequest('/admin/categories', { method: 'POST', body: data }),
-  updateAdminCategory: (id, data) => apiRequest(`/admin/categories/${id}`, { method: 'PUT', body: data }),
-  deleteAdminCategory: (id) => apiRequest(`/admin/categories/${id}`, { method: 'DELETE' }),
+    function writeSessionCache(fullPath, data) {
+      try {
+        sessionStorage.setItem(SESSION_PREFIX + fullPath, JSON.stringify({ time: Date.now(), data }))
+      } catch {
+        // Ignore quota errors
+      }
+    }
 
-  // Admin Banners
-  getAdminBanners: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/admin/banners${query ? '?' + query : ''}`)
-  },
-  getAdminBanner: (id) => apiRequest(`/admin/banners/${id}`),
-  createAdminBanner: (data) => apiRequest('/admin/banners', { method: 'POST', body: data }),
-  updateAdminBanner: (id, data) => apiRequest(`/admin/banners/${id}`, { method: 'PUT', body: data }),
-  deleteAdminBanner: (id) => apiRequest(`/admin/banners/${id}`, { method: 'DELETE' }),
-  toggleAdminBanner: (id) => apiRequest(`/admin/banners/${id}/toggle-active`, { method: 'POST' }),
-  reorderAdminBanners: (orders) => apiRequest('/admin/banners/reorder', { method: 'POST', body: { orders } }),
+    function clearSessionPublicCache() {
+      try {
+        const keysToRemove = []
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const k = sessionStorage.key(i)
+          if (k && k.startsWith(SESSION_PREFIX)) keysToRemove.push(k)
+        }
+        keysToRemove.forEach(k => sessionStorage.removeItem(k))
+      } catch {
+        // Ignore
+      }
+    }
 
-  // Admin Posts & Articles
-  getAdminPosts: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/admin/posts${query ? '?' + query : ''}`)
-  },
-  getAdminPost: (id) => apiRequest(`/admin/posts/${id}`),
-  createAdminPost: (data) => apiRequest('/admin/posts', { method: 'POST', body: data }),
-  updateAdminPost: (id, data) => apiRequest(`/admin/posts/${id}`, { method: 'PUT', body: data }),
-  deleteAdminPost: (id) => apiRequest(`/admin/posts/${id}`, { method: 'DELETE' }),
-  toggleAdminPost: (id) => apiRequest(`/admin/posts/${id}/toggle-publish`, { method: 'POST' }),
+    export function getCachedPublicSync(endpoint, params = {}) {
+      const fullPath = buildPublicPath(endpoint, params)
+      const mem = publicCache.get(fullPath)
+      if (mem && (Date.now() - mem.time < CACHE_TTL)) {
+        return mem.data
+      }
+      const sess = readSessionCache(fullPath)
+      if (sess) {
+        publicCache.set(fullPath, sess)
+        return sess.data
+      }
+      return null
+    }
 
-  // Admin Settings
-  updateAdminSettings: (data) => apiRequest('/admin/settings', { method: 'POST', body: data }),
+    function fetchAndStorePublic(fullPath) {
+      if (inFlightRequests.has(fullPath)) {
+        return inFlightRequests.get(fullPath)
+      }
+      const reqPromise = apiRequest(fullPath)
+        .then(res => {
+          publicCache.set(fullPath, { time: Date.now(), data: res })
+          writeSessionCache(fullPath, res)
+          return res
+        })
+        .finally(() => {
+          inFlightRequests.delete(fullPath)
+        })
+      inFlightRequests.set(fullPath, reqPromise)
+      return reqPromise
+    }
 
-  // Admin Media Library
-  getAdminMedia: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/admin/media${query ? '?' + query : ''}`)
-  },
-  uploadAdminMedia: (formData) => apiRequest('/admin/media/upload', { method: 'POST', body: formData }),
-  deleteAdminMedia: (path) => apiRequest('/admin/media', { method: 'DELETE', body: { path } }),
-  createAdminMediaFolder: (data) => apiRequest('/admin/media/folders', { method: 'POST', body: data }),
-  deleteAdminMediaFolder: (folder) => apiRequest('/admin/media/folders', { method: 'DELETE', body: { folder } }),
+    function cachedPublicRequest(endpoint, params = {}) {
+      const fullPath = buildPublicPath(endpoint, params)
+      const now = Date.now()
+      const hit = publicCache.get(fullPath)
+      if (hit && (now - hit.time < CACHE_TTL)) {
+        return Promise.resolve(hit.data)
+      }
+      const sessHit = readSessionCache(fullPath)
+      if (sessHit) {
+        publicCache.set(fullPath, sessHit)
+        // Stale-while-revalidate ngầm nếu cache session cũ hơn 30s
+        if (now - sessHit.time > 30 * 1000) {
+          fetchAndStorePublic(fullPath).catch(() => { })
+        }
+        return Promise.resolve(sessHit.data)
+      }
+      return fetchAndStorePublic(fullPath)
+    }
 
-  // ERP - Orders
-  getErpOrders: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/admin/erp/orders${query ? '?' + query : ''}`)
-  },
-  getErpNextCode: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/admin/erp/orders/next-code${query ? '?' + query : ''}`)
-  },
-  getErpOrder: (id) => apiRequest(`/admin/erp/orders/${id}`),
-  createErpOrder: (data) => apiRequest('/admin/erp/orders', { method: 'POST', body: data }),
-  updateErpOrder: (id, data) => apiRequest(`/admin/erp/orders/${id}`, { method: 'PUT', body: data }),
-  deleteErpOrder: (id) => apiRequest(`/admin/erp/orders/${id}`, { method: 'DELETE' }),
-  updateErpOrderStage: (id, stage) => apiRequest(`/admin/erp/orders/${id}/stage`, { method: 'POST', body: { stage } }),
-  addErpOrderPayment: (id, data) => apiRequest(`/admin/erp/orders/${id}/payments`, { method: 'POST', body: data }),
-  requestErpOrderDelete: (id, reason) => apiRequest(`/admin/erp/orders/${id}/request-delete`, { method: 'POST', body: { reason } }),
-  getErpOrderVietQR: (id, bank = 'acb') => apiRequest(`/admin/erp/orders/${id}/vietqr?bank=${bank}`),
+    // API Endpoints
+    export const api = {
+      // Public (Áp dụng cache tức thì khi chuyển trang qua lại, F5 sẽ xóa cache)
+      getCategories: () => cachedPublicRequest('/categories'),
+      getCategoryBySlug: (slug) => apiRequest(`/categories/${slug}`),
+      getProducts: (params = {}) => cachedPublicRequest('/products', params),
+      getProductBySlug: (slug) => apiRequest(`/products/${slug}`),
+      getBanners: (params = {}) => cachedPublicRequest('/banners', params),
+      getPosts: (params = {}) => cachedPublicRequest('/posts', params),
+      getPostBySlug: (slug) => apiRequest(`/posts/${slug}`),
+      submitQuote: (formData) => apiRequest('/quotes', { method: 'POST', body: formData }),
+      getSettings: () => apiRequest('/settings'),
 
-  // ERP - Customers & CRM
-  getErpCustomers: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/admin/erp/customers${query ? '?' + query : ''}`)
-  },
-  searchErpCustomerPhone: (phone) => apiRequest(`/admin/erp/customers/search?phone=${encodeURIComponent(phone)}`),
-  getErpDailyCare: (days = 15) => apiRequest(`/admin/erp/customers/daily-care?days=${days}`),
-  createErpCustomer: (data) => apiRequest('/admin/erp/customers', { method: 'POST', body: data }),
-  getErpCustomer: (id) => apiRequest(`/admin/erp/customers/${id}`),
-  getErpCustomerCommissionStatement: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/admin/erp/customers/commission-statement${query ? '?' + query : ''}`)
-  },
-  updateErpCustomer: (id, data) => apiRequest(`/admin/erp/customers/${id}`, { method: 'PUT', body: data }),
-  deleteErpCustomer: (id) => apiRequest(`/admin/erp/customers/${id}`, { method: 'DELETE' }),
-  importErpCustomers: (customers) => apiRequest('/admin/erp/customers/import', { method: 'POST', body: { customers } }),
+      // Auth
+      login: (credentials) => apiRequest('/auth/login', { method: 'POST', body: credentials }),
+      logout: () => apiRequest('/auth/logout', { method: 'POST' }),
+      getMe: () => apiRequest('/auth/me'),
 
-  // ERP - Suppliers & Debt
-  getErpSuppliers: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/admin/erp/suppliers${query ? '?' + query : ''}`)
-  },
-  createErpSupplier: (data) => apiRequest('/admin/erp/suppliers', { method: 'POST', body: data }),
-  getErpSupplier: (id) => apiRequest(`/admin/erp/suppliers/${id}`),
-  updateErpSupplier: (id, data) => apiRequest(`/admin/erp/suppliers/${id}`, { method: 'PUT', body: data }),
-  deleteErpSupplier: (id) => apiRequest(`/admin/erp/suppliers/${id}`, { method: 'DELETE' }),
-  payErpSupplier: (id, data) => apiRequest(`/admin/erp/suppliers/${id}/payments`, { method: 'POST', body: data }),
+      // Admin Dashboard
+      getDashboardStats: () => apiRequest('/admin/dashboard-stats'),
 
-  // ERP - Cashbook
-  getErpCashbook: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/admin/erp/cashbook${query ? '?' + query : ''}`)
-  },
-  createErpCashbook: (data) => apiRequest('/admin/erp/cashbook', { method: 'POST', body: data }),
-  getErpCashbookStats: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/admin/erp/cashbook/statistics${query ? '?' + query : ''}`)
-  },
-  getErpCashbookAccountLedger: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/admin/erp/cashbook/account-ledger${query ? '?' + query : ''}`)
-  },
-  updateErpCashbook: (id, data) => apiRequest(`/admin/erp/cashbook/${id}`, { method: 'PUT', body: data }),
-  deleteErpCashbook: (id) => apiRequest(`/admin/erp/cashbook/${id}`, { method: 'DELETE' }),
+      // Admin Quotes
+      getAdminQuotes: (params = {}) => {
+        const query = new URLSearchParams(params).toString()
+        return apiRequest(`/admin/quotes${query ? '?' + query : ''}`)
+      },
+      getAdminQuoteDetail: (id) => apiRequest(`/admin/quotes/${id}`),
+      updateAdminQuote: (id, data) => apiRequest(`/admin/quotes/${id}`, { method: 'PUT', body: data }),
+      deleteAdminQuote: (id) => apiRequest(`/admin/quotes/${id}`, { method: 'DELETE' }),
 
-  // ERP - Finance & Profit
-  getErpDashboard: () => apiRequest('/admin/erp/finance/dashboard'),
-  getErpProfitSharing: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/admin/erp/finance/profit-sharing${query ? '?' + query : ''}`)
-  },
+      // Admin Products
+      createAdminProduct: (data) => apiRequest('/admin/products', { method: 'POST', body: data }),
+      updateAdminProduct: (id, data) => apiRequest(`/admin/products/${id}`, { method: 'PUT', body: data }),
+      deleteAdminProduct: (id) => apiRequest(`/admin/products/${id}`, { method: 'DELETE' }),
 
-  // Google Indexing API
-  getGoogleIndexingConfig: () => apiRequest('/admin/google-indexing/config'),
-  saveGoogleIndexingConfig: (data) => apiRequest('/admin/google-indexing/config', { method: 'POST', body: data }),
-  testGoogleIndexingConnection: () => apiRequest('/admin/google-indexing/test', { method: 'POST' }),
-  publishGoogleIndexingUrl: (url, type = 'URL_UPDATED') => apiRequest('/admin/google-indexing/publish', { method: 'POST', body: { url, type } }),
-  getGoogleIndexingMetadata: (url) => apiRequest(`/admin/google-indexing/metadata?url=${encodeURIComponent(url)}`),
+      // Admin Categories
+      createAdminCategory: (data) => apiRequest('/admin/categories', { method: 'POST', body: data }),
+      updateAdminCategory: (id, data) => apiRequest(`/admin/categories/${id}`, { method: 'PUT', body: data }),
+      deleteAdminCategory: (id) => apiRequest(`/admin/categories/${id}`, { method: 'DELETE' }),
 
-  // Users & Staff
-  getAdminUsers: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return apiRequest(`/admin/users${query ? '?' + query : ''}`)
-  },
-  createAdminUser: (data) => apiRequest('/admin/users', { method: 'POST', body: data }),
-  getAdminUserDetail: (id) => apiRequest(`/admin/users/${id}`),
-  updateAdminUser: (id, data) => apiRequest(`/admin/users/${id}`, { method: 'PUT', body: data }),
-  deleteAdminUser: (id) => apiRequest(`/admin/users/${id}`, { method: 'DELETE' }),
-  toggleAdminUserActive: (id) => apiRequest(`/admin/users/${id}/toggle-active`, { method: 'POST' }),
+      // Admin Banners
+      getAdminBanners: (params = {}) => {
+        const query = new URLSearchParams(params).toString()
+        return apiRequest(`/admin/banners${query ? '?' + query : ''}`)
+      },
+      getAdminBanner: (id) => apiRequest(`/admin/banners/${id}`),
+      createAdminBanner: (data) => apiRequest('/admin/banners', { method: 'POST', body: data }),
+      updateAdminBanner: (id, data) => apiRequest(`/admin/banners/${id}`, { method: 'PUT', body: data }),
+      deleteAdminBanner: (id) => apiRequest(`/admin/banners/${id}`, { method: 'DELETE' }),
+      toggleAdminBanner: (id) => apiRequest(`/admin/banners/${id}/toggle-active`, { method: 'POST' }),
+      reorderAdminBanners: (orders) => apiRequest('/admin/banners/reorder', { method: 'POST', body: { orders } }),
 
-  // Roles & Permissions
-  getAdminRoles: () => apiRequest('/admin/roles'),
-  createAdminRole: (data) => apiRequest('/admin/roles', { method: 'POST', body: data }),
-  updateAdminRole: (id, data) => apiRequest(`/admin/roles/${id}`, { method: 'PUT', body: data }),
-  deleteAdminRole: (id) => apiRequest(`/admin/roles/${id}`, { method: 'DELETE' }),
-  getAdminPermissions: () => apiRequest('/admin/permissions'),
-  updateRolePermissions: (roleId, permissionIds) => apiRequest(`/admin/roles/${roleId}/permissions`, { method: 'POST', body: { permission_ids: permissionIds } })
-}
+      // Admin Posts & Articles
+      getAdminPosts: (params = {}) => {
+        const query = new URLSearchParams(params).toString()
+        return apiRequest(`/admin/posts${query ? '?' + query : ''}`)
+      },
+      getAdminPost: (id) => apiRequest(`/admin/posts/${id}`),
+      createAdminPost: (data) => apiRequest('/admin/posts', { method: 'POST', body: data }),
+      updateAdminPost: (id, data) => apiRequest(`/admin/posts/${id}`, { method: 'PUT', body: data }),
+      deleteAdminPost: (id) => apiRequest(`/admin/posts/${id}`, { method: 'DELETE' }),
+      toggleAdminPost: (id) => apiRequest(`/admin/posts/${id}/toggle-publish`, { method: 'POST' }),
+
+      // Admin Settings
+      updateAdminSettings: (data) => apiRequest('/admin/settings', { method: 'POST', body: data }),
+
+      // Admin Media Library
+      getAdminMedia: (params = {}) => {
+        const query = new URLSearchParams(params).toString()
+        return apiRequest(`/admin/media${query ? '?' + query : ''}`)
+      },
+      uploadAdminMedia: (formData) => apiRequest('/admin/media/upload', { method: 'POST', body: formData }),
+      deleteAdminMedia: (path) => apiRequest('/admin/media', { method: 'DELETE', body: { path } }),
+      createAdminMediaFolder: (data) => apiRequest('/admin/media/folders', { method: 'POST', body: data }),
+      deleteAdminMediaFolder: (folder) => apiRequest('/admin/media/folders', { method: 'DELETE', body: { folder } }),
+
+      // ERP - Orders
+      getErpOrders: (params = {}) => {
+        const query = new URLSearchParams(params).toString()
+        return apiRequest(`/admin/erp/orders${query ? '?' + query : ''}`)
+      },
+      getErpNextCode: (params = {}) => {
+        const query = new URLSearchParams(params).toString()
+        return apiRequest(`/admin/erp/orders/next-code${query ? '?' + query : ''}`)
+      },
+      getErpOrder: (id) => apiRequest(`/admin/erp/orders/${id}`),
+      createErpOrder: (data) => apiRequest('/admin/erp/orders', { method: 'POST', body: data }),
+      updateErpOrder: (id, data) => apiRequest(`/admin/erp/orders/${id}`, { method: 'PUT', body: data }),
+      deleteErpOrder: (id) => apiRequest(`/admin/erp/orders/${id}`, { method: 'DELETE' }),
+      updateErpOrderStage: (id, stage) => apiRequest(`/admin/erp/orders/${id}/stage`, { method: 'POST', body: { stage } }),
+      addErpOrderPayment: (id, data) => apiRequest(`/admin/erp/orders/${id}/payments`, { method: 'POST', body: data }),
+      requestErpOrderDelete: (id, reason) => apiRequest(`/admin/erp/orders/${id}/request-delete`, { method: 'POST', body: { reason } }),
+      getErpOrderVietQR: (id, bank = 'acb') => apiRequest(`/admin/erp/orders/${id}/vietqr?bank=${bank}`),
+
+      // ERP - Customers & CRM
+      getErpCustomers: (params = {}) => {
+        const query = new URLSearchParams(params).toString()
+        return apiRequest(`/admin/erp/customers${query ? '?' + query : ''}`)
+      },
+      searchErpCustomerPhone: (phone) => apiRequest(`/admin/erp/customers/search?phone=${encodeURIComponent(phone)}`),
+      getErpDailyCare: (days = 15) => apiRequest(`/admin/erp/customers/daily-care?days=${days}`),
+      createErpCustomer: (data) => apiRequest('/admin/erp/customers', { method: 'POST', body: data }),
+      getErpCustomer: (id) => apiRequest(`/admin/erp/customers/${id}`),
+      getErpCustomerCommissionStatement: (params = {}) => {
+        const query = new URLSearchParams(params).toString()
+        return apiRequest(`/admin/erp/customers/commission-statement${query ? '?' + query : ''}`)
+      },
+      updateErpCustomer: (id, data) => apiRequest(`/admin/erp/customers/${id}`, { method: 'PUT', body: data }),
+      deleteErpCustomer: (id) => apiRequest(`/admin/erp/customers/${id}`, { method: 'DELETE' }),
+      importErpCustomers: (customers) => apiRequest('/admin/erp/customers/import', { method: 'POST', body: { customers } }),
+
+      // ERP - Suppliers & Debt
+      getErpSuppliers: (params = {}) => {
+        const query = new URLSearchParams(params).toString()
+        return apiRequest(`/admin/erp/suppliers${query ? '?' + query : ''}`)
+      },
+      createErpSupplier: (data) => apiRequest('/admin/erp/suppliers', { method: 'POST', body: data }),
+      getErpSupplier: (id) => apiRequest(`/admin/erp/suppliers/${id}`),
+      updateErpSupplier: (id, data) => apiRequest(`/admin/erp/suppliers/${id}`, { method: 'PUT', body: data }),
+      deleteErpSupplier: (id) => apiRequest(`/admin/erp/suppliers/${id}`, { method: 'DELETE' }),
+      payErpSupplier: (id, data) => apiRequest(`/admin/erp/suppliers/${id}/payments`, { method: 'POST', body: data }),
+
+      // ERP - Cashbook
+      getErpCashbook: (params = {}) => {
+        const query = new URLSearchParams(params).toString()
+        return apiRequest(`/admin/erp/cashbook${query ? '?' + query : ''}`)
+      },
+      createErpCashbook: (data) => apiRequest('/admin/erp/cashbook', { method: 'POST', body: data }),
+      getErpCashbookStats: (params = {}) => {
+        const query = new URLSearchParams(params).toString()
+        return apiRequest(`/admin/erp/cashbook/statistics${query ? '?' + query : ''}`)
+      },
+      getErpCashbookAccountLedger: (params = {}) => {
+        const query = new URLSearchParams(params).toString()
+        return apiRequest(`/admin/erp/cashbook/account-ledger${query ? '?' + query : ''}`)
+      },
+      updateErpCashbook: (id, data) => apiRequest(`/admin/erp/cashbook/${id}`, { method: 'PUT', body: data }),
+      deleteErpCashbook: (id) => apiRequest(`/admin/erp/cashbook/${id}`, { method: 'DELETE' }),
+
+      // ERP - Finance & Profit
+      getErpDashboard: () => apiRequest('/admin/erp/finance/dashboard'),
+      getErpProfitSharing: (params = {}) => {
+        const query = new URLSearchParams(params).toString()
+        return apiRequest(`/admin/erp/finance/profit-sharing${query ? '?' + query : ''}`)
+      },
+
+      // Google Indexing API
+      getGoogleIndexingConfig: () => apiRequest('/admin/google-indexing/config'),
+      saveGoogleIndexingConfig: (data) => apiRequest('/admin/google-indexing/config', { method: 'POST', body: data }),
+      testGoogleIndexingConnection: () => apiRequest('/admin/google-indexing/test', { method: 'POST' }),
+      publishGoogleIndexingUrl: (url, type = 'URL_UPDATED') => apiRequest('/admin/google-indexing/publish', { method: 'POST', body: { url, type } }),
+      getGoogleIndexingMetadata: (url) => apiRequest(`/admin/google-indexing/metadata?url=${encodeURIComponent(url)}`),
+
+      // Users & Staff
+      getAdminUsers: (params = {}) => {
+        const query = new URLSearchParams(params).toString()
+        return apiRequest(`/admin/users${query ? '?' + query : ''}`)
+      },
+      createAdminUser: (data) => apiRequest('/admin/users', { method: 'POST', body: data }),
+      getAdminUserDetail: (id) => apiRequest(`/admin/users/${id}`),
+      updateAdminUser: (id, data) => apiRequest(`/admin/users/${id}`, { method: 'PUT', body: data }),
+      deleteAdminUser: (id) => apiRequest(`/admin/users/${id}`, { method: 'DELETE' }),
+      toggleAdminUserActive: (id) => apiRequest(`/admin/users/${id}/toggle-active`, { method: 'POST' }),
+
+      // Roles & Permissions
+      getAdminRoles: () => apiRequest('/admin/roles'),
+      createAdminRole: (data) => apiRequest('/admin/roles', { method: 'POST', body: data }),
+      updateAdminRole: (id, data) => apiRequest(`/admin/roles/${id}`, { method: 'PUT', body: data }),
+      deleteAdminRole: (id) => apiRequest(`/admin/roles/${id}`, { method: 'DELETE' }),
+      getAdminPermissions: () => apiRequest('/admin/permissions'),
+      updateRolePermissions: (roleId, permissionIds) => apiRequest(`/admin/roles/${roleId}/permissions`, { method: 'POST', body: { permission_ids: permissionIds } })
+    }
 
 

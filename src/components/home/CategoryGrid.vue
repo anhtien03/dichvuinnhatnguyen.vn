@@ -17,7 +17,7 @@
             <span>{{ displaySubtitle }}</span>
             <span
               v-if="hoveredItem"
-              class="inline-block w-2 h-2 rounded-full bg-brand-gold animate-ping"
+              class="inline-block w-2 h-2 rounded-full bg-brand-gold"
             ></span>
           </div>
         </div>

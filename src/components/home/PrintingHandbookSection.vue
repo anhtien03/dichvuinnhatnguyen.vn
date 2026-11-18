@@ -96,10 +96,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { BookOpen, ArrowRight, Calendar } from 'lucide-vue-next'
-import { api } from '../../services/api'
+import { api, getCachedPublicSync } from '../../services/api'
 
-const posts = ref([])
-const isLoading = ref(true)
+const initPosts = (getCachedPublicSync('/posts')?.data || []).slice(0, 3)
+const posts = ref(initPosts)
+const isLoading = ref(initPosts.length === 0)
 
 function formatDate(dateStr) {
   if (!dateStr) return 'Mới đây'

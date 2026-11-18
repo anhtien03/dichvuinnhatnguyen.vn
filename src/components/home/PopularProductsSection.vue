@@ -6,7 +6,7 @@
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200/60 text-brand-gold text-xs font-bold uppercase tracking-wider mb-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-brand-gold animate-ping"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
             ẤN PHẨM PHỔ BIẾN
           </div>
           <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
@@ -52,7 +52,7 @@
           <!-- 1. Header (Banner) Navy -->
           <div class="bg-[#0A192F] text-white px-3.5 py-2 flex items-center justify-center shrink-0">
             <div class="flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#F59E0B] animate-pulse"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-[#F59E0B]"></span>
               <span>Xưởng In Nhật Nguyên</span>
             </div>
           </div>
@@ -123,10 +123,27 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Zap, ArrowRight } from 'lucide-vue-next'
-import { api } from '../../services/api'
+import { api, getCachedPublicSync } from '../../services/api'
 
-const popularProducts = ref([])
-const isLoading = ref(true)
+function pickPopular(allProds) {
+  if (!Array.isArray(allProds) || allProds.length === 0) return []
+  let popular = allProds.filter(p => p.is_popular)
+  if (popular.length === 0) {
+    popular = allProds.filter(p => {
+      const tag = (p.tag || '').toLowerCase()
+      const catBadge = (p.category?.badge || '').toLowerCase()
+      return tag.includes('bán chạy') || tag.includes('phổ biến') || catBadge.includes('bán chạy') || catBadge.includes('phổ biến')
+    })
+  }
+  if (popular.length === 0) {
+    popular = allProds
+  }
+  return popular.slice(0, 5)
+}
+
+const initPopular = pickPopular(getCachedPublicSync('/products', { compact: 1 })?.data || [])
+const popularProducts = ref(initPopular)
+const isLoading = ref(initPopular.length === 0)
 
 function formatCurrency(val) {
   if (!val) return 'Liên hệ'
@@ -141,26 +158,12 @@ function stripHtml(html) {
 
 onMounted(async () => {
   try {
-    const res = await api.getProducts()
+    const res = await api.getProducts({ compact: 1 })
     if (res?.data?.length) {
-      const allProds = res.data
-      let popular = allProds.filter(p => p.is_popular)
-      if (popular.length === 0) {
-        // Fallback 1: các ấn phẩm có tag hoặc thuộc danh mục có badge "Bán chạy" / "Phổ biến"
-        popular = allProds.filter(p => {
-          const tag = (p.tag || '').toLowerCase()
-          const catBadge = (p.category?.badge || '').toLowerCase()
-          return tag.includes('bán chạy') || tag.includes('phổ biến') || catBadge.includes('bán chạy') || catBadge.includes('phổ biến')
-        })
-      }
-      if (popular.length === 0) {
-        // Fallback 2: hiển thị các ấn phẩm đầu tiên để khối Ấn Phẩm Bán Chạy không bị ẩn mất
-        popular = allProds
-      }
-      popularProducts.value = popular.slice(0, 5)
+      popularProducts.value = pickPopular(res.data)
     }
   } catch (err) {
-    popularProducts.value = []
+    if (popularProducts.value.length === 0) popularProducts.value = []
   } finally {
     isLoading.value = false
   }

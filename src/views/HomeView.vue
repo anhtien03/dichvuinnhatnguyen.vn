@@ -7,21 +7,36 @@
     <CategoryGrid />
 
     <!-- Category Showcase Section (Bộ Sưu Tập Ấn Phẩm Chuyên Nghiệp) -->
-    <CategoryShowcaseSection />
+    <div class="cv-auto">
+      <CategoryShowcaseSection />
+    </div>
 
     <!-- Popular Products Section (Ấn phẩm phổ biến) -->
-    <PopularProductsSection />
+    <div class="cv-auto">
+      <PopularProductsSection />
+    </div>
 
     <!-- Tạm thời ẩn công cụ tính giá nhanh theo yêu cầu -->
     <!-- <QuickQuoteSection /> -->
 
     <!-- 4-Step Production Workflow -->
-    <WorkflowSteps />
+    <div class="cv-auto">
+      <WorkflowSteps />
+    </div>
 
     <!-- Printing Handbook / Articles (Cẩm nang về in ấn) -->
-    <PrintingHandbookSection />
+    <div class="cv-auto">
+      <PrintingHandbookSection />
+    </div>
   </div>
 </template>
+
+<style scoped>
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 650px;
+}
+</style>
 
 <script setup>
 import HeroBanner from '../components/home/HeroBanner.vue'

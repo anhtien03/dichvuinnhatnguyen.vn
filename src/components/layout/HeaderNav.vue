@@ -670,7 +670,7 @@ function formatCurrency(val) {
 
 async function loadProductsForSearch() {
   try {
-    const res = await api.getProducts().catch(() => null)
+    const res = await api.getProducts({ compact: 1 }).catch(() => null)
     if (res?.data && Array.isArray(res.data)) {
       allProducts.value = res.data.filter(p => p.is_active !== false)
     }

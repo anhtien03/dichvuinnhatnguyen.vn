@@ -119,12 +119,15 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { api } from '../../services/api'
+import { api, getCachedPublicSync } from '../../services/api'
 
-const categories = ref([])
-const products = ref([])
+const initCats = getCachedPublicSync('/categories')?.data || []
+const initProds = getCachedPublicSync('/products', { compact: 1 })?.data || []
+
+const categories = ref(initCats)
+const products = ref(initProds)
 const activeCategorySlug = ref('all')
-const isLoading = ref(true)
+const isLoading = ref(initProds.length === 0)
 
 function formatCurrency(val) {
   if (!val) return 'Liên hệ'
@@ -173,7 +176,7 @@ onMounted(async () => {
   try {
     const [catRes, prodRes] = await Promise.all([
       api.getCategories().catch(() => null),
-      api.getProducts().catch(() => null)
+      api.getProducts({ compact: 1 }).catch(() => null)
     ])
     if (catRes?.data?.length) {
       categories.value = catRes.data

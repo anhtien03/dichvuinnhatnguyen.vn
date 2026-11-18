@@ -43,6 +43,15 @@ class ProductController extends Controller
 
         $products = $query->get();
 
+        if ($request->boolean('compact')) {
+            $products->transform(function ($p) {
+                $plain = trim(preg_replace('/\s+/', ' ', strip_tags($p->description ?? '')));
+                $p->description = Str::limit($plain, 180, '...');
+                unset($p->specs, $p->gallery, $p->content);
+                return $p;
+            });
+        }
+
         return response()->json([
             'success' => true,
             'data' => $products,
