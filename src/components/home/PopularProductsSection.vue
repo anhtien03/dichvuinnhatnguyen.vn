@@ -1,5 +1,5 @@
 <template>
-  <section v-if="popularProducts.length > 0" class="py-14 lg:py-20 bg-gradient-to-b from-white via-slate-50/60 to-white border-b border-slate-200/80">
+  <section v-if="isLoading || popularProducts.length > 0" class="py-14 lg:py-20 bg-gradient-to-b from-white via-slate-50/60 to-white border-b border-slate-200/80">
     <div class="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
       
       <!-- Section Header -->
@@ -26,8 +26,24 @@
         </router-link>
       </div>
 
+      <!-- Skeleton Loading giữ đúng khung -->
+      <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-5 xl:gap-6">
+        <div
+          v-for="n in 5"
+          :key="'pop-skel-' + n"
+          class="w-full bg-white rounded-[12px] border border-slate-200/80 overflow-hidden animate-pulse"
+        >
+          <div class="aspect-[4/3] bg-slate-200/70"></div>
+          <div class="p-4 space-y-2.5">
+            <div class="h-4 bg-slate-200 rounded w-4/5"></div>
+            <div class="h-3 bg-slate-100 rounded w-full"></div>
+            <div class="h-4 bg-slate-200 rounded w-1/2 mt-2"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- 5-Column Modern Product Cards Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-5 xl:gap-6">
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-5 xl:gap-6">
         <div
           v-for="item in popularProducts"
           :key="item.id"
@@ -109,6 +125,7 @@ import { Zap, ArrowRight } from 'lucide-vue-next'
 import { api } from '../../services/api'
 
 const popularProducts = ref([])
+const isLoading = ref(true)
 
 function formatCurrency(val) {
   if (!val) return 'Liên hệ'
@@ -142,6 +159,8 @@ onMounted(async () => {
     }
   } catch (err) {
     popularProducts.value = []
+  } finally {
+    isLoading.value = false
   }
 })
 </script>

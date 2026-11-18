@@ -1,5 +1,5 @@
 <template>
-  <section v-if="hasProducts" class="py-12 lg:py-16 bg-white border-b border-slate-200/80">
+  <section v-if="isLoading || hasProducts" class="py-12 lg:py-16 bg-white border-b border-slate-200/80">
     <div class="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       
       <!-- Section Header with Category Tabs (Chỉ hiện các danh mục đang có sản phẩm) -->
@@ -41,8 +41,27 @@
         </div>
       </div>
 
+      <!-- Skeleton Loading giữ đúng khung để tránh nhảy trang khi F5 -->
+      <div v-if="isLoading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div
+          v-for="n in 8"
+          :key="'skel-' + n"
+          class="rounded-2xl bg-white border border-slate-200/80 overflow-hidden flex flex-col animate-pulse"
+        >
+          <div class="aspect-[4/3] bg-slate-200/70"></div>
+          <div class="p-3.5 sm:p-4 space-y-2.5">
+            <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+            <div class="h-3 bg-slate-100 rounded w-full"></div>
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <div class="h-4 bg-slate-200 rounded w-1/3"></div>
+              <div class="h-3 bg-slate-100 rounded w-1/4"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Main Showcase Grid: Hiển thị TRỰC TIẾP thẻ Ấn phẩm -> Bấm 1 click vào thẳng trang nội dung tính giá -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+      <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
         <router-link
           v-for="prod in currentCategoryProducts"
           :key="prod.id"
@@ -104,6 +123,7 @@ import { api } from '../../services/api'
 const categories = ref([])
 const products = ref([])
 const activeCategorySlug = ref('all')
+const isLoading = ref(true)
 
 function formatCurrency(val) {
   if (!val) return 'Liên hệ'
@@ -163,6 +183,8 @@ onMounted(async () => {
     activeCategorySlug.value = 'all'
   } catch (err) {
     products.value = []
+  } finally {
+    isLoading.value = false
   }
 })
 </script>

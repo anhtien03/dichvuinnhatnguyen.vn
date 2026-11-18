@@ -1,5 +1,5 @@
 <template>
-  <section v-if="posts.length > 0" class="py-16 lg:py-20 bg-slate-50 border-b border-slate-100">
+  <section v-if="isLoading || posts.length > 0" class="py-16 lg:py-20 bg-slate-50 border-b border-slate-100">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Section Header -->
       <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-4">
@@ -25,8 +25,23 @@
         </router-link>
       </div>
 
+      <!-- Skeleton Loading giữ đúng khung -->
+      <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+        <div
+          v-for="n in 3"
+          :key="'post-skel-' + n"
+          class="bg-white rounded-2xl overflow-hidden border border-slate-200/80 animate-pulse"
+        >
+          <div class="aspect-[16/10] bg-slate-200/70"></div>
+          <div class="p-5 space-y-2.5">
+            <div class="h-4 bg-slate-200 rounded w-4/5"></div>
+            <div class="h-3 bg-slate-100 rounded w-full"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- 3 Featured Articles Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+      <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
         <router-link
           v-for="post in posts"
           :key="post.id"
@@ -83,6 +98,7 @@ import { BookOpen, ArrowRight, Calendar } from 'lucide-vue-next'
 import { api } from '../../services/api'
 
 const posts = ref([])
+const isLoading = ref(true)
 
 function formatDate(dateStr) {
   if (!dateStr) return 'Mới đây'
@@ -98,6 +114,8 @@ onMounted(async () => {
     }
   } catch (err) {
     posts.value = []
+  } finally {
+    isLoading.value = false
   }
 })
 </script>
