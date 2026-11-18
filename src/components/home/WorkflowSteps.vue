@@ -1,107 +1,153 @@
 <template>
-  <section class="py-12 sm:py-16 bg-white border-b border-slate-100 overflow-hidden">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- Tiêu đề Banner -->
-      <div class="text-center max-w-5xl mx-auto flex flex-col items-center mb-8 sm:mb-10">
-        <img
-          src="/quy-trinh/tieu-de.webp"
-          alt="Quy trình đặt in tại In Nhanh Nhật Nguyên"
-          class="w-full max-w-3xl sm:max-w-4xl lg:max-w-5xl h-auto object-contain mx-auto"
-          decoding="async"
-        />
+  <section
+    class="relative overflow-hidden border-b border-slate-100 bg-white py-12 sm:py-16"
+    aria-labelledby="workflow-heading"
+  >
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-        <!-- Thanh chỉ báo bước chuyển tiếp (Progress Dots) -->
-        <div class="mt-4 flex items-center justify-center gap-2">
+      <!-- HEADER -->
+      <div class="mx-auto mb-9 flex max-w-5xl flex-col items-center text-center sm:mb-11">
+
+        <h2
+          id="workflow-heading"
+          class="inline-block rounded-xl bg-amber-400 px-3.5 py-1.5 text-lg font-extrabold uppercase tracking-tight text-slate-900 sm:px-5 sm:py-2 sm:text-2xl"
+        >
+          Quy trình đặt in tại In Nhanh Nhật Nguyên
+        </h2>
+
+        <p class="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-slate-600 sm:text-base">
+          Từng bước đều rõ ràng, minh bạch và nhanh gọn giúp bạn
+          đặt in dễ dàng, tiện lợi và tiết kiệm thời gian.
+        </p>
+
+        <!-- PROGRESS DOTS -->
+        <div
+          class="mt-5 flex items-center justify-center gap-2"
+          role="group"
+          aria-label="Chọn bước quy trình"
+        >
           <button
             v-for="(st, idx) in workflowSteps"
-            :key="'dot-' + idx"
+            :key="'dot-' + st.step"
+            type="button"
             @click="setStep(idx)"
-            class="group p-1 focus:outline-none"
-            :aria-label="st.title"
+            class="group flex min-h-8 min-w-8 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 cursor-pointer"
+            :aria-label="`Chuyển đến ${st.title}`"
+            :aria-current="activeStep === idx ? 'step' : undefined"
           >
             <span
-              class="h-2 rounded-full transition-all duration-500 block"
-              :class="activeStep === idx 
-                ? 'w-8 bg-brand-gold shadow-sm shadow-brand-gold/50' 
-                : 'w-2 bg-slate-200 group-hover:bg-slate-300'"
+              class="block h-2 rounded-full transition-[width,background-color] duration-300 ease-out"
+              :class="
+                activeStep === idx
+                  ? 'w-8 bg-amber-400 shadow-sm shadow-amber-400/30'
+                  : 'w-2 bg-slate-200 group-hover:bg-amber-300'
+              "
             ></span>
           </button>
         </div>
       </div>
 
-      <!-- 6 Tấm Quy Trình Đặt In kèm Animation Chuyển Tới Liên Tục -->
-      <div 
+      <!-- WORKFLOW CARDS -->
+      <div
         class="relative"
-        @mouseenter="pauseAutoPlay"
-        @mouseleave="resumeAutoPlay"
+        @mouseenter="setHovered(true)"
+        @mouseleave="setHovered(false)"
+        @focusin="setFocused(true)"
+        @focusout="handleFocusOut"
       >
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-5 items-stretch relative z-10">
+
+        <div
+          class="relative z-10 grid grid-cols-2 items-stretch gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6 lg:gap-5"
+        >
+
+          <!-- CARD -->
           <div
             v-for="(st, idx) in workflowSteps"
-            :key="idx"
-            class="relative flex flex-col h-full group"
+            :key="st.step"
+            class="group relative flex h-full min-w-0 flex-col"
             @mouseenter="setStep(idx)"
           >
-            <!-- Card từng bước (tối ưu GPU transform/opacity, tránh repaint nặng) -->
-            <div
-              class="h-full rounded-2xl p-2 sm:p-3.5 border transition-transform duration-300 flex flex-col items-center justify-center text-center cursor-pointer relative overflow-hidden"
-              :class="activeStep === idx 
-                ? 'bg-amber-50/40 border-brand-gold ring-2 ring-brand-gold/40 shadow-lg -translate-y-1.5' 
-                : 'bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5'"
-            >
-              <!-- Badge bước -->
-              <div 
-                class="absolute top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 z-10"
-                :class="activeStep === idx 
-                  ? 'bg-brand-gold text-slate-900 shadow-xs' 
-                  : 'bg-slate-100 text-slate-400 group-hover:text-slate-600'"
-              >
-                Bước 0{{ idx + 1 }}
-              </div>
 
-              <!-- Khung ảnh cố định chiều cao đồng bộ chuẩn 1:1 -->
-              <div class="w-full h-[185px] sm:h-[200px] lg:h-[205px] flex items-center justify-center pt-3">
+            <button
+              type="button"
+              @click="setStep(idx)"
+              @focus="setStep(idx)"
+              :aria-pressed="activeStep === idx"
+              :aria-label="`${st.title}. Chọn bước này`"
+              class="relative flex h-full w-full flex-col items-center overflow-hidden rounded-2xl border p-2.5 pt-10 text-center outline-none transition-colors duration-300 ease-out focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 sm:p-3 sm:pt-10 lg:p-3.5 lg:pt-10 cursor-pointer"
+              :class="
+                activeStep === idx
+                  ? 'border-amber-400 bg-amber-50/50 shadow-md shadow-amber-900/5'
+                  : 'border-slate-200 bg-white hover:border-amber-200 hover:shadow-md hover:shadow-slate-900/5'
+              "
+            >
+
+              <!-- STEP BADGE -->
+              <span
+                class="absolute left-1/2 top-2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 sm:text-xs"
+                :class="
+                  activeStep === idx
+                    ? 'bg-amber-400 text-slate-900'
+                    : 'bg-slate-100 text-slate-500 group-hover:bg-amber-50 group-hover:text-amber-700'
+                "
+              >
+                Bước {{ st.step }}
+              </span>
+
+              <!-- IMAGE -->
+              <div
+                class="flex h-[180px] w-full items-center justify-center overflow-hidden sm:h-[195px] lg:h-[205px]"
+              >
                 <img
                   :src="st.image"
                   :alt="st.title"
-                  class="h-full w-auto max-w-full object-contain mx-auto transition-transform duration-300"
-                  :class="activeStep === idx ? 'scale-105' : 'scale-100'"
                   decoding="async"
+                  class="h-full w-auto max-w-full object-contain transition-transform duration-500 ease-out motion-reduce:transition-none"
+                  :class="
+                    activeStep === idx
+                      ? 'scale-[1.025]'
+                      : 'scale-100 group-hover:scale-[1.02]'
+                  "
                 />
               </div>
 
-              <!-- Vệt sáng chân card (Active Bottom Glow Bar) -->
-              <div 
-                class="absolute bottom-0 left-0 right-0 h-1 transition-opacity duration-300"
-                :class="activeStep === idx ? 'bg-brand-gold opacity-100' : 'opacity-0'"
-              ></div>
-            </div>
+              <!-- ACTIVE INDICATOR -->
+              <span
+                class="absolute bottom-0 left-5 right-5 h-[3px] rounded-t-full bg-amber-400 transition-opacity duration-300"
+                :class="activeStep === idx ? 'opacity-100' : 'opacity-0'"
+              ></span>
 
-            <!-- Mũi tên động "chuyển tới" bước kế tiếp (Hiển thị từ bước 1 -> 5 trên desktop) -->
-            <div 
+            </button>
+
+            <!-- NEXT ARROW -->
+            <div
               v-if="idx < workflowSteps.length - 1"
-              class="hidden lg:flex absolute -right-3.5 top-1/2 -translate-y-1/2 z-20 pointer-events-none items-center justify-center w-7 h-7 rounded-full bg-white border shadow-xs transition-all duration-500"
-              :class="activeStep === idx 
-                ? 'border-brand-gold text-brand-gold shadow-md shadow-brand-gold/30 translate-x-1 scale-110' 
-                : 'border-slate-200 text-slate-300'"
+              class="pointer-events-none absolute -right-[15px] top-1/2 z-20 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border bg-white shadow-sm transition-colors duration-300 lg:flex"
+              :class="
+                activeStep === idx
+                  ? 'border-amber-400 text-amber-500'
+                  : 'border-slate-200 text-slate-300'
+              "
             >
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                stroke-width="2.5" 
-                stroke-linecap="round" 
-                stroke-linejoin="round" 
-                class="w-3.5 h-3.5 transition-transform duration-300"
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
                 :class="activeStep === idx ? 'animate-move-forward' : ''"
               >
-                <path d="m9 18 6-6-6-6"/>
+                <path d="m9 18 6-6-6-6" />
               </svg>
             </div>
+
           </div>
         </div>
       </div>
+
     </div>
   </section>
 </template>
@@ -109,9 +155,28 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 
+// ========================================
+// CONFIGURATION
+// ========================================
+
+const AUTOPLAY_DELAY = 4000
+
+// ========================================
+// STATE
+// ========================================
+
 const activeStep = ref(0)
+
+const isHovered = ref(false)
+const isFocused = ref(false)
+const isReducedMotion = ref(false)
+
 let timer = null
-const isPaused = ref(false)
+let motionQuery = null
+
+// ========================================
+// WORKFLOW DATA
+// ========================================
 
 const workflowSteps = [
   {
@@ -146,68 +211,154 @@ const workflowSteps = [
   }
 ]
 
-const startAutoPlay = () => {
-  stopAutoPlay()
-  timer = setInterval(() => {
-    if (!isPaused.value) {
-      activeStep.value = (activeStep.value + 1) % workflowSteps.length
-    }
-  }, 2200)
-}
+// ========================================
+// AUTOPLAY
+// ========================================
 
 const stopAutoPlay = () => {
-  if (timer) {
+  if (timer !== null) {
     clearInterval(timer)
     timer = null
   }
 }
 
-const pauseAutoPlay = () => {
-  isPaused.value = true
+const startAutoPlay = () => {
+  stopAutoPlay()
+
+  if (isReducedMotion.value) return
+  if (isHovered.value || isFocused.value) return
+  if (document.visibilityState !== 'visible') return
+
+  timer = setInterval(() => {
+    activeStep.value =
+      (activeStep.value + 1) % workflowSteps.length
+  }, AUTOPLAY_DELAY)
 }
 
-const resumeAutoPlay = () => {
-  isPaused.value = false
-}
+// ========================================
+// INTERACTION
+// ========================================
 
 const setStep = (idx) => {
+  if (idx < 0 || idx >= workflowSteps.length) return
   activeStep.value = idx
 }
 
+const setHovered = (value) => {
+  isHovered.value = value
+  if (value) {
+    stopAutoPlay()
+  } else {
+    startAutoPlay()
+  }
+}
+
+const setFocused = (value) => {
+  isFocused.value = value
+  if (value) {
+    stopAutoPlay()
+  } else {
+    startAutoPlay()
+  }
+}
+
+const handleFocusOut = (event) => {
+  const nextTarget = event.relatedTarget
+  if (!event.currentTarget.contains(nextTarget)) {
+    setFocused(false)
+  }
+}
+
+// ========================================
+// BROWSER VISIBILITY
+// ========================================
+
+const handleVisibilityChange = () => {
+  if (document.visibilityState === 'hidden') {
+    stopAutoPlay()
+  } else {
+    startAutoPlay()
+  }
+}
+
+// ========================================
+// REDUCED MOTION
+// ========================================
+
+const handleMotionChange = (event) => {
+  isReducedMotion.value = event.matches
+  if (event.matches) {
+    stopAutoPlay()
+  } else {
+    startAutoPlay()
+  }
+}
+
+// ========================================
+// LIFECYCLE
+// ========================================
+
 onMounted(() => {
+  motionQuery = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  )
+
+  isReducedMotion.value = motionQuery.matches
+
+  if (motionQuery.addEventListener) {
+    motionQuery.addEventListener('change', handleMotionChange)
+  } else {
+    motionQuery.addListener(handleMotionChange)
+  }
+
+  document.addEventListener(
+    'visibilitychange',
+    handleVisibilityChange
+  )
+
   startAutoPlay()
 })
 
 onBeforeUnmount(() => {
   stopAutoPlay()
+
+  document.removeEventListener(
+    'visibilitychange',
+    handleVisibilityChange
+  )
+
+  if (motionQuery) {
+    if (motionQuery.removeEventListener) {
+      motionQuery.removeEventListener(
+        'change',
+        handleMotionChange
+      )
+    } else {
+      motionQuery.removeListener(handleMotionChange)
+    }
+  }
 })
 </script>
 
 <style scoped>
 @keyframes moveForward {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
+
   50% {
     transform: translateX(3px);
   }
 }
 
 .animate-move-forward {
-  animation: moveForward 0.9s ease-in-out infinite;
+  animation: moveForward 1s ease-in-out infinite;
 }
 
-@keyframes shimmerSweep {
-  0% {
-    transform: translateX(-100%);
+@media (prefers-reduced-motion: reduce) {
+  .animate-move-forward {
+    animation: none !important;
   }
-  100% {
-    transform: translateX(200%);
-  }
-}
-
-.animate-shimmer-sweep {
-  animation: shimmerSweep 1.2s ease-out forwards;
 }
 </style>
-
