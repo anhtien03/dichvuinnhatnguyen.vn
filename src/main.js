@@ -5,6 +5,11 @@ import App from './App.vue'
 import './assets/main.css'
 import { vReveal } from './directives/vReveal'
 
+// Luôn bắt đầu ở đầu trang khi bấm F5 tải lại trang (Back/Forward vẫn giữ qua Vue Router scrollBehavior)
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual'
+}
+
 const app = createApp(App)
 
 // Tự động tải lại trang khi phát hiện bản build mới (Vite Chunk Mismatch Recovery)
