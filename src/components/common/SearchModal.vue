@@ -185,7 +185,7 @@ async function loadData() {
     isLoading.value = true
     try {
       const [resProd, resCat] = await Promise.allSettled([
-        api.getProducts(),
+        api.getProducts({ compact: 1 }),
         api.getCategories()
       ])
       if (resProd.status === 'fulfilled' && resProd.value?.data) {
