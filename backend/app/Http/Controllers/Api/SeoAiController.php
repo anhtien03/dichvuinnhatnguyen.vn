@@ -1,4 +1,4 @@
-    <?php
+<?php
 
 namespace App\Http\Controllers\Api;
 
@@ -41,8 +41,7 @@ class SeoAiController extends Controller
 
         $nowVn = now('Asia/Ho_Chi_Minh');
         $dailyKey = 'seo_ai_daily_count:' . $nowVn->format('Y-m-d');
-        $cache = Cache::store('file');
-        $currentCount = (int) $cache->get($dailyKey, 0);
+        $currentCount = $this->getDailyCount($dailyKey);
 
         if ($dailyLimit > 0 && $currentCount >= $dailyLimit) {
             return response()->json([
@@ -299,17 +298,42 @@ PROMPT;
     }
 
     /**
+     * Read today's AI SEO usage counter safely (fallback to default store if file cache is unwritable).
+     */
+    private function getDailyCount(string $dailyKey): int
+    {
+        try {
+            return (int) Cache::store('file')->get($dailyKey, 0);
+        } catch (\Throwable) {
+            try {
+                return (int) Cache::get($dailyKey, 0);
+            } catch (\Throwable) {
+                return 0;
+            }
+        }
+    }
+
+    /**
      * Atomically increment today's AI SEO usage counter until midnight Asia/Ho_Chi_Minh.
      */
     private function incrementDailyCount(string $dailyKey, \Illuminate\Support\Carbon $nowVn): int
     {
-        $cache = Cache::store('file');
         $expiresAt = $nowVn->copy()->endOfDay()->addMinutes(5);
-        if (!$cache->has($dailyKey)) {
-            $cache->put($dailyKey, 0, $expiresAt);
+
+        foreach (['file', null] as $store) {
+            try {
+                $cache = $store ? Cache::store($store) : Cache::store();
+                if (!$cache->has($dailyKey)) {
+                    $cache->put($dailyKey, 0, $expiresAt);
+                }
+
+                return (int) $cache->increment($dailyKey);
+            } catch (\Throwable) {
+                continue;
+            }
         }
 
-        return (int) $cache->increment($dailyKey);
+        return 1;
     }
 
     /**
