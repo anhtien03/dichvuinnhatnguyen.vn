@@ -1,4 +1,4 @@
-<?php
+    <?php
 
 namespace App\Http\Controllers\Api;
 
@@ -84,8 +84,8 @@ class SeoAiController extends Controller
             $lastError = $result['message'];
             $lastStatus = $result['status'];
 
-            // Retry with fallback model only on rate limit, overload, or unavailable model
-            if (!in_array($result['status'], [404, 429, 500, 503, 504], true)) {
+            // Retry with fallback model on rate limit, overload, unavailable model, or malformed JSON
+            if (!in_array($result['status'], [404, 429, 500, 502, 503, 504], true)) {
                 break;
             }
         }
@@ -175,7 +175,7 @@ PROMPT;
                     ],
                     'generationConfig' => [
                         'temperature' => 0.4,
-                        'maxOutputTokens' => 1536,
+                        'maxOutputTokens' => 3072,
                         'responseMimeType' => 'application/json',
                         'responseSchema' => [
                             'type' => 'OBJECT',
@@ -232,10 +232,15 @@ PROMPT;
 
         $payload = $response->json();
         $rawText = (string) data_get($payload, 'candidates.0.content.parts.0.text', '');
-        $decoded = json_decode(trim($rawText), true);
+        $finishReason = (string) data_get($payload, 'candidates.0.finishReason', '');
+        $decoded = $this->decodeGeminiJson($rawText);
 
         if (!is_array($decoded)) {
-            Log::warning('Gemini SEO invalid JSON output', ['model' => $model, 'raw' => mb_substr($rawText, 0, 500)]);
+            Log::warning('Gemini SEO invalid JSON output', [
+                'model' => $model,
+                'finish_reason' => $finishReason,
+                'raw' => mb_substr($rawText, 0, 500),
+            ]);
 
             return [
                 'ok' => false,
@@ -257,6 +262,40 @@ PROMPT;
             'usage' => $usage,
             'data' => $decoded,
         ];
+    }
+
+    /**
+     * Decode JSON robustly even if the model wraps it in markdown code fences.
+     */
+    private function decodeGeminiJson(string $rawText): ?array
+    {
+        $trimmed = trim($rawText);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        $decoded = json_decode($trimmed, true);
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+
+        if (preg_match('/```(?:json)?\s*([\s\S]*?)\s*```/i', $trimmed, $matches)) {
+            $decoded = json_decode(trim($matches[1]), true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+        }
+
+        $start = strpos($trimmed, '{');
+        $end = strrpos($trimmed, '}');
+        if ($start !== false && $end !== false && $end > $start) {
+            $decoded = json_decode(substr($trimmed, $start, $end - $start + 1), true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+        }
+
+        return null;
     }
 
     /**
