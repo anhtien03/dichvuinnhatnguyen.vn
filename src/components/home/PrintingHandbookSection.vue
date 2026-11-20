@@ -4,8 +4,8 @@
       <!-- Section Header -->
       <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-4">
         <div>
-          <span class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-gold uppercase tracking-wider mb-2">
-            <BookOpen class="w-4 h-4 text-brand-gold" />
+          <span class="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 uppercase tracking-wider mb-2">
+            <BookOpen class="w-4 h-4 text-amber-700" />
             CẨM NANG VỀ IN ẤN
           </span>
           <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
@@ -66,9 +66,9 @@
           <!-- Article Content -->
           <div class="p-6 flex-1 flex flex-col justify-between">
             <div>
-              <div class="flex items-center gap-3 text-xs text-slate-400 mb-2.5">
+              <div class="flex items-center gap-3 text-xs text-slate-600 mb-2.5">
                 <span class="flex items-center gap-1">
-                  <Calendar class="w-3.5 h-3.5 text-slate-400" />
+                  <Calendar class="w-3.5 h-3.5 text-slate-500" />
                   {{ formatDate(post.published_at || post.created_at) }}
                 </span>
               </div>

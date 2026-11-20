@@ -103,8 +103,8 @@
           
           <!-- Cột Trái (7/12): Tiêu đề, chữ gõ động & Mô tả -->
           <div class="lg:col-span-7 space-y-3 text-left">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-brand-blue text-[11px] font-bold uppercase tracking-wider">
-              <span class="w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-900 text-[11px] font-bold uppercase tracking-wider">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
               IN NHANH CHUYÊN NGHIỆP 
             </div>
 
@@ -146,7 +146,7 @@
                   <PhoneCall class="w-4 h-4" />
                 </div>
                 <div class="text-left text-xs leading-tight">
-                  <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Kinh Doanh</span>
+                  <span class="text-[10px] text-slate-600 font-bold uppercase tracking-wider block">Kinh Doanh</span>
                   <span class="font-black text-slate-900 group-hover:text-brand-blue transition-colors text-xs sm:text-[13px] block mt-0.5">
                     {{ siteSettings.hotlines[0].number }}
                   </span>
@@ -162,7 +162,7 @@
                   <PhoneCall class="w-4 h-4" />
                 </div>
                 <div class="text-left text-xs leading-tight">
-                  <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Kinh Doanh</span>
+                  <span class="text-[10px] text-slate-600 font-bold uppercase tracking-wider block">Kinh Doanh</span>
                   <span class="font-black text-slate-900 group-hover:text-brand-blue transition-colors text-xs sm:text-[13px] block mt-0.5">
                     {{ siteSettings.hotlines[1].number }}
                   </span>

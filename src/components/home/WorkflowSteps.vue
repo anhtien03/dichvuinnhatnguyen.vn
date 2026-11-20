@@ -88,7 +88,7 @@
                 :class="
                   activeStep === idx
                     ? 'bg-amber-400 text-slate-900'
-                    : 'bg-slate-100 text-slate-500 group-hover:bg-amber-50 group-hover:text-amber-700'
+                    : 'bg-slate-100 text-slate-700 group-hover:bg-amber-50 group-hover:text-amber-800'
                 "
               >
                 Bước {{ st.step }}
@@ -101,6 +101,9 @@
                 <img
                   :src="st.image"
                   :alt="st.title"
+                  width="787"
+                  height="1024"
+                  loading="lazy"
                   decoding="async"
                   class="h-full w-auto max-w-full object-contain transition-transform duration-500 ease-out motion-reduce:transition-none"
                   :class="

@@ -5,7 +5,7 @@
       <!-- Section Header with Category Tabs (Chỉ hiện các danh mục đang có sản phẩm) -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
         <div>
-          <span class="text-xs font-bold text-brand-gold uppercase tracking-wider block mb-1">
+          <span class="text-xs font-bold text-amber-700 uppercase tracking-wider block mb-1">
             DANH MỤC THIẾT KẾ & IN ẤN THEO NGÀNH
           </span>
           <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
@@ -92,10 +92,10 @@
 
           <div class="p-3.5 sm:p-4 flex-1 flex flex-col justify-between gap-2">
             <div>
-              <h4 class="text-sm sm:text-base font-black text-slate-900 group-hover:text-brand-blue line-clamp-1">
+              <h3 class="text-sm sm:text-base font-black text-slate-900 group-hover:text-brand-blue line-clamp-1">
                 {{ prod.name }}
-              </h4>
-              <p v-if="prod.description" class="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+              </h3>
+              <p v-if="prod.description" class="text-[11px] text-slate-600 mt-1 line-clamp-2 leading-relaxed">
                 {{ stripHtml(prod.description) }}
               </p>
             </div>
@@ -103,7 +103,7 @@
             <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
               <div class="text-xs sm:text-sm font-black text-brand-blue">
                 {{ prod.base_price ? formatCurrency(prod.base_price) : 'Liên hệ' }}
-                <span v-if="prod.base_price && prod.unit" class="text-[10px] text-slate-400 font-normal">/{{ prod.unit }}</span>
+                <span v-if="prod.base_price && prod.unit" class="text-[10px] text-slate-600 font-normal">/{{ prod.unit }}</span>
               </div>
               <span class="text-[11px] font-bold text-brand-blue group-hover:translate-x-0.5 transition-transform">
                 Tính giá &rarr;

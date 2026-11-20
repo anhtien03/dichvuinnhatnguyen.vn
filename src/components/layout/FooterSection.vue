@@ -6,7 +6,7 @@
         <!-- Col 1: Brand Info & Logo Trực Tiếp Trên Nền Sáng -->
         <div class="space-y-4 text-left">
           <router-link to="/" class="inline-block hover:opacity-90 transition-opacity">
-            <img src="/logo.png" alt="In Ấn Nhật Nguyên" class="h-16 sm:h-18 lg:h-20 w-auto object-contain" />
+            <img src="/logo.png" alt="In Ấn Nhật Nguyên" width="1024" height="389" class="h-16 sm:h-18 lg:h-20 w-auto object-contain" />
           </router-link>
           <p class="text-xs text-slate-500 leading-relaxed font-normal">
             Hơn 8 năm kinh nghiệm chuyên nghiệp trong lĩnh vực in ấn bao bì, ấn phẩm văn phòng và quảng cáo. Cam kết chất lượng chuẩn màu, đúng hẹn, giá tận xưởng không qua trung gian.
@@ -94,12 +94,12 @@
             </li>
             <li class="flex items-center gap-2.5">
               <Phone class="w-4 h-4 text-brand-gold shrink-0" />
-              <div>
+              <div class="space-y-1.5">
                 <a
                   v-for="(h, idx) in siteSettings.hotlines"
                   :key="idx"
                   :href="'tel:' + h.number.replace(/\s+/g, '')"
-                  class="block font-black text-brand-blue hover:underline"
+                  class="block py-1 font-black text-brand-blue hover:underline"
                 >
                   {{ h.number }} ({{ h.nvkd }})
                 </a>

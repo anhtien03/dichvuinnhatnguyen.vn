@@ -5,8 +5,8 @@
       <!-- Section Header -->
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200/60 text-brand-gold text-xs font-bold uppercase tracking-wider mb-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200/80 text-amber-800 text-xs font-bold uppercase tracking-wider mb-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
             ẤN PHẨM PHỔ BIẾN
           </div>
           <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
@@ -88,13 +88,13 @@
               <!-- Giá tiền & Quy cách -->
               <div class="pt-2 border-t border-slate-100 flex items-baseline justify-between">
                 <div>
-                  <span class="text-[10px] text-slate-400 block">Giá từ:</span>
+                  <span class="text-[10px] text-slate-600 block">Giá từ:</span>
                   <div class="text-[#1E3A8A] font-black text-base">
                     {{ formatCurrency(item.base_price || item.basePrice || 0) }}
-                    <span class="text-[10px] text-slate-500 font-normal">/ {{ item.unit || 'cái' }}</span>
+                    <span class="text-[10px] text-slate-600 font-normal">/ {{ item.unit || 'cái' }}</span>
                   </div>
                 </div>
-                <span class="text-[10px] font-semibold text-slate-400">
+                <span class="text-[10px] font-semibold text-slate-600">
                   {{ item.turnaround || '24h - 48h' }}
                 </span>
               </div>

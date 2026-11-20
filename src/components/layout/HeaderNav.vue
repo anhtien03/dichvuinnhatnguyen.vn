@@ -9,6 +9,8 @@
             <img
               src="/logo.png"
               alt="Nhật Nguyên Design & Printing"
+              width="1024"
+              height="389"
               class="h-11 sm:h-16 lg:h-[86px] w-auto max-w-[170px] sm:max-w-none object-contain transition-transform group-hover:scale-[1.02]"
             />
           </router-link>

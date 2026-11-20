@@ -5,8 +5,8 @@
       <!-- Section header -->
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <!-- DANH MỤC DỊCH VỤ IN: Viết hoa + Màu vàng thương hiệu -->
-          <h2 class="text-2xl sm:text-3xl font-black text-brand-gold tracking-tight uppercase">
+          <!-- DANH MỤC DỊCH VỤ IN: Viết hoa + Màu vàng thương hiệu đậm đạt chuẩn tương phản -->
+          <h2 class="text-2xl sm:text-3xl font-black text-amber-700 tracking-tight uppercase">
             DANH MỤC DỊCH VỤ IN
           </h2>
           <!-- Bạn đang cần in ấn phẩm nào?: Nhỏ lại + Tương tác hover -->
