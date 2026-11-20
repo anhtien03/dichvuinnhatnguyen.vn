@@ -108,12 +108,23 @@ class SeoAiController extends Controller
 
         $plainContent = html_entity_decode(strip_tags((string) ($input['content'] ?? '')), ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $plainContent = preg_replace('/\s+/u', ' ', trim($plainContent)) ?? '';
+        $currentWords = $plainContent !== '' ? count(preg_split('/\s+/u', $plainContent, -1, PREG_SPLIT_NO_EMPTY) ?: []) : 0;
+        $minWordsTarget = match ($input['type'] ?? 'product') {
+            'post' => 500,
+            'category' => 120,
+            default => 200,
+        };
+        $wordsNeeded = max(0, $minWordsTarget - $currentWords);
         $excerpt = mb_substr($plainContent, 0, 2200);
 
         $title = trim((string) $input['title']);
         $focusKeyword = trim((string) ($input['focus_keyword'] ?? ''));
         $currentSlug = trim((string) ($input['slug'] ?? ''));
         $currentYear = date('Y');
+
+        $expansionInstruction = $wordsNeeded > 0
+            ? "7. \"expansion_html\": Nội dung hiện tại mới có {$currentWords} từ (cần thêm khoảng " . ($wordsNeeded + 60) . " từ để vượt mốc {$minWordsTarget} từ và đưa mật độ từ khóa về mức 1.0% - 2.5%). Hãy viết 1 đoạn <p>...</p> và 1 danh sách <ul><li>...</li></ul> khoảng " . max(100, min(220, $wordsNeeded + 70)) . " từ đặt bên dưới h2_heading, mô tả quy trình in ấn, kiểm tra file, gia công thành phẩm và giao hàng phù hợp với sản phẩm/bài viết này. QUAN TRỌNG: KHÔNG lặp lại y nguyên cụm focus_keyword quá 1 lần trong expansion_html (hãy dùng từ đồng nghĩa/ngữ cảnh tự nhiên) để tránh vượt mật độ từ khóa."
+            : '7. "expansion_html": Trả về chuỗi rỗng "" vì nội dung hiện tại đã đủ độ dài.';
 
         return <<<PROMPT
 Bạn là chuyên gia SEO tiếng Việt cho website xưởng in "In Nhật Nguyên" (dichvuinnhatnguyen.vn, chuyên in ấn phẩm tại TP.HCM & giao toàn quốc).
@@ -123,7 +134,7 @@ Hãy phân tích dữ liệu dưới đây và trả về JSON tối ưu chuẩn
 - Tên / Tiêu đề gốc: {$title}
 - Từ khóa mục tiêu hiện tại (nếu có): {$focusKeyword}
 - Slug hiện tại (nếu có): {$currentSlug}
-- Nội dung hiện có (tóm tắt): {$excerpt}
+- Nội dung hiện có ({$currentWords} từ, tóm tắt): {$excerpt}
 
 YÊU CẦU NGHIÊM NGẶT:
 1. "focus_keyword": 2-5 từ tiếng Việt tự nhiên, chữ thường, sát với tên sản phẩm/bài viết (giữ nguyên nếu từ khóa hiện tại đã tốt).
@@ -132,6 +143,7 @@ YÊU CẦU NGHIÊM NGẶT:
 4. "slug": URL tiếng Việt không dấu dạng kebab-case, ngắn gọn <= 75 ký tự, chứa toàn bộ từ khóa mục tiêu.
 5. "intro_html": Một thẻ <p>...</p> (2-3 câu, khoảng 45-70 từ) mở đầu tự nhiên, có chứa <strong>từ khóa mục tiêu</strong>.
 6. "h2_heading": Một thẻ <h2>...</h2> tự nhiên, hấp dẫn, chứa từ khóa mục tiêu.
+{$expansionInstruction}
 
 QUY TẮC CHỐNG BỊA ĐẶT:
 - TUYỆT ĐỐI KHÔNG tự bịa giá tiền, định lượng giấy (gsm), kích thước cụ thể, phần trăm giảm giá hoặc chính sách bảo hành nếu thông tin đó không có trong "Tên" hoặc "Nội dung hiện có".
@@ -163,7 +175,7 @@ PROMPT;
                     ],
                     'generationConfig' => [
                         'temperature' => 0.4,
-                        'maxOutputTokens' => 1024,
+                        'maxOutputTokens' => 1536,
                         'responseMimeType' => 'application/json',
                         'responseSchema' => [
                             'type' => 'OBJECT',
@@ -174,6 +186,7 @@ PROMPT;
                                 'slug' => ['type' => 'STRING'],
                                 'intro_html' => ['type' => 'STRING'],
                                 'h2_heading' => ['type' => 'STRING'],
+                                'expansion_html' => ['type' => 'STRING'],
                             ],
                             'required' => [
                                 'focus_keyword',
@@ -182,6 +195,7 @@ PROMPT;
                                 'slug',
                                 'intro_html',
                                 'h2_heading',
+                                'expansion_html',
                             ],
                         ],
                     ],
@@ -286,6 +300,9 @@ PROMPT;
             $h2Text = "<h2>{$h2Text}</h2>";
         }
 
+        $expansionText = strip_tags((string) ($data['expansion_html'] ?? ''), '<p><ul><li><strong><em><h3>');
+        $expansionText = trim($expansionText);
+
         return [
             'focus_keyword' => $focusKeyword,
             'meta_title' => $metaTitle,
@@ -293,6 +310,7 @@ PROMPT;
             'slug' => $slug,
             'intro_html' => $introText,
             'h2_heading' => $h2Text,
+            'expansion_html' => $expansionText,
         ];
     }
 }

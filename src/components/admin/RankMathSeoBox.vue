@@ -208,20 +208,23 @@
         </div>
 
         <label
-          v-if="aiPreview.intro_html || aiPreview.h2_heading"
+          v-if="aiPreview.intro_html || aiPreview.h2_heading || aiPreview.expansion_html"
           class="flex items-start gap-2.5 p-2.5 rounded-lg border cursor-pointer"
           :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-white border-slate-200'"
         >
           <input v-model="applyAiContentBlocks" type="checkbox" class="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500" />
           <div class="space-y-1 min-w-0">
             <div class="font-bold text-[11px]">
-              Chèn thêm đoạn mở đầu &amp; tiêu đề phụ H2 vào nội dung (giữ nguyên toàn bộ nội dung cũ)
+              Chèn bổ sung đoạn mở đầu, H2 &amp; phần mô tả còn thiếu (giữ nguyên toàn bộ nội dung cũ)
             </div>
             <div v-if="aiPreview.intro_html" class="text-[11px] text-slate-400 line-clamp-2">
               Mở đầu: {{ stripHtmlToText(aiPreview.intro_html) }}
             </div>
             <div v-if="aiPreview.h2_heading" class="text-[11px] text-slate-400 truncate">
               H2: {{ stripHtmlToText(aiPreview.h2_heading) }}
+            </div>
+            <div v-if="aiPreview.expansion_html" class="text-[11px] text-slate-400 line-clamp-2">
+              Bổ sung độ dài: {{ stripHtmlToText(aiPreview.expansion_html) }}
             </div>
           </div>
         </label>
@@ -954,11 +957,12 @@ async function optimizeWithAi() {
       meta_description: data.meta_description || '',
       slug: data.slug || slugify(data.focus_keyword || titleText),
       intro_html: data.intro_html || '',
-      h2_heading: data.h2_heading || ''
+      h2_heading: data.h2_heading || '',
+      expansion_html: data.expansion_html || ''
     }
 
-    // Suggest inserting intro/H2 only if current content doesn't already have them
-    applyAiContentBlocks.value = !testKeywordInIntro.value || !testKeywordInSubheadings.value
+    // Suggest inserting missing SEO blocks if intro, H2, word count, or density needs improvement
+    applyAiContentBlocks.value = !testKeywordInIntro.value || !testKeywordInSubheadings.value || !testContentLength.value || !testKeywordDensity.value
   } catch (err) {
     aiError.value = err?.message || 'Không thể kết nối AI Gemini. Bạn có thể dùng mẫu tối ưu cục bộ.'
   } finally {
@@ -977,7 +981,10 @@ function applyAiPreview() {
   if (applyAiContentBlocks.value) {
     const introPart = (!testKeywordInIntro.value && suggestion.intro_html) ? suggestion.intro_html : ''
     const h2Part = (!testKeywordInSubheadings.value && suggestion.h2_heading) ? suggestion.h2_heading : ''
-    const parts = [introPart, newContent, h2Part].filter(Boolean)
+    const expansionPart = ((!testContentLength.value || !testKeywordDensity.value) && suggestion.expansion_html)
+      ? suggestion.expansion_html
+      : ''
+    const parts = [introPart, newContent, h2Part, expansionPart].filter(Boolean)
     if (parts.length > 0) {
       newContent = parts.join('\n')
       emit('update:content', newContent)
