@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'seo_model' => env('GEMINI_SEO_MODEL', 'gemini-3.8-flash'),
+        'seo_fallback_model' => env('GEMINI_SEO_FALLBACK_MODEL', 'gemini-3.5-flash-lite'),
+        'seo_daily_limit' => (int) env('GEMINI_SEO_DAILY_LIMIT', 100),
+        'base_url' => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta'),
+    ],
+
 ];

@@ -346,6 +346,9 @@ const SESSION_PREFIX = 'inn_pub_v1:'
       publishGoogleIndexingUrl: (url, type = 'URL_UPDATED') => apiRequest('/admin/google-indexing/publish', { method: 'POST', body: { url, type } }),
       getGoogleIndexingMetadata: (url) => apiRequest(`/admin/google-indexing/metadata?url=${encodeURIComponent(url)}`),
 
+      // AI SEO Optimization
+      optimizeAdminSeo: (data) => apiRequest('/admin/seo/optimize', { method: 'POST', body: data }),
+
       // Users & Staff
       getAdminUsers: (params = {}) => {
         const query = new URLSearchParams(params).toString()

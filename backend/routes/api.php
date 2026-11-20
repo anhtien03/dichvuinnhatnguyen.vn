@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\QuoteRequestController;
+use App\Http\Controllers\Api\SeoAiController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\ErpOrderController;
 use App\Http\Controllers\Api\ErpCustomerController;
@@ -83,6 +84,9 @@ Route::prefix('v1')->group(function () {
 
         // Site Settings Management
         Route::post('/admin/settings', [SettingController::class, 'update'])->middleware('permission:settings.manage');
+
+        // AI SEO Optimization (Gemini)
+        Route::post('/admin/seo/optimize', [SeoAiController::class, 'optimize'])->middleware('throttle:20,1');
 
         // Google Indexing API
         Route::get('/admin/google-indexing/config', [GoogleIndexingController::class, 'getConfig'])->middleware('permission:seo_indexing.manage');

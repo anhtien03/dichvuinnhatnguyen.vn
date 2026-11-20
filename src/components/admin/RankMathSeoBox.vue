@@ -92,18 +92,159 @@
           <span>Tối Ưu Nhanh Chuẩn Rank Math 85+ Điểm</span>
         </div>
         <p class="text-[11px] text-slate-400">
-          Tự động sinh Tiêu đề & Thẻ mô tả tối ưu từ khóa, độ dài và các từ kích thích click.
+          Dùng AI Gemini 3.8 để viết Meta Title, Description, Slug riêng biệt hoặc dùng mẫu tối ưu tức thì.
         </p>
       </div>
 
-      <button
-        type="button"
-        @click="autoOptimizeSEO"
-        class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
-      >
-        <Sparkles class="w-3.5 h-3.5" />
-        <span>Tối Ưu 1 Chạm</span>
-      </button>
+      <div class="flex flex-wrap items-center gap-2 shrink-0">
+        <button
+          type="button"
+          :disabled="isOptimizingAi"
+          @click="optimizeWithAi"
+          class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+        >
+          <Loader2 v-if="isOptimizingAi" class="w-3.5 h-3.5 animate-spin" />
+          <Wand2 v-else class="w-3.5 h-3.5" />
+          <span>{{ isOptimizingAi ? 'Đang phân tích...' : 'Tối Ưu AI (Gemini 3.8)' }}</span>
+        </button>
+
+        <button
+          type="button"
+          :disabled="isOptimizingAi"
+          @click="autoOptimizeSEO"
+          class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+        >
+          <Sparkles class="w-3.5 h-3.5" />
+          <span>Tối Ưu 1 Chạm</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2b. AI Error Alert -->
+    <div
+      v-if="aiError"
+      class="p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+    >
+      <div class="flex items-start gap-2 text-rose-400">
+        <AlertCircle class="w-4 h-4 shrink-0 mt-0.5" />
+        <span>{{ aiError }}</span>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button
+          type="button"
+          @click="autoOptimizeSEO(); aiError = ''"
+          class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] cursor-pointer"
+        >
+          Dùng mẫu cục bộ
+        </button>
+        <button
+          type="button"
+          @click="aiError = ''"
+          class="p-1 rounded-lg hover:bg-rose-500/20 text-rose-400 cursor-pointer"
+          title="Đóng"
+        >
+          <X class="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+
+    <!-- 2c. AI Suggestion Preview Panel (Method A - Non-destructive) -->
+    <div
+      v-if="aiPreview"
+      class="p-4 rounded-xl border space-y-3 transition-all"
+      :class="isDarkMode ? 'bg-[#1A222C] border-emerald-500/30' : 'bg-emerald-50/60 border-emerald-200'"
+    >
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <Wand2 class="w-4 h-4 text-emerald-500" />
+          <span class="text-xs font-extrabold" :class="isDarkMode ? 'text-emerald-400' : 'text-emerald-700'">
+            Xem trước đề xuất AI
+          </span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 border border-emerald-500/20">
+            {{ aiPreview.model }}
+          </span>
+          <span
+            v-if="aiPreview.quota && aiPreview.quota.daily_limit > 0"
+            class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/20"
+          >
+            Hôm nay: {{ aiPreview.quota.used_today }}/{{ aiPreview.quota.daily_limit }} lượt
+          </span>
+        </div>
+        <button
+          type="button"
+          @click="aiPreview = null"
+          class="p-1 rounded-lg hover:bg-slate-500/20 text-slate-400 cursor-pointer"
+          title="Đóng xem trước"
+        >
+          <X class="w-4 h-4" />
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 gap-2.5 text-xs">
+        <div class="p-2.5 rounded-lg border" :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-white border-slate-200'">
+          <div class="text-[10px] font-bold uppercase text-slate-400 mb-0.5">Từ khóa mục tiêu</div>
+          <div class="font-bold text-indigo-400">{{ aiPreview.focus_keyword }}</div>
+        </div>
+
+        <div class="p-2.5 rounded-lg border" :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-white border-slate-200'">
+          <div class="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 mb-0.5">
+            <span>Meta Title</span>
+            <span>{{ aiPreview.meta_title.length }} ký tự</span>
+          </div>
+          <div class="font-semibold">{{ aiPreview.meta_title }}</div>
+        </div>
+
+        <div class="p-2.5 rounded-lg border" :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-white border-slate-200'">
+          <div class="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 mb-0.5">
+            <span>Meta Description</span>
+            <span>{{ aiPreview.meta_description.length }} ký tự</span>
+          </div>
+          <div class="leading-relaxed">{{ aiPreview.meta_description }}</div>
+        </div>
+
+        <div class="p-2.5 rounded-lg border" :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-white border-slate-200'">
+          <div class="text-[10px] font-bold uppercase text-slate-400 mb-0.5">Slug URL</div>
+          <div class="font-mono text-[11px] text-emerald-500">/{{ urlPrefix }}/{{ aiPreview.slug }}</div>
+        </div>
+
+        <label
+          v-if="aiPreview.intro_html || aiPreview.h2_heading"
+          class="flex items-start gap-2.5 p-2.5 rounded-lg border cursor-pointer"
+          :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-white border-slate-200'"
+        >
+          <input v-model="applyAiContentBlocks" type="checkbox" class="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500" />
+          <div class="space-y-1 min-w-0">
+            <div class="font-bold text-[11px]">
+              Chèn thêm đoạn mở đầu &amp; tiêu đề phụ H2 vào nội dung (giữ nguyên toàn bộ nội dung cũ)
+            </div>
+            <div v-if="aiPreview.intro_html" class="text-[11px] text-slate-400 line-clamp-2">
+              Mở đầu: {{ stripHtmlToText(aiPreview.intro_html) }}
+            </div>
+            <div v-if="aiPreview.h2_heading" class="text-[11px] text-slate-400 truncate">
+              H2: {{ stripHtmlToText(aiPreview.h2_heading) }}
+            </div>
+          </div>
+        </label>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-1">
+        <button
+          type="button"
+          @click="aiPreview = null"
+          class="px-3 py-1.5 rounded-lg border text-xs font-bold cursor-pointer"
+          :class="isDarkMode ? 'border-[#2E3A47] text-slate-300 hover:bg-slate-800' : 'border-slate-300 text-slate-600 hover:bg-slate-100'"
+        >
+          Hủy
+        </button>
+        <button
+          type="button"
+          @click="applyAiPreview"
+          class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm flex items-center gap-1.5 cursor-pointer"
+        >
+          <Check class="w-3.5 h-3.5" />
+          <span>Áp Dụng Đề Xuất</span>
+        </button>
+      </div>
     </div>
 
     <!-- 3. Google SERP Snippet Preview -->
@@ -394,10 +535,11 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import {
   Target, Search, Zap, Sparkles, Eye, CheckCircle2,
-  XCircle, AlertCircle
+  XCircle, AlertCircle, Wand2, Loader2, Check, X
 } from 'lucide-vue-next'
 import { useAdminTheme } from '../../composables/useAdminTheme'
 import { slugify } from '../../composables/useSEO'
+import { api } from '../../services/api'
 
 const { isDarkMode } = useAdminTheme()
 
@@ -426,6 +568,10 @@ const emit = defineEmits([
 const focusKeyword = ref(props.initialKeyword || '')
 const previewDevice = ref('desktop')
 const activeTab = ref('basic')
+const isOptimizingAi = ref(false)
+const aiError = ref('')
+const aiPreview = ref(null)
+const applyAiContentBlocks = ref(false)
 
 const minWordsTarget = computed(() => {
   if (props.type === 'post') return 500
@@ -773,6 +919,82 @@ function autoOptimizeSEO() {
     focusKeyword: kw,
     content: newContent
   })
+}
+
+async function optimizeWithAi() {
+  const titleText = (props.title || '').trim()
+  if (!titleText) {
+    aiError.value = 'Vui lòng nhập Tên / Tiêu đề trước khi tối ưu bằng AI.'
+    return
+  }
+
+  isOptimizingAi.value = true
+  aiError.value = ''
+  aiPreview.value = null
+
+  try {
+    const res = await api.optimizeAdminSeo({
+      title: titleText,
+      type: props.type || 'product',
+      focus_keyword: focusKeyword.value.trim(),
+      meta_title: props.metaTitle || '',
+      meta_description: props.metaDescription || '',
+      slug: props.slug || '',
+      content: props.content || ''
+    })
+
+    const data = res?.data || {}
+    aiPreview.value = {
+      model: res?.model || 'gemini-3.8-flash',
+      quota: res?.quota || null,
+      focus_keyword: data.focus_keyword || focusKeyword.value.trim(),
+      meta_title: data.meta_title || '',
+      meta_description: data.meta_description || '',
+      slug: data.slug || slugify(data.focus_keyword || titleText),
+      intro_html: data.intro_html || '',
+      h2_heading: data.h2_heading || ''
+    }
+
+    // Suggest inserting intro/H2 only if current content doesn't already have them
+    applyAiContentBlocks.value = !testKeywordInIntro.value || !testKeywordInSubheadings.value
+  } catch (err) {
+    aiError.value = err?.message || 'Không thể kết nối AI Gemini. Bạn có thể dùng mẫu tối ưu cục bộ.'
+  } finally {
+    isOptimizingAi.value = false
+  }
+}
+
+function applyAiPreview() {
+  if (!aiPreview.value) return
+
+  const suggestion = aiPreview.value
+  const kw = suggestion.focus_keyword || focusKeyword.value
+  focusKeyword.value = kw
+
+  let newContent = props.content || ''
+  if (applyAiContentBlocks.value) {
+    const introPart = (!testKeywordInIntro.value && suggestion.intro_html) ? suggestion.intro_html : ''
+    const h2Part = (!testKeywordInSubheadings.value && suggestion.h2_heading) ? suggestion.h2_heading : ''
+    const parts = [introPart, newContent, h2Part].filter(Boolean)
+    if (parts.length > 0) {
+      newContent = parts.join('\n')
+      emit('update:content', newContent)
+    }
+  }
+
+  emit('update:focusKeyword', kw)
+  emit('update:metaTitle', suggestion.meta_title)
+  emit('update:metaDescription', suggestion.meta_description)
+  emit('update:slug', suggestion.slug)
+  emit('optimized', {
+    metaTitle: suggestion.meta_title,
+    metaDescription: suggestion.meta_description,
+    slug: suggestion.slug,
+    focusKeyword: kw,
+    content: newContent
+  })
+
+  aiPreview.value = null
 }
 
 // Evaluate candidate keyword score when initialKeyword was not previously saved
