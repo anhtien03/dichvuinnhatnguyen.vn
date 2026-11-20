@@ -81,7 +81,8 @@
       <!-- FULL-WIDTH PANORAMIC HERO BANNER (Tràn viền toàn cảnh kiểu Trần Gia) -->
       <section class="relative w-full h-[320px] sm:h-[420px] lg:h-[520px] bg-slate-900 overflow-hidden">
         <img
-          :src="post.banner_image || post.thumbnail || '/banner-chinh.jpg'"
+          v-if="post.banner_image || post.thumbnail"
+          :src="post.banner_image || post.thumbnail"
           :alt="post.title"
           class="w-full h-full object-cover object-center filter brightness-[0.95]"
         />
@@ -420,9 +421,9 @@
                   :to="`/tin-tuc/${relPost.slug}`"
                   class="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-brand-blue/40 transition-all flex gap-3 group"
                 >
-                  <div class="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                  <div v-if="relPost.thumbnail" class="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 shrink-0">
                     <img
-                      :src="relPost.thumbnail || '/banner-chinh.jpg'"
+                      :src="relPost.thumbnail"
                       :alt="relPost.title"
                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />

@@ -56,7 +56,8 @@
             class="block w-full lg:h-full relative lg:flex-1 cursor-pointer"
           >
             <img
-              :src="mainBanner?.image_url || '/banner-chinh.jpg'"
+              v-if="mainBanner?.image_url"
+              :src="mainBanner.image_url"
               :alt="mainBanner?.title || 'Xưởng In Nhật Nguyên'"
               class="w-full h-auto lg:h-full lg:object-cover object-center group-hover:scale-[1.02] transition-transform duration-700 block"
               loading="eager"

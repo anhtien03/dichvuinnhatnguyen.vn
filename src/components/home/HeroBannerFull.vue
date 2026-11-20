@@ -130,7 +130,7 @@ const slides = ref([
   {
     id: 1,
     title: 'Xưởng In Nhật Nguyên - Bạn Cần In Có Ngay Trong Ngày',
-    image: '/banner-chinh.jpg',
+    image: '',
     link: '/yeu-cau-bao-gia'
   }
 ])
