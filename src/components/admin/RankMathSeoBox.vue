@@ -933,6 +933,8 @@ async function optimizeWithAi() {
   aiPreview.value = null
 
   try {
+    const plainExcerpt = stripHtmlToText(props.content || '').slice(0, 3000)
+
     const res = await api.optimizeAdminSeo({
       title: titleText,
       type: props.type || 'product',
@@ -940,7 +942,7 @@ async function optimizeWithAi() {
       meta_title: props.metaTitle || '',
       meta_description: props.metaDescription || '',
       slug: props.slug || '',
-      content: props.content || ''
+      content: plainExcerpt
     })
 
     const data = res?.data || {}

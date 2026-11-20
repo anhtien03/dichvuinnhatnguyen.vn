@@ -24,7 +24,7 @@ class SeoAiController extends Controller
             'meta_title' => ['nullable', 'string', 'max:160'],
             'meta_description' => ['nullable', 'string', 'max:320'],
             'slug' => ['nullable', 'string', 'max:160'],
-            'content' => ['nullable', 'string', 'max:15000'],
+            'content' => ['nullable', 'string', 'max:100000'],
         ]);
 
         $apiKey = (string) config('services.gemini.api_key', '');
