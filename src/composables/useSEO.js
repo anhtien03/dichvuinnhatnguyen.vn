@@ -11,16 +11,44 @@ import { watchEffect } from 'vue'
  * @param {string} [options.type]
  * @param {Object} [options.schema] - JSON-LD Schema.org object
  */
+const CANONICAL_ORIGIN = 'https://dichvuinnhatnguyen.vn'
+
+export function normalizeCanonicalUrl(rawUrl) {
+  try {
+    const parsed = new URL(rawUrl || window.location.pathname, CANONICAL_ORIGIN)
+    let path = parsed.pathname || '/'
+    if (path.length > 1 && path.endsWith('/')) {
+      path = path.slice(0, -1)
+    }
+    return `${CANONICAL_ORIGIN}${path}`
+  } catch {
+    return `${CANONICAL_ORIGIN}/`
+  }
+}
+
+export function setCanonicalLink(rawUrl) {
+  const cleanUrl = normalizeCanonicalUrl(rawUrl)
+  let canonicalLink = document.querySelector('link[rel="canonical"]')
+  if (!canonicalLink) {
+    canonicalLink = document.createElement('link')
+    canonicalLink.setAttribute('rel', 'canonical')
+    document.head.appendChild(canonicalLink)
+  }
+  canonicalLink.setAttribute('href', cleanUrl)
+  return cleanUrl
+}
+
 export function setMetaTags({
   title = 'Xưởng In Nhật Nguyên - In Nhanh, Giá Gốc Trực Tiếp TPHCM',
   description = 'Xưởng in Offset & Kỹ thuật số Nhật Nguyên chuyên in hộp giấy, túi giấy, tem nhãn decal, catalogue, namecard giá gốc tận xưởng.',
   keywords = 'in hộp giấy, in túi giấy, xưởng in offset tphcm, in decal tem nhãn, in catalogue',
   image = 'https://dichvuinnhatnguyen.vn/og-banner.jpg',
-  url = window.location.href,
+  url = window.location.pathname,
   type = 'website',
   robots = 'index, follow',
   schema = null
 } = {}) {
+  const canonicalUrl = setCanonicalLink(url)
   // 1. Update Title
   document.title = title.includes('Nhật Nguyên') ? title : `${title} | In Ấn Nhật Nguyên`
 
@@ -46,7 +74,7 @@ export function setMetaTags({
   setMeta('property', 'og:description', description)
   setMeta('property', 'og:type', type)
   setMeta('property', 'og:image', image)
-  setMeta('property', 'og:url', url)
+  setMeta('property', 'og:url', canonicalUrl)
   setMeta('property', 'og:site_name', 'Xưởng In Ấn Nhật Nguyên')
 
   // 4. Twitter Card
@@ -55,14 +83,7 @@ export function setMetaTags({
   setMeta('name', 'twitter:description', description)
   setMeta('name', 'twitter:image', image)
 
-  // 5. Canonical Link
-  let canonicalLink = document.querySelector('link[rel="canonical"]')
-  if (!canonicalLink) {
-    canonicalLink = document.createElement('link')
-    canonicalLink.setAttribute('rel', 'canonical')
-    document.head.appendChild(canonicalLink)
-  }
-  canonicalLink.setAttribute('href', url)
+  // 5. Canonical Link (đã chuẩn hóa ở trên via setCanonicalLink)
 
   // 6. Schema.org JSON-LD Structured Data
   if (schema) {

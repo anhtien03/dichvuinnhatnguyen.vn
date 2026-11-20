@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import { getAdminToken, can } from '../services/api'
 import { usePageLoader } from '../composables/usePageLoader'
+import { setCanonicalLink } from '../composables/useSEO'
 
 const { startNavLoading, finishNavLoading } = usePageLoader()
 
@@ -307,38 +308,41 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-router.afterEach(() => {
-  finishNavLoading()
-})
-
-// Automatically recover when Vite deployment changes chunk hashes or network fails
-router.onError((error, to) => {
-  finishNavLoading()
-  const errorMsg = String(error?.message || error || '')
-  const isChunkLoadFailed =
-  error?.name === 'ChunkLoadError' ||
-    /loading chunk/i.test(errorMsg) ||
-    /failed to fetch dynamically imported module/i.test(errorMsg) ||
-    /importing a module script failed/i.test(errorMsg) ||
-    /expected a javascript-or-wasm module script/i.test(errorMsg) ||
-    /mime type of "text\/html"/i.test(errorMsg)
-
-  if (isChunkLoadFailed) {
-    const targetUrl = to?.fullPath || window.location.href
-    const key = `vite_chunk_reload_${targetUrl}`
-    const lastReload = sessionStorage.getItem(key)
-    const now = Date.now()
-
-    // Chỉ tự reload 1 lần trong 10 giây để tránh reload loop vô tận
-    if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
-      sessionStorage.setItem(key, now.toString())
-      window.location.href = targetUrl
-      return
+  router.afterEach((to) => {
+    finishNavLoading()
+    if (!to.path.startsWith('/he-thong-admin')) {
+      setCanonicalLink(to.path)
     }
-  }
+  })
 
-  console.error('[Router Error]', error)
-})
+  // Automatically recover when Vite deployment changes chunk hashes or network fails
+  router.onError((error, to) => {
+    finishNavLoading()
+    const errorMsg = String(error?.message || error || '')
+    const isChunkLoadFailed =
+      error?.name === 'ChunkLoadError' ||
+      /loading chunk/i.test(errorMsg) ||
+      /failed to fetch dynamically imported module/i.test(errorMsg) ||
+      /importing a module script failed/i.test(errorMsg) ||
+      /expected a javascript-or-wasm module script/i.test(errorMsg) ||
+      /mime type of "text\/html"/i.test(errorMsg)
 
-export default router
+    if (isChunkLoadFailed) {
+      const targetUrl = to?.fullPath || window.location.href
+      const key = `vite_chunk_reload_${targetUrl}`
+      const lastReload = sessionStorage.getItem(key)
+      const now = Date.now()
+
+      // Chỉ tự reload 1 lần trong 10 giây để tránh reload loop vô tận
+      if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+        sessionStorage.setItem(key, now.toString())
+        window.location.href = targetUrl
+        return
+      }
+    }
+
+    console.error('[Router Error]', error)
+  })
+
+  export default router
 
