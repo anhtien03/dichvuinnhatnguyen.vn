@@ -122,7 +122,7 @@ class SeoAiController extends Controller
         $currentYear = date('Y');
 
         $expansionInstruction = $wordsNeeded > 0
-            ? "7. \"expansion_html\": Nội dung hiện tại mới có {$currentWords} từ (cần thêm khoảng " . ($wordsNeeded + 60) . " từ để vượt mốc {$minWordsTarget} từ và đưa mật độ từ khóa về mức 1.0% - 2.5%). Hãy viết 1 đoạn <p>...</p> và 1 danh sách <ul><li>...</li></ul> khoảng " . max(100, min(220, $wordsNeeded + 70)) . " từ đặt bên dưới h2_heading, mô tả quy trình in ấn, kiểm tra file, gia công thành phẩm và giao hàng phù hợp với sản phẩm/bài viết này. QUAN TRỌNG: KHÔNG lặp lại y nguyên cụm focus_keyword quá 1 lần trong expansion_html (hãy dùng từ đồng nghĩa/ngữ cảnh tự nhiên) để tránh vượt mật độ từ khóa."
+            ? "7. \"expansion_html\": Nội dung hiện tại mới có {$currentWords} từ (cần thêm khoảng " . ($wordsNeeded + 60) . " từ để vượt mốc {$minWordsTarget} từ và đưa mật độ từ khóa về mức 1.0% - 2.5%). Hãy viết 1 đoạn <p>...</p> ngắn và mục <h3>Câu hỏi thường gặp</h3> gồm 2-3 câu hỏi-đáp ngắn gọn (mỗi câu dùng <h4> hoặc <strong> + <p>...</p>) khoảng " . max(110, min(230, $wordsNeeded + 80)) . " từ đặt bên dưới h2_heading, giải đáp các thắc mắc thực tế của khách đặt in (hỗ trợ kiểm tra file, nhận in số lượng linh hoạt, giao hàng TP.HCM & toàn quốc) phù hợp với sản phẩm/bài viết này. QUAN TRỌNG: KHÔNG lặp lại y nguyên cụm focus_keyword quá 1 lần trong expansion_html (hãy dùng từ đồng nghĩa/ngữ cảnh tự nhiên) để tránh vượt mật độ từ khóa."
             : '7. "expansion_html": Trả về chuỗi rỗng "" vì nội dung hiện tại đã đủ độ dài.';
 
         return <<<PROMPT
@@ -143,6 +143,7 @@ YÊU CẦU NGHIÊM NGẶT:
 5. "intro_html": Một thẻ <p>...</p> (2-3 câu, khoảng 45-70 từ) mở đầu tự nhiên, có chứa <strong>từ khóa mục tiêu</strong>.
 6. "h2_heading": Một thẻ <h2>...</h2> tự nhiên, hấp dẫn, chứa từ khóa mục tiêu.
 {$expansionInstruction}
+8. "image_alt": Một câu mô tả thẻ Alt chuẩn SEO Google Hình Ảnh (60-110 ký tự) cho ảnh đại diện của sản phẩm/bài viết này, có chứa từ khóa mục tiêu tự nhiên và tên Xưởng In Nhật Nguyên.
 
 QUY TẮC CHỐNG BỊA ĐẶT:
 - TUYỆT ĐỐI KHÔNG tự bịa giá tiền, định lượng giấy (gsm), kích thước cụ thể, phần trăm giảm giá hoặc chính sách bảo hành nếu thông tin đó không có trong "Tên" hoặc "Nội dung hiện có".
@@ -186,6 +187,7 @@ PROMPT;
                                 'intro_html' => ['type' => 'STRING'],
                                 'h2_heading' => ['type' => 'STRING'],
                                 'expansion_html' => ['type' => 'STRING'],
+                                'image_alt' => ['type' => 'STRING'],
                             ],
                             'required' => [
                                 'focus_keyword',
@@ -195,6 +197,7 @@ PROMPT;
                                 'intro_html',
                                 'h2_heading',
                                 'expansion_html',
+                                'image_alt',
                             ],
                         ],
                     ],
@@ -363,8 +366,10 @@ PROMPT;
             $h2Text = "<h2>{$h2Text}</h2>";
         }
 
-        $expansionText = strip_tags((string) ($data['expansion_html'] ?? ''), '<p><ul><li><strong><em><h3>');
+        $expansionText = strip_tags((string) ($data['expansion_html'] ?? ''), '<p><ul><li><strong><em><h3><h4>');
         $expansionText = trim($expansionText);
+
+        $imageAlt = trim(preg_replace('/\s+/u', ' ', strip_tags((string) ($data['image_alt'] ?? ''))) ?? '');
 
         return [
             'focus_keyword' => $focusKeyword,
@@ -374,6 +379,7 @@ PROMPT;
             'intro_html' => $introText,
             'h2_heading' => $h2Text,
             'expansion_html' => $expansionText,
+            'image_alt' => $imageAlt,
         ];
     }
 }

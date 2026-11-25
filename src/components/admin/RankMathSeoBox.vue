@@ -202,9 +202,39 @@
           <div class="leading-relaxed">{{ aiPreview.meta_description }}</div>
         </div>
 
-        <div class="p-2.5 rounded-lg border" :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-white border-slate-200'">
-          <div class="text-[10px] font-bold uppercase text-slate-400 mb-0.5">Slug URL</div>
-          <div class="font-mono text-[11px] text-emerald-500">/{{ urlPrefix }}/{{ aiPreview.slug }}</div>
+        <div class="p-2.5 rounded-lg border space-y-1.5" :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-white border-slate-200'">
+          <div class="text-[10px] font-bold uppercase text-slate-400">Slug URL</div>
+          <label
+            v-if="(slug || '').trim().length > 3 && (slug || '').trim() !== aiPreview.slug"
+            class="flex items-start gap-2 text-[11px] cursor-pointer"
+          >
+            <input v-model="keepExistingSlug" type="checkbox" class="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500" />
+            <span>
+              Giữ nguyên Slug cũ (<span class="font-mono text-amber-500">/{{ urlPrefix }}/{{ slug }}</span>) để không mất link đã index trên Google
+            </span>
+          </label>
+          <div class="font-mono text-[11px] text-emerald-500">
+            {{ (keepExistingSlug && (slug || '').trim().length > 3) ? `Đề xuất mới (chưa áp dụng): /${urlPrefix}/${aiPreview.slug}` : `/${urlPrefix}/${aiPreview.slug}` }}
+          </div>
+        </div>
+
+        <div
+          v-if="aiPreview.image_alt"
+          class="p-2.5 rounded-lg border"
+          :class="isDarkMode ? 'bg-[#24303F] border-[#2E3A47]' : 'bg-white border-slate-200'"
+        >
+          <div class="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 mb-0.5">
+            <span>Gợi ý Alt ảnh chuẩn SEO</span>
+            <button
+              type="button"
+              @click="copyImageAlt"
+              class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-400 font-bold cursor-pointer"
+            >
+              <Copy class="w-3 h-3" />
+              <span>{{ copiedAlt ? 'Đã copy' : 'Copy Alt' }}</span>
+            </button>
+          </div>
+          <div class="text-[11px]">{{ aiPreview.image_alt }}</div>
         </div>
 
         <label
@@ -538,7 +568,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import {
   Target, Search, Zap, Sparkles, Eye, CheckCircle2,
-  XCircle, AlertCircle, Wand2, Loader2, Check, X
+  XCircle, AlertCircle, Wand2, Loader2, Check, X, Copy
 } from 'lucide-vue-next'
 import { useAdminTheme } from '../../composables/useAdminTheme'
 import { slugify } from '../../composables/useSEO'
@@ -575,6 +605,8 @@ const isOptimizingAi = ref(false)
 const aiError = ref('')
 const aiPreview = ref(null)
 const applyAiContentBlocks = ref(false)
+const keepExistingSlug = ref(true)
+const copiedAlt = ref(false)
 
 const minWordsTarget = computed(() => {
   if (props.type === 'post') return 500
@@ -958,9 +990,12 @@ async function optimizeWithAi() {
       slug: data.slug || slugify(data.focus_keyword || titleText),
       intro_html: data.intro_html || '',
       h2_heading: data.h2_heading || '',
-      expansion_html: data.expansion_html || ''
+      expansion_html: data.expansion_html || '',
+      image_alt: data.image_alt || ''
     }
 
+    keepExistingSlug.value = (props.slug || '').trim().length > 3
+    copiedAlt.value = false
     // Suggest inserting missing SEO blocks if intro, H2, word count, or density needs improvement
     applyAiContentBlocks.value = !testKeywordInIntro.value || !testKeywordInSubheadings.value || !testContentLength.value || !testKeywordDensity.value
   } catch (err) {
@@ -970,12 +1005,28 @@ async function optimizeWithAi() {
   }
 }
 
+async function copyImageAlt() {
+  if (!aiPreview.value?.image_alt) return
+  try {
+    await navigator.clipboard.writeText(aiPreview.value.image_alt)
+    copiedAlt.value = true
+    setTimeout(() => {
+      copiedAlt.value = false
+    }, 2000)
+  } catch {
+    // Ignore clipboard failure
+  }
+}
+
 function applyAiPreview() {
   if (!aiPreview.value) return
 
   const suggestion = aiPreview.value
   const kw = suggestion.focus_keyword || focusKeyword.value
   focusKeyword.value = kw
+  const finalSlug = (keepExistingSlug.value && (props.slug || '').trim().length > 3)
+    ? props.slug.trim()
+    : suggestion.slug
 
   let newContent = props.content || ''
   if (applyAiContentBlocks.value) {
@@ -994,11 +1045,11 @@ function applyAiPreview() {
   emit('update:focusKeyword', kw)
   emit('update:metaTitle', suggestion.meta_title)
   emit('update:metaDescription', suggestion.meta_description)
-  emit('update:slug', suggestion.slug)
+  emit('update:slug', finalSlug)
   emit('optimized', {
     metaTitle: suggestion.meta_title,
     metaDescription: suggestion.meta_description,
-    slug: suggestion.slug,
+    slug: finalSlug,
     focusKeyword: kw,
     content: newContent
   })

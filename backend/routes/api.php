@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\QuoteRequestController;
 use App\Http\Controllers\Api\SeoAiController;
 use App\Http\Controllers\Api\SettingController;
+use App\Http\Controllers\Api\SitemapController;
 use App\Http\Controllers\Api\ErpOrderController;
 use App\Http\Controllers\Api\ErpCustomerController;
 use App\Http\Controllers\Api\ErpSupplierController;
@@ -40,6 +41,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/posts/{slug}', [PostController::class, 'show']);
     Route::post('/quotes', [QuoteRequestController::class, 'store'])->middleware('throttle:10,1');
     Route::get('/settings', [SettingController::class, 'index']);
+    Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 
     // 3. Admin Protected Routes (Bearer Token via Sanctum & Granular RBAC Permissions)
     Route::middleware('auth:sanctum')->group(function () {
