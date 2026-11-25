@@ -334,7 +334,8 @@
                 </router-link>
                 <router-link
                   v-else
-                  :to="'/yeu-cau-bao-gia?product=' + encodeURIComponent(cat.name)"
+                  to="/yeu-cau-bao-gia"
+                  @click="selectProductForQuote(cat.name)"
                   class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-bold text-xs transition-all duration-200"
                 >
                   <span>Báo giá riêng 15 phút</span>
@@ -463,7 +464,8 @@
 
           <div class="shrink-0 flex items-center gap-2 self-start sm:self-center">
             <router-link
-              :to="'/yeu-cau-bao-gia?product=' + encodeURIComponent(currentCategory.name)"
+              to="/yeu-cau-bao-gia"
+              @click="selectProductForQuote(currentCategory.name)"
               class="px-4 py-2 rounded-xl bg-brand-gold hover:bg-brand-gold-hover text-slate-950 font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5"
             >
               <span>Yêu cầu quy cách riêng</span>
@@ -534,7 +536,8 @@
               ← Quay lại tất cả danh mục
             </button>
             <router-link
-              :to="'/yeu-cau-bao-gia?product=' + encodeURIComponent(currentCategory?.name || 'In theo yêu cầu')"
+              to="/yeu-cau-bao-gia"
+              @click="selectProductForQuote(currentCategory?.name || 'In theo yêu cầu')"
               class="px-5 py-2.5 rounded-xl bg-brand-gold hover:bg-brand-gold-hover text-slate-950 font-bold text-xs shadow-md transition-all flex items-center gap-1.5"
             >
               <span>Gửi yêu cầu báo giá ngay</span>
@@ -657,9 +660,16 @@ import { categories as fallbackCategories } from '../data/categories'
 import ProductCard from '../components/products/ProductCard.vue'
 import { api } from '../services/api'
 import { setMetaTags } from '../composables/useSEO'
+import { useQuoteStore } from '../stores/quote'
 
 const route = useRoute()
 const router = useRouter()
+const quoteStore = useQuoteStore()
+
+function selectProductForQuote(productName) {
+  quoteStore.resetQuote()
+  quoteStore.setProductQuote({ id: null, name: productName }, {}, 0)
+}
 
 const products = ref([...fallbackProducts])
 const categories = ref([...fallbackCategories])

@@ -107,9 +107,9 @@
                 <div v-else class="p-5 text-center text-xs text-slate-500 space-y-2">
                   <p>Không tìm thấy ấn phẩm nào với từ khóa "<strong>{{ searchQuery }}</strong>"</p>
                   <router-link
-                    :to="'/yeu-cau-bao-gia?product=' + encodeURIComponent(searchQuery)"
+                    to="/yeu-cau-bao-gia"
                     class="inline-block text-brand-blue font-bold hover:underline"
-                    @click="isSearchDropdownOpen = false"
+                    @click="handleSearchQuoteClick"
                   >
                     Gửi yêu cầu báo giá theo quy cách riêng &rarr;
                   </router-link>
@@ -647,10 +647,12 @@ import { siteSettings } from '../../data/siteSettings'
 import { megaMenuData } from '../../data/megaMenuData'
 import { api } from '../../services/api'
 import { usePageLoader } from '../../composables/usePageLoader'
+import { useQuoteStore } from '../../stores/quote'
 import SearchModal from '../common/SearchModal.vue'
 
 const { startNavLoading, finishNavLoading } = usePageLoader()
 const router = useRouter()
+const quoteStore = useQuoteStore()
 const isSearching = ref(false)
 const isSearchOpen = ref(false)
 const isMobileMenuOpen = ref(false)
@@ -766,15 +768,23 @@ function handleMouseLeave() {
   }, 200)
 }
 
+function handleSearchQuoteClick() {
+  isSearchDropdownOpen.value = false
+  quoteStore.resetQuote()
+  const name = searchQuery.value.trim()
+  if (name) {
+    quoteStore.setProductQuote({ id: null, name }, {}, 0)
+  }
+}
+
 function handleItemClick(item) {
   isMegaOpen.value = false
   if (item.hasDetail && item.slug) {
     router.push(`/san-pham/${item.slug}`)
   } else {
-    router.push({
-      path: '/yeu-cau-bao-gia',
-      query: { product: item.name }
-    })
+    quoteStore.resetQuote()
+    quoteStore.setProductQuote({ id: null, name: item.name }, {}, 0)
+    router.push('/yeu-cau-bao-gia')
   }
 }
 
@@ -783,10 +793,9 @@ function handleFeaturedClick(featured) {
   if (featured.hasDetail && featured.slug) {
     router.push(`/san-pham/${featured.slug}`)
   } else {
-    router.push({
-      path: '/yeu-cau-bao-gia',
-      query: { product: featured.productName || featured.title }
-    })
+    quoteStore.resetQuote()
+    quoteStore.setProductQuote({ id: null, name: featured.productName || featured.title }, {}, 0)
+    router.push('/yeu-cau-bao-gia')
   }
 }
 

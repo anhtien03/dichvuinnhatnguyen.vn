@@ -131,7 +131,8 @@
                   Tùy chỉnh chi tiết &rarr;
                 </router-link>
                 <router-link
-                  :to="{ path: '/yeu-cau-bao-gia', query: { product: currentProduct.slug, qty: currentQuantityObj.count } }"
+                  to="/yeu-cau-bao-gia"
+                  @click="handleQuickQuoteClick"
                   class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-brand-gold hover:bg-brand-gold-hover text-slate-950 text-xs font-extrabold text-center shadow-md transition-all"
                 >
                   Nhận báo giá mức này
@@ -150,6 +151,9 @@ import { ref, computed } from 'vue'
 import { Calculator, CheckCircle } from 'lucide-vue-next'
 import { products } from '../../data/products'
 import { siteSettings } from '../../data/siteSettings'
+import { useQuoteStore } from '../../stores/quote'
+
+const quoteStore = useQuoteStore()
 
 const selectableProducts = products.slice(0, 6)
 const selectedProductId = ref(selectableProducts[0].id)
@@ -171,6 +175,15 @@ const estimatedTotal = computed(() => {
 
 function formatCurrency(val) {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
+}
+
+function handleQuickQuoteClick() {
+  quoteStore.resetQuote()
+  quoteStore.setProductQuote(
+    currentProduct.value,
+    { quantity: `${currentQuantityObj.value.count} ${currentProduct.value.unit || 'cái'}` },
+    estimatedTotal.value
+  )
 }
 </script>
 

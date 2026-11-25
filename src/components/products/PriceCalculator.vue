@@ -394,12 +394,7 @@ function proceedToContactQuote() {
   quoteStore.setProductQuote(props.product, specs, 0)
   quoteStore.currentQuote.files = uploadedFiles.value
 
-  router.push({
-    path: '/yeu-cau-bao-gia',
-    query: {
-      product: props.product.slug
-    }
-  })
+  router.push('/yeu-cau-bao-gia')
 }
 
 function proceedToQuote() {
@@ -413,12 +408,6 @@ function proceedToQuote() {
   quoteStore.setProductQuote(props.product, specs, calculationResult.value.total)
   quoteStore.currentQuote.files = uploadedFiles.value
 
-  router.push({
-    path: '/yeu-cau-bao-gia',
-    query: {
-      product: props.product.slug,
-      qty: selectedQuantity.value?.count || 1
-    }
-  })
+  router.push('/yeu-cau-bao-gia')
 }
 </script>

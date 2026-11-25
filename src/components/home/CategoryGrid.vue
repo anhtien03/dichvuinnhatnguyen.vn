@@ -77,28 +77,28 @@ const hoveredItem = ref(null)
 // 20 ấn phẩm chủ lực chuẩn theo hình mẫu: 10 cột x 2 hàng
 const printItems = [
   // Hàng 1
-  { id: 'bia-ho-so', name: 'Bìa đựng hồ sơ', icon: Folder, link: '/san-pham?cat=an-pham-van-phong' },
+  { id: 'bia-ho-so', name: 'Bìa đựng hồ sơ', icon: Folder, link: '/danh-muc/an-pham-van-phong' },
   { id: 'danh-thiep', name: 'Danh thiếp', icon: Contact2, link: '/danh-muc/in-the-danh-thiep' },
-  { id: 'giay-tieu-de', name: 'Giấy tiêu đề', icon: FileText, link: '/san-pham?cat=an-pham-van-phong' },
+  { id: 'giay-tieu-de', name: 'Giấy tiêu đề', icon: FileText, link: '/danh-muc/an-pham-van-phong' },
   { id: 'bao-thu', name: 'Bao thư', icon: Mail, link: '/san-pham/bao-thu-nho' },
-  { id: 've', name: 'Vé', icon: Ticket, link: '/san-pham?cat=tiep-thi-quang-cao' },
-  { id: 'to-gap', name: 'Tờ gấp', icon: Layers, link: '/san-pham?cat=tiep-thi-quang-cao' },
-  { id: 'poster', name: 'Poster', icon: Image, link: '/san-pham?cat=tiep-thi-quang-cao' },
-  { id: 'to-roi', name: 'Tờ rơi', icon: Files, link: '/san-pham?cat=tiep-thi-quang-cao' },
-  { id: 'catalogue', name: 'Catalogue', icon: BookOpen, link: '/san-pham?cat=tiep-thi-quang-cao' },
-  { id: 'phieu-qua-tang', name: 'Phiếu Quà Tặng', icon: Gift, link: '/san-pham?cat=tiep-thi-quang-cao' },
+  { id: 've', name: 'Vé', icon: Ticket, link: '/danh-muc/tiep-thi-quang-cao' },
+  { id: 'to-gap', name: 'Tờ gấp', icon: Layers, link: '/danh-muc/tiep-thi-quang-cao' },
+  { id: 'poster', name: 'Poster', icon: Image, link: '/danh-muc/tiep-thi-quang-cao' },
+  { id: 'to-roi', name: 'Tờ rơi', icon: Files, link: '/danh-muc/tiep-thi-quang-cao' },
+  { id: 'catalogue', name: 'Catalogue', icon: BookOpen, link: '/danh-muc/tiep-thi-quang-cao' },
+  { id: 'phieu-qua-tang', name: 'Phiếu Quà Tặng', icon: Gift, link: '/danh-muc/tiep-thi-quang-cao' },
 
   // Hàng 2
-  { id: 'hop-giay', name: 'Hộp Giấy', icon: Package, link: '/san-pham?cat=bao-bi-tui-giay' },
-  { id: 'tui-giay', name: 'Túi giấy', icon: ShoppingBag, link: '/san-pham?cat=bao-bi-tui-giay' },
-  { id: 'nhan-dan', name: 'Nhãn Dán', icon: Stamp, link: '/san-pham?cat=tem-nhan-decal' },
-  { id: 'mac-san-pham', name: 'Mác sản phẩm', icon: Tag, link: '/san-pham?cat=tem-nhan-decal' },
-  { id: 'bieu-mau', name: 'Biểu Mẫu', icon: ClipboardList, link: '/san-pham?cat=an-pham-van-phong' },
+  { id: 'hop-giay', name: 'Hộp Giấy', icon: Package, link: '/danh-muc/bao-bi-tui-giay' },
+  { id: 'tui-giay', name: 'Túi giấy', icon: ShoppingBag, link: '/danh-muc/bao-bi-tui-giay' },
+  { id: 'nhan-dan', name: 'Nhãn Dán', icon: Stamp, link: '/danh-muc/tem-nhan-decal' },
+  { id: 'mac-san-pham', name: 'Mác sản phẩm', icon: Tag, link: '/danh-muc/tem-nhan-decal' },
+  { id: 'bieu-mau', name: 'Biểu Mẫu', icon: ClipboardList, link: '/danh-muc/an-pham-van-phong' },
   { id: 'the-nhua', name: 'Thẻ nhựa', icon: CreditCard, link: '/danh-muc/in-the-danh-thiep' },
-  { id: 'thuc-don', name: 'Thực Đơn', icon: UtensilsCrossed, link: '/san-pham?cat=tiep-thi-quang-cao' },
-  { id: 'giay-ghi-chu', name: 'Giấy ghi chú', icon: StickyNote, link: '/san-pham?cat=an-pham-van-phong' },
-  { id: 'phieu-bao-hanh', name: 'Phiếu bảo hành', icon: ShieldCheck, link: '/san-pham?cat=an-pham-van-phong' },
-  { id: 'thiep-moi', name: 'Thiệp Mời', icon: Heart, link: '/san-pham?cat=lich-so-tay' }
+  { id: 'thuc-don', name: 'Thực Đơn', icon: UtensilsCrossed, link: '/danh-muc/tiep-thi-quang-cao' },
+  { id: 'giay-ghi-chu', name: 'Giấy ghi chú', icon: StickyNote, link: '/danh-muc/an-pham-van-phong' },
+  { id: 'phieu-bao-hanh', name: 'Phiếu bảo hành', icon: ShieldCheck, link: '/danh-muc/an-pham-van-phong' },
+  { id: 'thiep-moi', name: 'Thiệp Mời', icon: Heart, link: '/danh-muc/lich-so-tay' }
 ]
 
 const displaySubtitle = computed(() => {

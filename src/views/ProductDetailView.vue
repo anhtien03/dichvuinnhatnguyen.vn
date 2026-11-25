@@ -171,7 +171,8 @@
             <!-- CTA Báo giá riêng / Tư vấn Zalo nhanh -->
             <div class="pt-2">
               <router-link
-                :to="'/yeu-cau-bao-gia?product=' + product.slug"
+                to="/yeu-cau-bao-gia"
+                @click="selectProductForQuote(product)"
                 class="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-2 transition-colors"
               >
                 <HelpCircle class="w-4 h-4 text-slate-500" />
@@ -365,7 +366,7 @@
 
         <div class="mt-4 p-3.5 rounded-2xl bg-blue-50/70 border border-blue-100 flex items-center justify-between text-xs text-blue-900">
           <span>Cần in số lượng lớn hơn hoặc quy cách riêng biệt (kích thước khác, giấy mỹ thuật cao cấp)?</span>
-          <router-link :to="'/yeu-cau-bao-gia?product=' + product.slug" class="font-bold underline hover:text-blue-700 ml-2 shrink-0">
+          <router-link to="/yeu-cau-bao-gia" @click="selectProductForQuote(product)" class="font-bold underline hover:text-blue-700 ml-2 shrink-0">
             Gửi yêu cầu báo giá xưởng &rarr;
           </router-link>
         </div>
@@ -689,8 +690,16 @@ import PriceCalculator from '../components/products/PriceCalculator.vue'
 import ProductCard from '../components/products/ProductCard.vue'
 import { api } from '../services/api'
 import { setMetaTags } from '../composables/useSEO'
+import { useQuoteStore } from '../stores/quote'
 
 const route = useRoute()
+const quoteStore = useQuoteStore()
+
+function selectProductForQuote(prod) {
+  if (!prod) return
+  quoteStore.resetQuote()
+  quoteStore.setProductQuote({ id: prod.id ?? null, name: prod.name }, {}, 0)
+}
 const isLoading = ref(true)
 const product = ref(null)
 const allProducts = ref([])

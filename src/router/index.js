@@ -265,6 +265,10 @@ router.beforeEach((to, from, next) => {
   // Start top progress bar if navigating between different routes
   if (to.path !== from.path) {
     startNavLoading()
+    const staleSchema = document.querySelector('script[data-schema="dynamic"]')
+    if (staleSchema) {
+      staleSchema.remove()
+    }
   }
 
   // Update document title
@@ -279,6 +283,8 @@ router.beforeEach((to, from, next) => {
   }
   if (to.path.startsWith('/he-thong-admin')) {
     robotsMeta.content = 'noindex, nofollow, noarchive, nosnippet'
+  } else if (to.path === '/yeu-cau-bao-gia' && to.query.product !== undefined) {
+    robotsMeta.content = 'noindex, follow'
   } else {
     robotsMeta.content = 'index, follow'
   }

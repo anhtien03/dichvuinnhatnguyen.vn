@@ -235,15 +235,15 @@ function handleSearch() {
 }
 
 const menuCategories = [
-  { id: 'hop-giay', name: 'Hộp giấy', icon: '📦', link: '/san-pham?cat=bao-bi-tui-giay', slugMatch: ['hop', 'hop-giay', 'hop-cung'] },
-  { id: 'tui-giay', name: 'Túi giấy - Paper bags', icon: '🛍️', link: '/san-pham?cat=bao-bi-tui-giay', slugMatch: ['tui', 'tui-giay'] },
-  { id: 'nhan-decal', name: 'Nhãn Decal', icon: '🏷️', link: '/san-pham?cat=tem-nhan-decal', slugMatch: ['decal', 'tem', 'nhan-mac', 'tag'] },
-  { id: 'bia-so-mi', name: 'Bìa Sơ Mi (Folder) - Folder', icon: '📁', link: '/san-pham?cat=an-pham-van-phong', slugMatch: ['folder', 'bia', 'kep-file'] },
-  { id: 'to-roi', name: 'Tờ Rơi - Leaflets, Brochures', icon: '📰', link: '/san-pham?cat=tiep-thi-quang-cao', slugMatch: ['to-roi', 'flyer'] },
-  { id: 'catalogue', name: 'Catalogue - Cẩm Nang', icon: '📖', link: '/san-pham?cat=tiep-thi-quang-cao', slugMatch: ['catalogue', 'cam-nang'] },
-  { id: 'brochure', name: 'Brochure - Tờ Gấp', icon: '📑', link: '/san-pham?cat=tiep-thi-quang-cao', slugMatch: ['brochure', 'to-gap'] },
-  { id: 'ho-so-nang-luc', name: 'Hồ sơ năng lực', icon: '🖼️', link: '/san-pham?cat=tiep-thi-quang-cao', slugMatch: ['ho-so-nang-luc', 'profile'] },
-  { id: 'the-nhua', name: 'In Thẻ Nhựa', icon: '💳', link: '/san-pham?cat=an-pham-van-phong', slugMatch: ['the-nhua', 'the-pvc'] }
+  { id: 'hop-giay', name: 'Hộp giấy', icon: '📦', link: '/danh-muc/bao-bi-tui-giay', slugMatch: ['hop', 'hop-giay', 'hop-cung'] },
+  { id: 'tui-giay', name: 'Túi giấy - Paper bags', icon: '🛍️', link: '/danh-muc/bao-bi-tui-giay', slugMatch: ['tui', 'tui-giay'] },
+  { id: 'nhan-decal', name: 'Nhãn Decal', icon: '🏷️', link: '/danh-muc/tem-nhan-decal', slugMatch: ['decal', 'tem', 'nhan-mac', 'tag'] },
+  { id: 'bia-so-mi', name: 'Bìa Sơ Mi (Folder) - Folder', icon: '📁', link: '/danh-muc/an-pham-van-phong', slugMatch: ['folder', 'bia', 'kep-file'] },
+  { id: 'to-roi', name: 'Tờ Rơi - Leaflets, Brochures', icon: '📰', link: '/danh-muc/tiep-thi-quang-cao', slugMatch: ['to-roi', 'flyer'] },
+  { id: 'catalogue', name: 'Catalogue - Cẩm Nang', icon: '📖', link: '/danh-muc/tiep-thi-quang-cao', slugMatch: ['catalogue', 'cam-nang'] },
+  { id: 'brochure', name: 'Brochure - Tờ Gấp', icon: '📑', link: '/danh-muc/tiep-thi-quang-cao', slugMatch: ['brochure', 'to-gap'] },
+  { id: 'ho-so-nang-luc', name: 'Hồ sơ năng lực', icon: '🖼️', link: '/danh-muc/tiep-thi-quang-cao', slugMatch: ['ho-so-nang-luc', 'profile'] },
+  { id: 'the-nhua', name: 'In Thẻ Nhựa', icon: '💳', link: '/danh-muc/an-pham-van-phong', slugMatch: ['the-nhua', 'the-pvc'] }
 ]
 
 function getCategoryProducts(cat) {

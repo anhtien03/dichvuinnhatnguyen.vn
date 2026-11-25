@@ -246,16 +246,30 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { User, Package, FileUp, Send, CheckCircle2, MessageSquare } from 'lucide-vue-next'
 import { siteSettings } from '../data/siteSettings'
 import { api } from '../services/api'
 import { useQuoteStore } from '../stores/quote'
+import { setMetaTags } from '../composables/useSEO'
 import FileUploadBox from '../components/products/FileUploadBox.vue'
 
 const route = useRoute()
 const quoteStore = useQuoteStore()
+
+function updateSEO() {
+  const hasQueryVariant = route.query.product !== undefined
+  setMetaTags({
+    title: 'Gửi yêu cầu báo giá nhanh - Xưởng In Nhật Nguyên',
+    description: 'Gửi yêu cầu báo giá in ấn trực tiếp tại Xưởng In Nhật Nguyên. Nhận báo giá gốc tận xưởng trong 15 - 30 phút cho hộp giấy, túi giấy, tem nhãn decal, catalogue, namecard.',
+    keywords: 'yêu cầu báo giá in ấn, báo giá in nhanh, báo giá xưởng in nhật nguyên, đặt in theo yêu cầu',
+    url: 'https://dichvuinnhatnguyen.vn/yeu-cau-bao-gia',
+    robots: hasQueryVariant ? 'noindex, follow' : 'index, follow'
+  })
+}
+
+watch(() => route.fullPath, updateSEO, { flush: 'post' })
 
 const isSubmitting = ref(false)
 const isSubmitted = ref(false)
@@ -273,7 +287,31 @@ const form = ref({
   files: []
 })
 
+function syncFromQuoteStore() {
+  if (quoteStore.currentQuote.productName) {
+    form.value.productName = quoteStore.currentQuote.productName
+  }
+  if (quoteStore.currentQuote.specs?.quantity) {
+    form.value.quantity = quoteStore.currentQuote.specs.quantity
+  }
+  if (quoteStore.currentQuote.files && quoteStore.currentQuote.files.length > 0) {
+    form.value.files = quoteStore.currentQuote.files
+  }
+}
+
+watch(
+  () => [
+    quoteStore.currentQuote.productName,
+    quoteStore.currentQuote.specs?.quantity,
+    quoteStore.currentQuote.files
+  ],
+  syncFromQuoteStore
+)
+
 onMounted(async () => {
+  updateSEO()
+  syncFromQuoteStore()
+
   try {
     const res = await api.getProducts()
     if (res?.data) {
@@ -283,7 +321,7 @@ onMounted(async () => {
     console.error('Failed to load products for quote request', err)
   }
 
-  if (route.query.product) {
+  if (route.query.product && !quoteStore.currentQuote.productName) {
     const raw = String(route.query.product).trim()
     const prod = availableProducts.value.find(p => p.slug === raw || p.name.toLowerCase() === raw.toLowerCase())
     if (prod) {
@@ -291,21 +329,13 @@ onMounted(async () => {
       if (route.query.qty) {
         form.value.quantity = `${route.query.qty} ${prod.unit || 'cái'}`
       }
-    } else {
+    } else if (raw) {
       // Direct product name or custom request from Mega Menu
       form.value.productName = raw
       if (route.query.qty) {
         form.value.quantity = route.query.qty
       }
     }
-  }
-
-  // Pre-fill from store if available
-  if (quoteStore.currentQuote.productName) {
-    form.value.productName = quoteStore.currentQuote.productName
-  }
-  if (quoteStore.currentQuote.files && quoteStore.currentQuote.files.length > 0) {
-    form.value.files = quoteStore.currentQuote.files
   }
 })
 
