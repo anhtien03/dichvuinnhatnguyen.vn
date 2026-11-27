@@ -29,18 +29,18 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     // 1. Authentication (Public login)
-    Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+    Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:public-login');
 
     // 2. Public Catalog & Quotes & Settings & Banners & Posts
-    Route::get('/categories', [CategoryController::class, 'index'])->middleware('throttle:120,1');
-    Route::get('/categories/{slug}', [CategoryController::class, 'show'])->middleware('throttle:120,1');
-    Route::get('/products', [ProductController::class, 'index'])->middleware('throttle:120,1');
-    Route::get('/products/{slug}', [ProductController::class, 'show'])->middleware('throttle:120,1');
-    Route::get('/banners', [BannerController::class, 'index'])->middleware('throttle:120,1');
-    Route::get('/posts', [PostController::class, 'index'])->middleware('throttle:120,1');
-    Route::get('/posts/{slug}', [PostController::class, 'show'])->middleware('throttle:120,1');
-    Route::post('/quotes', [QuoteRequestController::class, 'store'])->middleware('throttle:10,1');
-    Route::get('/settings', [SettingController::class, 'index'])->middleware('throttle:120,1');
+    Route::get('/categories', [CategoryController::class, 'index'])->middleware('throttle:catalog-categories');
+    Route::get('/categories/{slug}', [CategoryController::class, 'show'])->middleware('throttle:catalog-categories');
+    Route::get('/products', [ProductController::class, 'index'])->middleware('throttle:catalog-list');
+    Route::get('/products/{slug}', [ProductController::class, 'show'])->middleware('throttle:catalog-detail');
+    Route::get('/banners', [BannerController::class, 'index'])->middleware('throttle:catalog-display');
+    Route::get('/posts', [PostController::class, 'index'])->middleware('throttle:catalog-news');
+    Route::get('/posts/{slug}', [PostController::class, 'show'])->middleware('throttle:catalog-news');
+    Route::post('/quotes', [QuoteRequestController::class, 'store'])->middleware('throttle:public-quotes');
+    Route::get('/settings', [SettingController::class, 'index'])->middleware('throttle:catalog-display');
     Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 
     // 3. Admin Protected Routes (Bearer Token via Sanctum & Granular RBAC Permissions)
