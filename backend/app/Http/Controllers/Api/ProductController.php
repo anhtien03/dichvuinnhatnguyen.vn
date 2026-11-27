@@ -8,9 +8,16 @@ use App\Models\SiteSetting;
 use App\Services\GoogleIndexingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
+    private function canReadHiddenProducts(): bool
+    {
+        $user = Auth::guard('sanctum')->user();
+        return $user !== null && $user->hasPermission('products.manage');
+    }
+
     public function index(Request $request)
     {
         $query = Product::with('category.parent')->orderBy('sort_order', 'asc')->orderBy('id', 'desc');
@@ -29,7 +36,7 @@ class ProductController extends Controller
             $query->where('is_popular', true);
         }
 
-        if (!$request->user() && !$request->boolean('all')) {
+        if (!$request->boolean('all') || !$this->canReadHiddenProducts()) {
             $query->where('is_active', true);
         }
 
@@ -58,12 +65,15 @@ class ProductController extends Controller
         ]);
     }
 
-    public function show($slugOrId)
+    public function show(Request $request, $slugOrId)
     {
-        $product = Product::with('category.parent')
-            ->where('slug', $slugOrId)
-            ->orWhere('id', $slugOrId)
-            ->firstOrFail();
+        $query = Product::with('category.parent')->where(function ($q) use ($slugOrId) {
+            $q->where('slug', $slugOrId)->orWhere('id', $slugOrId);
+        });
+        if (!$request->boolean('all') || !$this->canReadHiddenProducts()) {
+            $query->where('is_active', true);
+        }
+        $product = $query->firstOrFail();
 
         return response()->json([
             'success' => true,
