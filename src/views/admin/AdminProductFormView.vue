@@ -1884,7 +1884,7 @@ async function loadCategories() {
 
 async function loadProductDetail(id) {
   try {
-    const res = await api.getProductBySlug(id)
+    const res = await api.getAdminProduct(id)
     if (res.data) {
       const p = res.data
       let pSpecs = p.specs
