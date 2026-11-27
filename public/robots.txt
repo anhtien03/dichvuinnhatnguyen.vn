@@ -8,6 +8,16 @@ Disallow: /he-thong-admin/
 Disallow: /he-thong-nn
 Disallow: /he-thong-nn/
 Disallow: /api/
+# Public catalog resources required for rendering
+Allow: /api/v1/products$
+Allow: /api/v1/products?
+Allow: /api/v1/products/
+Allow: /api/v1/categories$
+Allow: /api/v1/categories?
+Allow: /api/v1/categories/
+Allow: /api/v1/posts$
+Allow: /api/v1/posts?
+Allow: /api/v1/posts/
 
 # Sitemap location
 Sitemap: https://dichvuinnhatnguyen.vn/sitemap.xml
