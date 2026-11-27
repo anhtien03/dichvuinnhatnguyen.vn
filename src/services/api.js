@@ -99,7 +99,7 @@ const publicCache = new Map()
 const inFlightRequests = new Map()
 const CACHE_TTL = 90 * 1000 // 90 giây trong RAM
 const SESSION_CACHE_TTL = 5 * 60 * 1000 // 5 phút qua F5
-const SESSION_PREFIX = 'inn_pub_v1:'
+const SESSION_PREFIX = 'inn_pub_v2:'
 
   function buildPublicPath(endpoint, params = {}) {
     const query = new URLSearchParams(params).toString()
@@ -198,8 +198,9 @@ const SESSION_PREFIX = 'inn_pub_v1:'
       // Public (Áp dụng cache tức thì khi chuyển trang qua lại, F5 sẽ xóa cache)
       getCategories: () => cachedPublicRequest('/categories'),
       getCategoryBySlug: (slug) => apiRequest(`/categories/${slug}`),
-      getProducts: (params = {}) => cachedPublicRequest('/products', params),
+      getProducts: (params = {}) => params.all ? apiRequest(buildPublicPath('/products', params), { cache: 'no-store' }) : cachedPublicRequest('/products', params),
       getProductBySlug: (slug) => apiRequest(`/products/${slug}`),
+      getAdminProduct: (id) => apiRequest(`/products/${encodeURIComponent(id)}?all=1`, { cache: 'no-store' }),
       getBanners: (params = {}) => cachedPublicRequest('/banners', params),
       getPosts: (params = {}) => cachedPublicRequest('/posts', params),
       getPostBySlug: (slug) => apiRequest(`/posts/${slug}`),
