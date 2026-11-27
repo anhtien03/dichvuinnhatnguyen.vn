@@ -40,6 +40,37 @@ export function setAdminUser(user) {
   }
 }
 
+// Retry only anonymous public reads; never replay mutations or admin requests.
+async function fetchWithPublicRetry(url, options, eligible) {
+  const maxRetries = eligible ? 2 : 0
+  for (let attempt = 0; ; attempt++) {
+    let response
+    try {
+      response = await fetch(url, options)
+    } catch (error) {
+      if (attempt >= maxRetries || error.name !== 'TypeError' || options.signal?.aborted) throw error
+    }
+    if (response && (attempt >= maxRetries || ![429, 502, 503, 504].includes(response.status))) return response
+    let delay = 300 * (2 ** attempt) + Math.floor(Math.random() * 150)
+    const retryAfter = response?.headers.get('Retry-After')
+    if (retryAfter) {
+      const seconds = Number(retryAfter)
+      const wait = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(retryAfter) - Date.now()
+      if (Number.isFinite(wait)) delay = Math.max(delay, wait)
+      else if (response.status === 429) return response
+    } else if (response?.status === 429) {
+      return response
+    }
+    // Do not hold the UI waiting for a long server cooldown.
+    if (delay > 1500 || options.signal?.aborted) {
+      if (response) return response
+      throw new DOMException('Request aborted', 'AbortError')
+    }
+    await new Promise(resolve => setTimeout(resolve, delay))
+    if (options.signal?.aborted) throw new DOMException('Request aborted', 'AbortError')
+  }
+}
+
 export async function apiRequest(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`
   const headers = {
@@ -59,10 +90,13 @@ export async function apiRequest(endpoint, options = {}) {
     options.body = JSON.stringify(options.body)
   }
 
-  const response = await fetch(url, {
+  const publicRead = !token && !options.signal && !options.body &&
+    (options.method || 'GET').toUpperCase() === 'GET' &&
+    /^\/(products|categories|posts)(\/[^/?]+)?(\?|$)|^\/(banners|settings)(\?|$)/.test(endpoint)
+  const response = await fetchWithPublicRetry(url, {
     ...options,
     headers
-  })
+  }, publicRead)
 
   // Handle Unauthorized
   if (response.status === 401 && !endpoint.includes('/auth/login')) {
@@ -79,6 +113,7 @@ export async function apiRequest(endpoint, options = {}) {
     const errorMsg = data.message || (data.errors ? Object.values(data.errors).flat().join(', ') : 'Có lỗi xảy ra')
     const err = new Error(errorMsg)
     err.status = response.status
+    err.retryAfter = response.headers.get('Retry-After')
     err.data = data
     throw err
   }
