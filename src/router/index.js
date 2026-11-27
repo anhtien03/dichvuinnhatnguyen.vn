@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import { getAdminToken, can } from '../services/api'
 import { usePageLoader } from '../composables/usePageLoader'
-import { setCanonicalLink } from '../composables/useSEO'
+import { setCanonicalLink, setMetaTags } from '../composables/useSEO'
 
 const { startNavLoading, finishNavLoading } = usePageLoader()
 
@@ -271,7 +271,10 @@ router.beforeEach((to, from, next) => {
     }
   }
 
-  // Update document title
+  // Reset route metadata before asynchronous page-specific SEO is applied.
+  if (to.path !== from.path) {
+    setMetaTags({ title: to.meta.title || 'In Ấn Nhật Nguyên', url: to.path })
+  }
   document.title = to.meta.title ? `${to.meta.title} | In Ấn Nhật Nguyên` : 'In Ấn Nhật Nguyên'
 
   // Security: Prevent search engines and crawlers from indexing admin pages
@@ -283,6 +286,8 @@ router.beforeEach((to, from, next) => {
   }
   if (to.path.startsWith('/he-thong-admin')) {
     robotsMeta.content = 'noindex, nofollow, noarchive, nosnippet'
+  } else if (to.name === 'not-found') {
+    robotsMeta.content = 'noindex, follow'
   } else if (to.path === '/yeu-cau-bao-gia' && to.query.product !== undefined) {
     robotsMeta.content = 'noindex, follow'
   } else {
