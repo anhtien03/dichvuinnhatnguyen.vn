@@ -54,8 +54,11 @@ export function setMetaTags({
 
   // Helper to set or create meta tag
   const setMeta = (attr, key, content) => {
-    if (!content) return
     let el = document.querySelector(`meta[${attr}="${key}"]`)
+    if (!content) {
+      el?.remove()
+      return
+    }
     if (!el) {
       el = document.createElement('meta')
       el.setAttribute(attr, key)
@@ -95,6 +98,8 @@ export function setMetaTags({
       document.head.appendChild(script)
     }
     script.textContent = JSON.stringify(schema)
+  } else {
+    document.querySelector('script[data-schema="dynamic"]')?.remove()
   }
 }
 
