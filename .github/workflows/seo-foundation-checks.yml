@@ -16,7 +16,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - run: node --test tests/api-client.test.mjs
+      - run: node --test tests/api-client.test.mjs tests/pricing-regression.test.mjs
       - run: npm run build
   backend-static:
     runs-on: ubuntu-latest
