@@ -93,7 +93,12 @@ class SitemapController extends Controller
             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
         ];
 
+        $seen = [];
         foreach ($urls as $item) {
+            if (isset($seen[$item['loc']])) {
+                continue;
+            }
+            $seen[$item['loc']] = true;
             $loc = htmlspecialchars($item['loc'], ENT_XML1, 'UTF-8');
             $lines[] = '  <url>';
             $lines[] = "    <loc>{$loc}</loc>";
