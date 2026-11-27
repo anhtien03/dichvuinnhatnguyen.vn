@@ -868,33 +868,13 @@ function applyProductSEO(prod) {
       '@type': 'Product',
       name: prod.name,
       description: prod.meta_description || plainDesc || 'Sản phẩm in ấn chất lượng cao tại Xưởng In Nhật Nguyên',
-      image: prod.image ? (prod.image.startsWith('http') ? prod.image : `https://dichvuinnhatnguyen.vn${prod.image}`) : 'https://dichvuinnhatnguyen.vn/logo.png',
+      image: typeof prod.image === 'string' && prod.image ? new URL(prod.image, 'https://dichvuinnhatnguyen.vn/').href : undefined,
       sku: `NN-${prod.id || prod.slug || 'IN-AN'}`,
       mpn: `NN-${prod.id || 'PRODUCT'}`,
       brand: {
         '@type': 'Brand',
         name: 'In Ấn Nhật Nguyên'
       },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.9',
-        reviewCount: '156',
-        bestRating: '5',
-        worstRating: '1'
-      },
-      offers: {
-        '@type': 'Offer',
-        price: (prod.base_price && prod.base_price > 0) ? prod.base_price : 500,
-        priceCurrency: 'VND',
-        priceValidUntil: '2027-12-31',
-        itemCondition: 'https://schema.org/NewCondition',
-        availability: 'https://schema.org/InStock',
-        url: prod.canonical_url || window.location.href,
-        seller: {
-          '@type': 'Organization',
-          name: 'Xưởng In Ấn Nhật Nguyên'
-        }
-      }
     }
   })
 }
@@ -926,11 +906,15 @@ async function loadProduct() {
         ]
       }
       activeImage.value = p.image || ''
-      applyProductSEO(product.value)
+      try {
+        applyProductSEO(product.value)
+      } catch {
+        console.warn('Product SEO metadata update failed')
+      }
       return
     }
   } catch (err) {
-    // API error
+    console.warn('Product data request failed')
   } finally {
     isLoading.value = false
   }
