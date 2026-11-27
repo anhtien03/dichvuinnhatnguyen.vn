@@ -86,6 +86,7 @@ export async function apiRequest(endpoint, options = {}) {
   // Clear client cache after any write/mutation request
   const method = (options.method || 'GET').toUpperCase()
   if (method !== 'GET') {
+    cacheGeneration++
     publicCache.clear()
     inFlightRequests.clear()
     clearSessionPublicCache()
@@ -97,12 +98,15 @@ export async function apiRequest(endpoint, options = {}) {
 // Client In-Memory + SessionStorage SWR Cache (chỉ lưu dữ liệu công khai trang chủ)
 const publicCache = new Map()
 const inFlightRequests = new Map()
+let cacheGeneration = 0
 const CACHE_TTL = 90 * 1000 // 90 giây trong RAM
 const SESSION_CACHE_TTL = 5 * 60 * 1000 // 5 phút qua F5
 const SESSION_PREFIX = 'inn_pub_v2:'
 
   function buildPublicPath(endpoint, params = {}) {
-    const query = new URLSearchParams(params).toString()
+    const search = new URLSearchParams(params)
+      search.sort()
+      const query = search.toString()
       return `${endpoint}${query ? '?' + query : ''}`
     }
 
@@ -144,6 +148,7 @@ const SESSION_PREFIX = 'inn_pub_v2:'
     }
 
     export function getCachedPublicSync(endpoint, params = {}) {
+      if (getAdminToken()) return null
       const fullPath = buildPublicPath(endpoint, params)
       const mem = publicCache.get(fullPath)
       if (mem && (Date.now() - mem.time < CACHE_TTL)) {
@@ -161,14 +166,19 @@ const SESSION_PREFIX = 'inn_pub_v2:'
       if (inFlightRequests.has(fullPath)) {
         return inFlightRequests.get(fullPath)
       }
+      const generation = cacheGeneration
       const reqPromise = apiRequest(fullPath)
         .then(res => {
-          publicCache.set(fullPath, { time: Date.now(), data: res })
-          writeSessionCache(fullPath, res)
+          if (generation === cacheGeneration) {
+            publicCache.set(fullPath, { time: Date.now(), data: res })
+            writeSessionCache(fullPath, res)
+          }
           return res
         })
         .finally(() => {
-          inFlightRequests.delete(fullPath)
+          if (inFlightRequests.get(fullPath) === reqPromise) {
+            inFlightRequests.delete(fullPath)
+          }
         })
       inFlightRequests.set(fullPath, reqPromise)
       return reqPromise
@@ -176,6 +186,8 @@ const SESSION_PREFIX = 'inn_pub_v2:'
 
     function cachedPublicRequest(endpoint, params = {}) {
       const fullPath = buildPublicPath(endpoint, params)
+      // Admin reads must be fresh and must not populate public storage.
+      if (getAdminToken()) return apiRequest(fullPath, { cache: 'no-store' })
       const now = Date.now()
       const hit = publicCache.get(fullPath)
       if (hit && (now - hit.time < CACHE_TTL)) {
