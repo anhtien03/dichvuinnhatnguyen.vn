@@ -1,0 +1,30 @@
+name: SEO foundation checks
+on:
+  push:
+    branches: [feature/seo-foundation-v1]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: node --test tests/api-client.test.mjs
+      - run: npm run build
+  backend-static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - run: find backend/app backend/routes backend/config -name '*.php' -print0 | xargs -0 -n1 php -l
