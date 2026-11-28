@@ -427,7 +427,7 @@
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
-                <h1 class="text-lg font-black text-slate-900">{{ currentCategory.name }}</h1>
+                <h2 class="text-lg font-black text-slate-900">{{ currentCategory.name }}</h2>
                 <span
                   v-if="currentCategory.badge"
                   class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200"
