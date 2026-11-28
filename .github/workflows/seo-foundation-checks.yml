@@ -58,3 +58,6 @@ jobs:
       - name: RBAC target contract (known gaps, diagnostic only)
         continue-on-error: true
         run: php artisan test --filter='PermissionSecurityTest::test_(pricing|seo)'
+      - name: Advanced RBAC security diagnostics (known gaps)
+        continue-on-error: true
+        run: php artisan test --filter=AdvancedPermissionSecurityTest
