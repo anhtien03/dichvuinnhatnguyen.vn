@@ -78,6 +78,6 @@ jobs:
         run: php artisan test --filter=AuthenticationSecurityTest
       - name: ERP financial regression (required)
         run: php artisan test --filter='ErpIntegrityTest::test_(financial_formula_and_sequential_payments|invalid_item_update_does_not_mutate_order|payment_failure_rolls_back|payment_permission_is_independent)$'
-      - name: ERP integrity target contracts (diagnostic)
-        continue-on-error: true
+      - name: ERP integrity regression (required)
+        if: ${{ !cancelled() }}
         run: php artisan test --filter=ErpIntegrityTest::test_target_
