@@ -29,6 +29,8 @@ class ErpIntegrityTest extends TestCase
                     elseif (in_array($model->getCasts()[$field] ?? '', ['float','double','integer'])) $t->decimal($field,18,2)->default(0)->nullable();
                     else $t->text($field)->nullable();
                 }
+                // Mirror the unique code constraint in the original ERP order migration.
+                if ($model->getTable() === 'erp_orders') $t->unique('code');
                 $t->timestamps();
             });
         }
