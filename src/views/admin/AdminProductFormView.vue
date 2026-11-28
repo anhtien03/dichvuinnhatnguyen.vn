@@ -1293,7 +1293,7 @@ import {
   Plus,
   Trash2
 } from 'lucide-vue-next'
-import { api } from '../../services/api'
+import { api, can } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
 import { swalToast, swalError } from '../../utils/swal'
 import { slugify } from '../../composables/useSEO'
@@ -1961,6 +1961,10 @@ async function handleSubmit() {
     }
 
     if (isEditMode.value) {
+      if (!can('pricing.manage')) {
+        delete payload.base_price
+        delete payload.specs
+      }
       await api.updateAdminProduct(route.params.id, payload)
       successMessage.value = 'Đã cập nhật ấn phẩm & cấu hình SEO thành công! Đang chuyển hướng...'
       swalToast('Đã cập nhật ấn phẩm thành công!')
