@@ -15,5 +15,40 @@ for url in http://127.0.0.1:8000/sitemap.xml http://127.0.0.1:4173/; do
   curl -fs "$url" >/dev/null
 done
 (cd backend && php artisan seo:render)
-SEO_BASE_URL=http://127.0.0.1:8000 node tests/seo-browser-diagnostic.mjs
-node tests/seo-snapshot-faults.mjs
+python3 - <<'PY'
+from html.parser import HTMLParser
+from urllib.request import urlopen
+import xml.etree.ElementTree as ET
+class Scan(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.tags=[]
+    def handle_starttag(self,tag,attrs):
+        self.tags.append((tag,dict(attrs)))
+base='http://127.0.0.1:8000'
+origin='https://dichvuinnhatnguyen.vn'
+urls=ET.fromstring(urlopen(base+'/sitemap.xml',timeout=10).read()).findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc')
+assert len(urls)>=9
+for entry in urls:
+    url=entry.text
+    assert url.startswith(origin+'/')
+    with urlopen(base+url[len(origin):],timeout=10) as r:
+        assert r.status==200
+        p=Scan()
+        p.feed(r.read().decode('utf-8'))
+    checks={
+        'language':any(t=='html' and a.get('lang')=='vi' for t,a in p.tags),
+        'title':sum(t=='title' for t,a in p.tags)==1,
+        'description':any(t=='meta' and a.get('name')=='description' and a.get('content') for t,a in p.tags),
+        'canonical':[a.get('href') for t,a in p.tags if t=='link' and a.get('rel')=='canonical']==[url],
+        'H1':sum(t=='h1' for t,a in p.tags)==1,
+    }
+    print(url,checks)
+    assert all(checks.values()),url
+PY
+if [ "${SEO_RAW_ONLY:-0}" != 1 ]; then
+  status=0
+  SEO_BASE_URL=http://127.0.0.1:8000 node tests/seo-browser-diagnostic.mjs || status=1
+  node tests/seo-snapshot-faults.mjs || status=1
+  exit "$status"
+fi
