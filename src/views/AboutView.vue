@@ -443,6 +443,7 @@ import {
   PhoneCall
 } from 'lucide-vue-next'
 import { siteSettings } from '../data/siteSettings'
+import { setMetaTags } from '../composables/useSEO'
 
 const activeWorkflowStep = ref(0)
 let workflowTimer = null
@@ -506,6 +507,12 @@ const resumeWorkflow = () => {
 }
 
 onMounted(() => {
+  setMetaTags({
+    title: 'Giới Thiệu Xưởng In Ấn Nhật Nguyên - Nhanh, Đẹp, Giá Tốt',
+    description: 'Xưởng In Ấn Nhật Nguyên tại Quận 12, TP.HCM với hơn 8 năm kinh nghiệm in Offset & Kỹ thuật số trực tiếp tại xưởng, kiểm tra file miễn phí, đổi trả nếu lỗi sản xuất.',
+    keywords: 'giới thiệu xưởng in nhật nguyên, xưởng in trực tiếp tphcm, in offset quận 12, in nhanh kts',
+    url: 'https://dichvuinnhatnguyen.vn/gioi-thieu'
+  })
   startWorkflowAutoPlay()
 })
 

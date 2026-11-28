@@ -717,24 +717,45 @@ function applyCategorySEO() {
       title: 'Danh Mục Sản Phẩm & Dịch Vụ In Ấn Trực Tiếp Tại Xưởng | Nhật Nguyên',
       description: 'Bảng tổng hợp các ngành danh mục in Offset và In Kỹ Thuật Số trực tiếp tại xưởng in Nhật Nguyên: Hộp giấy, Túi giấy, Decal, Namecard, Catalogue, Tờ rơi giá gốc.',
       keywords: 'danh muc in an, in hop giay, in tui giay, in decal, in catalogue, in to roi, in namecard, xuong in tphcm',
-      url: 'https://dichvuinnhatnguyen.vn/san-pham'
+      url: 'https://dichvuinnhatnguyen.vn/san-pham',
+      schema: {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://dichvuinnhatnguyen.vn/' },
+          { '@type': 'ListItem', position: 2, name: 'Sản phẩm', item: 'https://dichvuinnhatnguyen.vn/san-pham' }
+        ]
+      }
     })
     return
   }
 
   const cat = currentCategory.value
   if (cat) {
+    const categoryUrl = cat.canonical_url || `https://dichvuinnhatnguyen.vn/danh-muc/${cat.slug}`
     setMetaTags({
       title: cat.meta_title || `${cat.name} - Giá Gốc Trực Tiếp Tại Xưởng TPHCM | Nhật Nguyên`,
       description: cat.meta_description || cat.description || `Xưởng in Nhật Nguyên chuyên sản xuất ${cat.name} chất lượng cao, công nghệ in hiện đại, giá xưởng trực tiếp không qua trung gian.`,
       keywords: cat.meta_keywords || `${cat.name}, xuong in nhat nguyen, in gia goc, bao gia ${cat.name}`,
-      url: cat.canonical_url || `https://dichvuinnhatnguyen.vn/danh-muc/${cat.slug}`,
+      url: categoryUrl,
       schema: {
         '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
-        name: cat.meta_title || cat.name,
-        description: cat.meta_description || cat.description,
-        url: `https://dichvuinnhatnguyen.vn/danh-muc/${cat.slug}`
+        '@graph': [
+          {
+            '@type': 'CollectionPage',
+            name: cat.meta_title || cat.name,
+            description: cat.meta_description || cat.description,
+            url: categoryUrl
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://dichvuinnhatnguyen.vn/' },
+              { '@type': 'ListItem', position: 2, name: 'Sản phẩm', item: 'https://dichvuinnhatnguyen.vn/san-pham' },
+              { '@type': 'ListItem', position: 3, name: cat.name, item: categoryUrl }
+            ]
+          }
+        ]
       }
     })
   }

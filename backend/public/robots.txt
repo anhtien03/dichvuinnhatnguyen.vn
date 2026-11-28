@@ -1,2 +1,13 @@
+# Robots.txt for In An Nhat Nguyen
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /he-thong-admin
+Disallow: /he-thong-admin/
+Disallow: /he-thong-nn
+Disallow: /he-thong-nn/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://dichvuinnhatnguyen.vn/sitemap.xml

@@ -149,9 +149,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { MapPin, Phone, Mail, Clock, MessageSquare, CheckCircle } from 'lucide-vue-next'
 import { siteSettings } from '../data/siteSettings'
+import { setMetaTags } from '../composables/useSEO'
+
+onMounted(() => {
+  setMetaTags({
+    title: 'Liên Hệ Xưởng In Ấn Nhật Nguyên - Quận 12, TP.HCM',
+    description: 'Liên hệ Xưởng In Ấn Nhật Nguyên tại Quận 12, TP.HCM. Hotline/Zalo 0359 005 469, email nhatnguyenprinting@gmail.com. Hỗ trợ tư vấn, xem mẫu giấy và báo giá in nhanh.',
+    keywords: 'liên hệ xưởng in nhật nguyên, địa chỉ xưởng in quận 12, hotline in ấn nhật nguyên, báo giá in ấn tphcm',
+    url: 'https://dichvuinnhatnguyen.vn/lien-he'
+  })
+})
 
 const submitted = ref(false)
 const msgForm = ref({

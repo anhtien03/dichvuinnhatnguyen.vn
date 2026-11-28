@@ -83,6 +83,7 @@
               <img
                 :src="activeImage || product.image || '/logo.png'"
                 :alt="product.name"
+                fetchpriority="high"
                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <span v-if="product.tag" class="absolute top-3 right-3 px-3 py-1 rounded-lg bg-brand-gold text-slate-950 font-black text-xs shadow-md">
@@ -856,25 +857,65 @@ const formattedDescription = computed(() => {
 function applyProductSEO(prod) {
   if (!prod) return
   const plainDesc = stripHtml(prod.description)
+  const canonicalProductUrl = prod.canonical_url || `https://dichvuinnhatnguyen.vn/san-pham/${prod.slug}`
+  const basePrice = Number(prod.base_price)
+  const productSchema = {
+    '@type': 'Product',
+    name: prod.name,
+    description: prod.meta_description || plainDesc || 'Sản phẩm in ấn chất lượng cao tại Xưởng In Nhật Nguyên',
+    image: typeof prod.image === 'string' && prod.image ? new URL(prod.image, 'https://dichvuinnhatnguyen.vn/').href : undefined,
+    sku: `NN-${prod.id || prod.slug || 'IN-AN'}`,
+    mpn: `NN-${prod.id || 'PRODUCT'}`,
+    brand: {
+      '@type': 'Brand',
+      name: 'In Ấn Nhật Nguyên'
+    },
+    ...(basePrice > 0 ? {
+      offers: {
+        '@type': 'Offer',
+        priceCurrency: 'VND',
+        price: basePrice,
+        availability: 'https://schema.org/InStock',
+        url: canonicalProductUrl
+      }
+    } : {})
+  }
+
+  const breadcrumbItems = [
+    { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://dichvuinnhatnguyen.vn/' },
+    { '@type': 'ListItem', position: 2, name: 'Sản phẩm', item: 'https://dichvuinnhatnguyen.vn/san-pham' }
+  ]
+  if (prod.category?.slug) {
+    breadcrumbItems.push({
+      '@type': 'ListItem',
+      position: 3,
+      name: prod.category.name || prod.categoryName || 'Danh mục',
+      item: `https://dichvuinnhatnguyen.vn/danh-muc/${prod.category.slug}`
+    })
+  }
+  breadcrumbItems.push({
+    '@type': 'ListItem',
+    position: breadcrumbItems.length + 1,
+    name: prod.name,
+    item: canonicalProductUrl
+  })
+
   setMetaTags({
     title: prod.meta_title || `${prod.name} - Giá Gốc Xưởng In Nhật Nguyên`,
     description: prod.meta_description || plainDesc || 'Xưởng in Offset & Kỹ thuật số Nhật Nguyên — Chuyên sản xuất ấn phẩm bao bì, hộp giấy, túi giấy chất lượng cao, giá gốc trực tiếp.',
     keywords: prod.meta_keywords || `${prod.name}, in bao bi, xuong in nhat nguyen, in gia goc`,
     image: prod.image,
-    url: prod.canonical_url || window.location.href,
+    url: canonicalProductUrl,
     type: 'product',
     schema: {
       '@context': 'https://schema.org',
-      '@type': 'Product',
-      name: prod.name,
-      description: prod.meta_description || plainDesc || 'Sản phẩm in ấn chất lượng cao tại Xưởng In Nhật Nguyên',
-      image: typeof prod.image === 'string' && prod.image ? new URL(prod.image, 'https://dichvuinnhatnguyen.vn/').href : undefined,
-      sku: `NN-${prod.id || prod.slug || 'IN-AN'}`,
-      mpn: `NN-${prod.id || 'PRODUCT'}`,
-      brand: {
-        '@type': 'Brand',
-        name: 'In Ấn Nhật Nguyên'
-      },
+      '@graph': [
+        productSchema,
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: breadcrumbItems
+        }
+      ]
     }
   })
 }
@@ -932,7 +973,7 @@ async function loadProduct() {
 onMounted(() => {
   loadProduct()
   window.addEventListener('scroll', handleScroll, { passive: true })
-  api.getProducts().then(res => {
+  api.getProducts({ compact: 1 }).then(res => {
     if (res?.data?.length) {
       allProducts.value = res.data
     }

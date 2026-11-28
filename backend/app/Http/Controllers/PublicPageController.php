@@ -31,13 +31,21 @@ class PublicPageController extends Controller
         $titles = [
             '' => 'Trang chủ - In Ấn Nhật Nguyên',
             'san-pham' => 'Danh Mục Sản Phẩm & Dịch Vụ In Ấn Trực Tiếp Tại Xưởng | Nhật Nguyên',
-            'tin-tuc' => 'Cẩm nang & Kiến thức ngành in',
+            'tin-tuc' => 'Cẩm Nang Kỹ Thuật & Xuất Bản In Ấn | Xưởng In Nhật Nguyên',
             'gioi-thieu' => 'Giới thiệu xưởng in Nhật Nguyên - Nhanh, Đẹp, Giá Tốt',
             'lien-he' => 'Liên hệ xưởng in Nhật Nguyên',
             'yeu-cau-bao-gia' => 'Gửi yêu cầu báo giá nhanh',
         ];
+        $descriptions = [
+            '' => 'Xưởng in Offset & Kỹ thuật số Nhật Nguyên tại Quận 12 TP.HCM chuyên in hộp giấy, túi giấy, tem nhãn decal, catalogue, namecard giá gốc tận xưởng.',
+            'san-pham' => 'Danh mục ấn phẩm in ấn tại Xưởng In Nhật Nguyên: tem nhãn decal, hộp giấy, túi giấy, name card, catalogue, tờ rơi báo giá trực tiếp tận xưởng.',
+            'tin-tuc' => 'Tổng hợp cẩm nang kỹ thuật in ấn, hướng dẫn chọn chất liệu giấy, quy chuẩn xuất file CMYK và kinh nghiệm tối ưu chi phí in ấn cho doanh nghiệp.',
+            'gioi-thieu' => 'Tìm hiểu Xưởng In Nhật Nguyên tại TP.HCM — đối tác in ấn Offset & Kỹ thuật số chuyên nghiệp với dây chuyền hiện đại, giao nhanh và giá gốc tận xưởng.',
+            'lien-he' => 'Liên hệ Xưởng In Nhật Nguyên qua hotline 0359 005 469, Zalo hoặc email nhatnguyenprinting@gmail.com để được tư vấn và báo giá in ấn nhanh chóng.',
+            'yeu-cau-bao-gia' => 'Gửi yêu cầu báo giá in ấn trực tuyến tại Xưởng In Nhật Nguyên: chọn sản phẩm, quy cách, số lượng và nhận phản hồi báo giá nhanh trong 15 phút.',
+        ];
         $title = $titles[$path] ?? '404 - Trang không tồn tại';
-        $description = 'Xưởng in Offset & Kỹ thuật số Nhật Nguyên chuyên in hộp giấy, túi giấy, tem nhãn decal, catalogue, namecard giá gốc tận xưởng.';
+        $description = $descriptions[$path] ?? $descriptions[''];
         if ($record) {
             $title = $record->meta_title ?: match ($parts[1]) {
                 'san-pham' => $record->name . ' - Giá Gốc Xưởng In Nhật Nguyên',
@@ -48,7 +56,9 @@ class PublicPageController extends Controller
         }
         if ($admin) $title = 'Quản trị - In Ấn Nhật Nguyên';
         if (!str_contains($title, 'Nhật Nguyên')) $title .= ' | In Ấn Nhật Nguyên';
-        $canonical = 'https://dichvuinnhatnguyen.vn/' . implode('/', array_map('rawurlencode', explode('/', $path)));
+        $canonical = ($record && !empty($record->canonical_url))
+            ? $record->canonical_url
+            : 'https://dichvuinnhatnguyen.vn/' . implode('/', array_map('rawurlencode', explode('/', $path)));
         $robots = $admin ? 'noindex, nofollow' : ((!$exists || ($path === 'yeu-cau-bao-gia' && $request->has('product'))) ? 'noindex, follow' : 'index, follow');
         $html = preg_replace_callback('~<title>.*?</title>~is', fn () => '<title>'.e($title).'</title>', $html, 1);
         $html = preg_replace_callback('~<meta\\s+name="description"[^>]*>~i', fn () => '<meta name="description" content="'.e($description).'">', $html, 1);

@@ -83,7 +83,7 @@
 
           <!-- Card 2: sub2Banner -->
           <router-link
-            :to="sub2Banner?.link_url || '/san-pham/in-tem-nhan-decal-be-thanh-pham'"
+            :to="sub2Banner?.link_url || '/san-pham/nhan-decal-giay'"
             class="rounded-2xl overflow-hidden relative shadow-sm hover:shadow-xl transition-all group border border-slate-200/90 bg-slate-900 block aspect-[16/9] lg:aspect-auto flex-1 min-h-[140px] cursor-pointer"
           >
             <img

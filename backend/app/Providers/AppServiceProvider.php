@@ -69,9 +69,16 @@ class AppServiceProvider extends ServiceProvider
                 if (!config('seo.snapshots')) {
                     return;
                 }
-                DB::afterCommit(static function () use ($model): void {
+                // Capture original/changed attributes synchronously before finishSave()/syncOriginal() clears them.
+                $context = [
+                    'was_recently_created' => (bool) $model->wasRecentlyCreated,
+                    'changed_keys' => array_keys($model->getChanges()),
+                    'original_slug' => $model->getOriginal('slug'),
+                    'original_category_id' => $model->getOriginal('category_id'),
+                ];
+                DB::afterCommit(static function () use ($model, $context): void {
                     try {
-                        PublicSeoSnapshot::invalidateForModel($model, 'saved');
+                        PublicSeoSnapshot::invalidateForModel($model, 'saved', $context);
                     } catch (\Throwable $e) {
                         Log::warning('seo_snapshot_invalidation_failed', ['error' => $e->getMessage()]);
                     }
@@ -82,9 +89,15 @@ class AppServiceProvider extends ServiceProvider
                 if (!config('seo.snapshots')) {
                     return;
                 }
-                DB::afterCommit(static function () use ($model): void {
+                $context = [
+                    'was_recently_created' => false,
+                    'changed_keys' => [],
+                    'original_slug' => $model->getOriginal('slug'),
+                    'original_category_id' => $model->getOriginal('category_id'),
+                ];
+                DB::afterCommit(static function () use ($model, $context): void {
                     try {
-                        PublicSeoSnapshot::invalidateForModel($model, 'deleted');
+                        PublicSeoSnapshot::invalidateForModel($model, 'deleted', $context);
                     } catch (\Throwable $e) {
                         Log::warning('seo_snapshot_invalidation_failed', ['error' => $e->getMessage()]);
                     }

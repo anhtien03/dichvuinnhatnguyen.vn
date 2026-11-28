@@ -106,9 +106,26 @@ function formatDisplayPhone(raw) {
   return raw
 }
 
+function trackContactClick(eventName, linkType) {
+  if (typeof window.gtag === 'function') {
+    window.gtag('event', eventName, {
+      event_category: 'contact',
+      link_type: linkType
+    })
+  }
+}
+
 function handleGlobalPhoneClick(e) {
+  const zaloLink = e.target.closest('a[href*="zalo.me"]')
+  if (zaloLink) {
+    trackContactClick('click_zalo', 'zalo')
+    return
+  }
+
   const link = e.target.closest('a[href^="tel:"]')
   if (!link) return
+
+  trackContactClick('click_to_call', 'tel')
 
   // Check if device is a mobile phone (Android, iPhone, iPad)
   const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
@@ -153,8 +170,8 @@ onMounted(async () => {
 
     if (res.data?.google_analytics_id) {
       // Dynamic Google Analytics 4 loader
-      const gaId = res.data.google_analytics_id
-      if (!document.querySelector(`script[src*="${gaId}"]`)) {
+      const gaId = String(res.data.google_analytics_id).trim()
+      if (/^(G|GT|AW|DC)-[A-Z0-9]+$/i.test(gaId) && !document.querySelector(`script[src*="${gaId}"]`)) {
         const gaScript = document.createElement('script')
         gaScript.async = true
         gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`

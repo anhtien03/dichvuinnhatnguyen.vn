@@ -14,8 +14,9 @@
 ## Danh mục dịch vụ in ấn
 
 - [Ấn phẩm văn phòng](https://dichvuinnhatnguyen.vn/danh-muc/an-pham-van-phong): In bao thư, bìa đựng hồ sơ (folder), giấy tiêu đề, biểu mẫu, phiếu bảo hành, giấy ghi chú.
-- [Bao bì & Túi giấy](https://dichvuinnhatnguyen.vn/danh-muc/bao-bi-tui-giay): In túi giấy kraft/couche/ivory, hộp giấy, hộp cứng theo yêu cầu.
+- [Bao bì & Túi giấy](https://dichvuinnhatnguyen.vn/danh-muc/hop-giay-tui-giay): In túi giấy kraft/couche/ivory, hộp giấy, hộp cứng theo yêu cầu.
 - [Tem nhãn & Decal](https://dichvuinnhatnguyen.vn/danh-muc/tem-nhan-decal): In tem nhãn decal giấy, decal nhựa, tem bảo hành, nhãn dán cắt bế demi.
 - [Tiếp thị & Quảng cáo](https://dichvuinnhatnguyen.vn/danh-muc/tiep-thi-quang-cao): In tờ rơi, tờ gấp (brochure), catalogue, poster, thực đơn (menu), phiếu quà tặng.
 - [Sự kiện & Triển lãm](https://dichvuinnhatnguyen.vn/danh-muc/su-kien-trien-lam): In hashtag cầm tay, standee, vé sự kiện, thẻ đeo/bib chạy bộ.
-- [Lịch & Sổ tay](https://dichvuinnhatnguyen.vn/danh-muc/lich-so-tay): In lịch Tết, bao lì xì, thiệp mời và sổ tay doanh nghiệp.
+- [In thẻ & Danh thiếp](https://dichvuinnhatnguyen.vn/danh-muc/in-the-danh-thiep): In namecard, danh thiếp, thẻ tích điểm, thẻ cảm ơn, voucher, thẻ treo sản phẩm.
+- [Lịch & Quà tặng](https://dichvuinnhatnguyen.vn/danh-muc/lich-qua-tang): In lịch Tết, bao lì xì, thiệp mời và sổ tay doanh nghiệp.

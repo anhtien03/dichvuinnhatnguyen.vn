@@ -22,7 +22,7 @@ const concurrency = Math.max(1, Math.min(4, Number(process.env.RENDER_CONCURRENC
 const maxRssMb = Math.max(256, Number(process.env.RENDER_MAX_RSS_MB || 768));
 
 const STATIC_PATHS = new Set(['/', '/san-pham', '/tin-tuc', '/gioi-thieu', '/lien-he', '/yeu-cau-bao-gia']);
-const SENSITIVE_KEY_RE = /(key|secret|token|password|credential|private)/i;
+const SENSITIVE_KEY_RE = /(key|secret|token|password|credential|private|service_account|webhook)/i;
 
 function validatePublicPath(path) {
   if (!STATIC_PATHS.has(path) && !/^\/(san-pham|danh-muc|tin-tuc)\/[\p{L}\p{N}_%-]+$/u.test(path)) {
@@ -30,18 +30,28 @@ function validatePublicPath(path) {
   }
 }
 
+function redactSensitiveKeys(value) {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item) => !(item && typeof item === 'object' && 'key' in item && SENSITIVE_KEY_RE.test(String(item.key || ''))))
+      .map((item) => redactSensitiveKeys(item));
+  }
+  if (value && typeof value === 'object') {
+    const clean = {};
+    for (const [k, v] of Object.entries(value)) {
+      if (!SENSITIVE_KEY_RE.test(k)) {
+        clean[k] = redactSensitiveKeys(v);
+      }
+    }
+    return clean;
+  }
+  return value;
+}
+
 function sanitizeBootstrapValue(endpointPath, payload) {
   if (!payload || typeof payload !== 'object') return null;
   if (endpointPath === '/settings') {
-    const src = payload.data && typeof payload.data === 'object' ? payload.data : payload;
-    if (Array.isArray(src)) {
-      return src.filter((item) => item && !SENSITIVE_KEY_RE.test(String(item.key || '')));
-    }
-    const clean = {};
-    for (const [k, v] of Object.entries(src)) {
-      if (!SENSITIVE_KEY_RE.test(k)) clean[k] = v;
-    }
-    return payload.data ? { ...payload, data: clean } : clean;
+    return redactSensitiveKeys(payload);
   }
   return payload;
 }

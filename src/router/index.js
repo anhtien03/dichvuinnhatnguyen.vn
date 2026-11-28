@@ -319,10 +319,16 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-  router.afterEach((to) => {
+  router.afterEach((to, from) => {
     finishNavLoading()
     if (!to.path.startsWith('/he-thong-admin')) {
       setCanonicalLink(to.path)
+      if (from.matched.length > 0 && typeof window.gtag === 'function') {
+        window.gtag('event', 'page_view', {
+          page_path: to.fullPath,
+          page_title: document.title
+        })
+      }
     }
   })
 

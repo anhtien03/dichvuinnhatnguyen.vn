@@ -196,20 +196,25 @@ class PublicSeoSnapshot
     /**
      * Determine exact affected public routes for a mutated/deleted model.
      */
-    public static function invalidateForModel(Model $model, string $event = 'saved'): void
+    public static function invalidateForModel(Model $model, string $event = 'saved', array $context = []): void
     {
         $routes = [];
         $critical = $event === 'deleted';
         $reason = class_basename($model).':'.$event;
 
+        $wasRecentlyCreated = (bool) ($context['was_recently_created'] ?? $model->wasRecentlyCreated);
+        $changedKeys = $context['changed_keys'] ?? array_keys($model->getChanges());
+        $hasChanged = static fn (array $keys): bool => array_intersect($keys, $changedKeys) !== [];
+        $oldSlug = array_key_exists('original_slug', $context) ? $context['original_slug'] : $model->getOriginal('slug');
+        $oldCategoryId = array_key_exists('original_category_id', $context) ? $context['original_category_id'] : $model->getOriginal('category_id');
+
         if ($model instanceof Product) {
-            if ($model->wasRecentlyCreated || $model->wasChanged(['base_price', 'specs', 'is_active', 'slug', 'category_id'])) {
+            if ($wasRecentlyCreated || $hasChanged(['base_price', 'specs', 'is_active', 'slug', 'category_id'])) {
                 $critical = true;
             }
             if (!empty($model->slug)) {
                 $routes[] = '/san-pham/'.rawurlencode((string) $model->slug);
             }
-            $oldSlug = $model->getOriginal('slug');
             if (!empty($oldSlug) && $oldSlug !== $model->slug) {
                 $routes[] = '/san-pham/'.rawurlencode((string) $oldSlug);
             }
@@ -218,7 +223,7 @@ class PublicSeoSnapshot
 
             $catIds = array_values(array_unique(array_filter([
                 $model->category_id,
-                $model->getOriginal('category_id'),
+                $oldCategoryId,
             ])));
             if ($catIds !== []) {
                 foreach (Category::whereIn('id', $catIds)->pluck('slug') as $catSlug) {
@@ -226,13 +231,12 @@ class PublicSeoSnapshot
                 }
             }
         } elseif ($model instanceof Category) {
-            if ($model->wasRecentlyCreated || $model->wasChanged(['is_active', 'slug', 'parent_id'])) {
+            if ($wasRecentlyCreated || $hasChanged(['is_active', 'slug', 'parent_id'])) {
                 $critical = true;
             }
             if (!empty($model->slug)) {
                 $routes[] = '/danh-muc/'.rawurlencode((string) $model->slug);
             }
-            $oldSlug = $model->getOriginal('slug');
             if (!empty($oldSlug) && $oldSlug !== $model->slug) {
                 $routes[] = '/danh-muc/'.rawurlencode((string) $oldSlug);
             }
@@ -242,13 +246,12 @@ class PublicSeoSnapshot
                 $routes[] = '/san-pham/'.rawurlencode((string) $prodSlug);
             }
         } elseif ($model instanceof Post) {
-            if ($model->wasRecentlyCreated || $model->wasChanged(['is_published', 'slug'])) {
+            if ($wasRecentlyCreated || $hasChanged(['is_published', 'slug'])) {
                 $critical = true;
             }
             if (!empty($model->slug)) {
                 $routes[] = '/tin-tuc/'.rawurlencode((string) $model->slug);
             }
-            $oldSlug = $model->getOriginal('slug');
             if (!empty($oldSlug) && $oldSlug !== $model->slug) {
                 $routes[] = '/tin-tuc/'.rawurlencode((string) $oldSlug);
             }
@@ -333,36 +336,36 @@ class PublicSeoSnapshot
 
     public static function write(string $route, string $expectedVersion, array $page): void
     {
-        $currentVersion = self::routeRevision($route);
-        if ($expectedVersion !== $currentVersion) {
-            throw new \RuntimeException('Public data changed during render');
-        }
-
         if (!self::isValidPage($page)) {
             throw new \RuntimeException('Invalid rendered page payload');
         }
 
-        $manifest = self::readManifest();
-        $buildHash = (string) ($manifest['build_hash'] ?? self::currentBuildHash());
         $checksum = self::computeChecksum($page);
-        $generatedAt = time();
 
-        $record = [
-            'route' => $route,
-            'version' => $currentVersion,
-            'build_hash' => $buildHash,
-            'checksum' => $checksum,
-            'generated_at' => $generatedAt,
-            'page' => $page,
-        ];
+        self::mutateManifest(static function (array $m) use ($route, $expectedVersion, $page, $checksum): array {
+            $currentVersion = self::routeRevision($route, $m);
+            if ($expectedVersion !== $currentVersion) {
+                throw new \RuntimeException('Public data changed during render');
+            }
 
-        $encoded = json_encode($record, JSON_THROW_ON_ERROR);
-        $file = self::path($route);
-        File::ensureDirectoryExists(dirname($file), 0700);
-        File::replace($file, $encoded);
-        File::replace(self::lkgPath($route), $encoded);
+            $buildHash = (string) ($m['build_hash'] ?? self::currentBuildHash());
+            $generatedAt = time();
 
-        self::mutateManifest(static function (array $m) use ($route, $currentVersion, $generatedAt): array {
+            $record = [
+                'route' => $route,
+                'version' => $currentVersion,
+                'build_hash' => $buildHash,
+                'checksum' => $checksum,
+                'generated_at' => $generatedAt,
+                'page' => $page,
+            ];
+
+            $encoded = json_encode($record, JSON_THROW_ON_ERROR);
+            $file = self::path($route);
+            File::ensureDirectoryExists(dirname($file), 0700);
+            File::replace($file, $encoded);
+            File::replace(self::lkgPath($route), $encoded);
+
             $rev = (int) (explode(':', $currentVersion)[1] ?? 1);
             $m['routes'][$route] = [
                 'revision' => $rev,

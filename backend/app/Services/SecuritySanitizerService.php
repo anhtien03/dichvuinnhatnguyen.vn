@@ -32,6 +32,7 @@ class SecuritySanitizerService
         // 1. Remove dangerous wrapper tags completely (tag + contents)
         $dangerousTags = [
             'script',
+            'svg',
             'object',
             'embed',
             'applet',
@@ -63,11 +64,11 @@ class SecuritySanitizerService
             return ''; // Strip unauthorized iframes
         }, $clean);
 
-        // 3. Remove inline event handlers (e.g. onload, onerror, onclick, onmouseover, onfocus, etc.)
-        $clean = preg_replace('/\s+on[a-z]{3,20}\s*=\s*(?:["\'][^"\']*["\']|[^\s>]+)/i', '', $clean);
+        // 3. Remove inline event handlers (quoted, backticked, or unquoted, including slash-separated like <img/onerror=...>)
+        $clean = preg_replace('/(?<=[\s\/])on[a-z]{2,25}\s*=\s*(?:"[^"]*"|\'[^\']*\'|`[^`]*`|[^\s>"\'`]+)/i', '', $clean);
 
         // 4. Strip dangerous pseudo-protocols in attributes (javascript:, vbscript:, data:text/html)
-        $clean = preg_replace('/(href|src|poster)\s*=\s*["\']\s*(?:javascript|vbscript|data:text\/html|livescript):[^"\']*["\']/i', '$1="#"', $clean);
+        $clean = preg_replace('/(href|src|poster)\s*=\s*(?:["\']\s*(?:javascript|vbscript|data:text\/html|livescript):[^"\']*["\']|(?:javascript|vbscript|data:text\/html|livescript):[^\s>]+)/i', '$1="#"', $clean);
 
         // 5. Clean style attributes: remove expressions, behavior, javascript in CSS
         $clean = preg_replace_callback('/style\s*=\s*(["\'])(.*?)\1/is', function ($matches) {

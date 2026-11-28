@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\SiteSetting;
 use App\Services\GoogleIndexingService;
+use App\Services\SecuritySanitizerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -121,6 +122,10 @@ class ProductController extends Controller
             $validated['specs'] = ['hide_pricing' => true, 'custom_specs' => $validated['specs']['custom_specs'] ?? []];
         }
 
+        if (array_key_exists('description', $validated)) {
+            $validated['description'] = SecuritySanitizerService::sanitizeHtml($validated['description']);
+        }
+
         $product = Product::create($validated);
 
         if (SiteSetting::get('google_indexing_auto_publish', true)) {
@@ -174,6 +179,9 @@ class ProductController extends Controller
             $request->validate(['specs.custom_specs' => 'sometimes|array', 'specs.custom_specs.*.name' => 'required|string|max:255', 'specs.custom_specs.*.value' => 'required|string|max:2000', 'specs.quantities.*.count' => 'required|integer|min:1', 'specs.quantities.*.pricePerUnit' => 'required|numeric|min:0']);
             $validated['specs'] = array_replace($product->specs ?? [], $validated['specs']);
         }
+        if (array_key_exists('description', $validated)) {
+            $validated['description'] = SecuritySanitizerService::sanitizeHtml($validated['description']);
+        }
         $product->update($validated);
 
         if (SiteSetting::get('google_indexing_auto_publish', true)) {
@@ -208,6 +216,9 @@ class ProductController extends Controller
         $product = Product::where('is_active', true)->findOrFail($id);
         if (isset($validated['specs'])) {
             $validated['specs'] = array_replace($product->specs ?? [], $validated['specs']);
+        }
+        if (array_key_exists('description', $validated)) {
+            $validated['description'] = SecuritySanitizerService::sanitizeHtml($validated['description']);
         }
         $product->update($validated);
         return response()->json(['success' => true, 'data' => $product]);

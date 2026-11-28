@@ -6,10 +6,14 @@ use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Post;
 use App\Models\Product;
+use App\Models\Role;
+use App\Models\SiteSetting;
+use App\Models\User;
 use App\Services\PublicSeoSnapshot;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class SeoSnapshotLifecycleV2Test extends TestCase
@@ -262,5 +266,98 @@ class SeoSnapshotLifecycleV2Test extends TestCase
     {
         $this->get('/san-pham/../../etc/passwd')->assertStatus(404);
         $this->artisan('seo:render', ['--origin' => 'https://evil.example'])->assertExitCode(1);
+    }
+
+    public function test_public_settings_excludes_service_account_json_and_update_succeeds_without_error(): void
+    {
+        SiteSetting::create(['key' => 'site_name', 'value' => 'In Ấn Nhật Nguyên']);
+        SiteSetting::create([
+            'key' => 'google_indexing_service_account_json',
+            'value' => '{"type":"service_account","private_key":"-----BEGIN PRIVATE KEY-----\\nSECRET"}',
+        ]);
+
+        $publicRes = $this->getJson('/api/v1/settings')->assertStatus(200);
+        $this->assertArrayNotHasKey('google_indexing_service_account_json', $publicRes->json('data'));
+
+        $role = Role::create(['name' => 'Super Admin', 'slug' => 'super_admin']);
+        $admin = User::create([
+            'name' => 'Admin',
+            'email' => 'admin-v2@example.test',
+            'password' => 'secret-password',
+            'role_id' => $role->id,
+            'is_active' => true,
+        ]);
+        Sanctum::actingAs($admin);
+
+        $updateRes = $this->postJson('/api/v1/admin/settings', [
+            'site_name' => 'In Ấn Nhật Nguyên Updated',
+        ])->assertStatus(200);
+
+        $updateRes->assertJsonPath('success', true);
+        $updateRes->assertJsonPath('data.site_name', 'In Ấn Nhật Nguyên Updated');
+        $this->assertArrayHasKey('google_indexing_service_account_json', $updateRes->json('data'));
+    }
+
+    public function test_transaction_slug_and_category_change_invalidates_old_urls(): void
+    {
+        $catA = Category::create(['name' => 'Danh mục A', 'slug' => 'cat-a-v2', 'is_active' => true]);
+        $catB = Category::create(['name' => 'Danh mục B', 'slug' => 'cat-b-v2', 'is_active' => true]);
+        $product = Product::create([
+            'category_id' => $catA->id,
+            'name' => 'Sản phẩm TX',
+            'slug' => 'prod-old-v2',
+            'base_price' => 100000,
+            'is_active' => true,
+        ]);
+
+        foreach (['/san-pham/prod-old-v2', '/san-pham/prod-new-v2', '/danh-muc/cat-a-v2', '/danh-muc/cat-b-v2'] as $route) {
+            $rev = PublicSeoSnapshot::routeRevision($route);
+            PublicSeoSnapshot::write($route, $rev, $this->samplePage($route));
+        }
+
+        DB::transaction(static function () use ($product, $catB): void {
+            $product->slug = 'prod-new-v2';
+            $product->category_id = $catB->id;
+            $product->save();
+        });
+
+        foreach (['/san-pham/prod-old-v2', '/san-pham/prod-new-v2', '/danh-muc/cat-a-v2', '/danh-muc/cat-b-v2'] as $route) {
+            $this->assertSame(
+                PublicSeoSnapshot::STATE_INVALID,
+                PublicSeoSnapshot::resolve($route)['state'],
+                "Expected {$route} to be INVALID after transaction"
+            );
+        }
+    }
+
+    public function test_product_controller_sanitizes_xss_in_description(): void
+    {
+        SiteSetting::set('google_indexing_auto_publish', false);
+        $category = Category::create(['name' => 'Cat XSS', 'slug' => 'cat-xss', 'is_active' => true]);
+        $role = Role::create(['name' => 'Super Admin', 'slug' => 'super_admin']);
+        $admin = User::create([
+            'name' => 'Admin XSS',
+            'email' => 'admin-xss@example.test',
+            'password' => 'secret-password',
+            'role_id' => $role->id,
+            'is_active' => true,
+        ]);
+        Sanctum::actingAs($admin);
+
+        $res = $this->postJson('/api/v1/admin/products', [
+            'name' => 'Sản phẩm XSS',
+            'slug' => 'san-pham-xss',
+            'category_id' => $category->id,
+            'base_price' => 50000,
+            'unit' => 'cái',
+            'description' => '<p>Mô tả hợp lệ</p><img src=x onerror=alert(1)><img/onload=alert(2)><svg onload=alert(3)><script>alert(4)</script></svg>',
+        ])->assertStatus(201);
+
+        $desc = (string) $res->json('data.description');
+        $this->assertStringContainsString('<p>Mô tả hợp lệ</p>', $desc);
+        $this->assertStringNotContainsString('onerror', strtolower($desc));
+        $this->assertStringNotContainsString('onload', strtolower($desc));
+        $this->assertStringNotContainsString('<svg', strtolower($desc));
+        $this->assertStringNotContainsString('<script', strtolower($desc));
     }
 }

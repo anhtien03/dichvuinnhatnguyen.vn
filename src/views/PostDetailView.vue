@@ -918,23 +918,51 @@ async function fetchPost() {
       post.value = res.data
 
       // Apply dynamic SEO
+      const canonicalPostUrl = `https://dichvuinnhatnguyen.vn/tin-tuc/${post.value.slug}`
+      const publishedDate = post.value.published_at || post.value.created_at
+      const modifiedDate = post.value.updated_at || publishedDate
       setMetaTags({
         title: post.value.meta_title || `${post.value.title} - Cẩm Nang In Ấn`,
         description: post.value.meta_description || post.value.excerpt || 'Cẩm nang hướng dẫn kỹ thuật xuất file in và chọn chất liệu in ấn tại Xưởng In Nhật Nguyên.',
         image: post.value.thumbnail || 'https://dichvuinnhatnguyen.vn/logo.png',
-        url: window.location.href,
+        url: canonicalPostUrl,
         type: 'article',
         schema: {
           '@context': 'https://schema.org',
-          '@type': 'Article',
-          headline: post.value.title,
-          description: post.value.excerpt || post.value.meta_description,
-          image: post.value.thumbnail || 'https://dichvuinnhatnguyen.vn/logo.png',
-          datePublished: post.value.published_at || post.value.created_at,
-          author: {
-            '@type': 'Organization',
-            name: 'Xưởng In Ấn Nhật Nguyên'
-          }
+          '@graph': [
+            {
+              '@type': 'Article',
+              headline: post.value.title,
+              description: post.value.excerpt || post.value.meta_description,
+              image: post.value.thumbnail || 'https://dichvuinnhatnguyen.vn/logo.png',
+              datePublished: publishedDate,
+              dateModified: modifiedDate,
+              mainEntityOfPage: {
+                '@type': 'WebPage',
+                '@id': canonicalPostUrl
+              },
+              author: {
+                '@type': 'Organization',
+                name: 'Xưởng In Ấn Nhật Nguyên'
+              },
+              publisher: {
+                '@type': 'Organization',
+                name: 'Xưởng In Ấn Nhật Nguyên',
+                logo: {
+                  '@type': 'ImageObject',
+                  url: 'https://dichvuinnhatnguyen.vn/logo.png'
+                }
+              }
+            },
+            {
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://dichvuinnhatnguyen.vn/' },
+                { '@type': 'ListItem', position: 2, name: 'Cẩm nang in ấn', item: 'https://dichvuinnhatnguyen.vn/tin-tuc' },
+                { '@type': 'ListItem', position: 3, name: post.value.title, item: canonicalPostUrl }
+              ]
+            }
+          ]
         }
       })
     }

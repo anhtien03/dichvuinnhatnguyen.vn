@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
+use App\Services\PublicSeoSnapshot;
 use Illuminate\Http\Request;
 
 class BannerController extends Controller
@@ -157,6 +158,10 @@ class BannerController extends Controller
 
         foreach ($items as $item) {
             Banner::where('id', $item['id'])->update(['sort_order' => $item['sort_order']]);
+        }
+
+        if (config('seo.snapshots')) {
+            PublicSeoSnapshot::invalidateRoutes(['/'], false, 'Banner:reorder');
         }
 
         return response()->json([

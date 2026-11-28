@@ -313,7 +313,7 @@ onMounted(async () => {
   syncFromQuoteStore()
 
   try {
-    const res = await api.getProducts()
+    const res = await api.getProducts({ compact: 1 })
     if (res?.data) {
       availableProducts.value = Array.isArray(res.data) ? res.data : (res.data.data || [])
     }
@@ -360,6 +360,15 @@ async function handleSubmit() {
     }
 
     const res = await api.submitQuote(formData)
+    if (typeof window.gtag === 'function') {
+      const matchedProduct = availableProducts.value.find(
+        p => p.slug === route.query.product || p.name === form.value.productName
+      )
+      window.gtag('event', 'generate_lead', {
+        event_category: 'quote',
+        product_slug: matchedProduct?.slug || (route.query.product ? String(route.query.product) : 'custom')
+      })
+    }
     submittedQuoteId.value = res.data?.code || 'NN-DAT-HANG'
     isSubmitted.value = true
     quoteStore.resetQuote()

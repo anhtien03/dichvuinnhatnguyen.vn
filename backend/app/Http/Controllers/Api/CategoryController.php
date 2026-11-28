@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\SiteSetting;
 use App\Services\GoogleIndexingService;
+use App\Services\SecuritySanitizerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -57,6 +58,10 @@ class CategoryController extends Controller
             $validated['slug'] = Str::slug($validated['name']);
         }
 
+        if (array_key_exists('description', $validated)) {
+            $validated['description'] = SecuritySanitizerService::sanitizeHtml($validated['description']);
+        }
+
         $category = Category::create($validated);
 
         if (SiteSetting::get('google_indexing_auto_publish', true)) {
@@ -95,6 +100,10 @@ class CategoryController extends Controller
 
         if (array_key_exists('parent_id', $validated) && (int) $validated['parent_id'] === (int) $category->id) {
             $validated['parent_id'] = null;
+        }
+
+        if (array_key_exists('description', $validated)) {
+            $validated['description'] = SecuritySanitizerService::sanitizeHtml($validated['description']);
         }
 
         $category->update($validated);
