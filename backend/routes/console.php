@@ -32,7 +32,7 @@ Artisan::command('seo:render {--origin=http://127.0.0.1:4173}', function () {
                 $this->info('Rendered '.$route);
             } catch (\Throwable $e) {
                 $failed++;
-                $this->error('Render failed: '.$route);
+                $this->error('Render failed: '.$route.' — '.$e->getMessage());
                 report($e);
             }
         }
