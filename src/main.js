@@ -10,6 +10,8 @@ if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual'
 }
 
+// Browser-rendered snapshots are not Vue SSR output; mount normally, not hydrate.
+document.querySelectorAll('script[data-seo-snapshot]').forEach(node => node.remove())
 const app = createApp(App)
 
 // Tự động tải lại trang khi phát hiện bản build mới (Vite Chunk Mismatch Recovery)
