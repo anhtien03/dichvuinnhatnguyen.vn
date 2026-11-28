@@ -518,6 +518,8 @@ async function submitEntry() {
     fetchStats()
   } catch (err) {
     swalError('Lỗi khi lưu phiếu', err.message || 'Không thể lưu phiếu')
+  } finally {
+    entrySubmitting = false
   }
 }
 
