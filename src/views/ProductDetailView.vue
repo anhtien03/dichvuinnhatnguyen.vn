@@ -68,7 +68,7 @@
           {{ product.categoryName }}
         </router-link>
         <span class="text-slate-300">/</span>
-        <span class="text-slate-800 font-bold truncate">{{ product.name }}</span>
+        <h1 class="text-slate-800 font-bold truncate">{{ product.name }}</h1>
       </nav>
 
       <!-- ================================================================= -->
