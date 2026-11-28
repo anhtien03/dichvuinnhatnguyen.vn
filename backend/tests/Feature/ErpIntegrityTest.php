@@ -358,7 +358,7 @@ class ErpIntegrityTest extends TestCase
     public function test_concurrency_cash_pagination_is_bounded(): void
     {
         $r=$this->getJson('/api/v1/admin/erp/cashbook?per_page=100000');
-        if ($r->status()===422) { $this->assertUnprocessable(); return; }
+        if ($r->status()===422) { $r->assertUnprocessable()->assertJsonValidationErrors('per_page'); return; }
         $r->assertOk();
         $this->assertLessThanOrEqual(100,$r->json('data.per_page'));
     }
