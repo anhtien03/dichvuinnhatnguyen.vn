@@ -68,7 +68,7 @@ class User extends Authenticatable
         // Check custom overrides
         $custom = $this->custom_permissions ?? [];
         if (isset($custom[$permissionSlug])) {
-            return (bool) $custom[$permissionSlug];
+            return in_array($custom[$permissionSlug], [true, 1, '1'], true);
         }
 
         // Check role permissions
@@ -84,6 +84,9 @@ class User extends Authenticatable
      */
     public function getAllPermissionSlugs(): array
     {
+        if (!$this->is_active) {
+            return [];
+        }
         if ($this->isSuperAdmin()) {
             return Permission::pluck('slug')->toArray();
         }
@@ -97,6 +100,7 @@ class User extends Authenticatable
         // Apply custom overrides
         $custom = $this->custom_permissions ?? [];
         foreach ($custom as $slug => $allowed) {
+            $allowed = in_array($allowed, [true, 1, '1'], true);
             if ($allowed && !in_array($slug, $rolePerms)) {
                 $rolePerms[] = $slug;
             } elseif (!$allowed) {
