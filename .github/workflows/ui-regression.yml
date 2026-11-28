@@ -132,3 +132,63 @@ jobs:
       - run: composer install --no-interaction --prefer-dist
       - run: php -r 'file_put_contents(".env", "APP_ENV=testing\nAPP_KEY=base64:".base64_encode(random_bytes(32))."\n");'
       - run: php artisan test --filter=PublicSeoDiagnosticTest
+  visual-comparison:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Build pinned baseline and candidate
+        run: |
+          revision=$(node -p "require('./tests/visual-baseline.json').revision")
+          git fetch --depth=1 origin "$revision"
+          git worktree add --detach /tmp/ui-reference "$revision"
+          (cd /tmp/ui-reference && npm ci && npm run build)
+          npm ci
+          npm run build
+          npm install --no-save --package-lock=false playwright@1.51.1 pixelmatch@6.0.0 pngjs@7.0.0
+          npx playwright install --with-deps chromium
+      - name: Compare screenshots
+        run: |
+          (cd /tmp/ui-reference && npm run preview -- --host 127.0.0.1 --port 4174 --strictPort) > /tmp/reference.log 2>&1 &
+          npm run preview -- --host 127.0.0.1 --port 4173 --strictPort > /tmp/candidate.log 2>&1 &
+          for port in 4173 4174; do
+            for i in $(seq 1 30); do curl -fs http://127.0.0.1:$port/ >/dev/null && break; sleep 1; done
+            curl -fs http://127.0.0.1:$port/ >/dev/null || { cat /tmp/reference.log /tmp/candidate.log; exit 1; }
+          done
+          mkdir -p visual-results
+          status=0
+          UI_BASE_URL=http://127.0.0.1:4174 UI_OUTPUT=visual-results/reference node tests/visual-capture.mjs || status=1
+          UI_BASE_URL=http://127.0.0.1:4173 UI_OUTPUT=visual-results/candidate node tests/visual-capture.mjs || status=1
+          node --input-type=module <<'JS' || status=1
+          import {readFileSync,writeFileSync,readdirSync,mkdirSync} from 'node:fs';
+          import {PNG} from 'pngjs';
+          import pixelmatch from 'pixelmatch';
+          const root='visual-results', results=[];
+          mkdirSync(root+'/diff',{recursive:true});
+          const files=readdirSync(root+'/reference').filter(f=>f.endsWith('.png'));
+          for(const file of files){
+            try{
+              const a=PNG.sync.read(readFileSync(root+'/reference/'+file));
+              const b=PNG.sync.read(readFileSync(root+'/candidate/'+file));
+              if(a.width!==b.width||a.height!==b.height){results.push({file,ok:false,reason:'dimension mismatch',reference:[a.width,a.height],candidate:[b.width,b.height]});continue;}
+              const diff=new PNG({width:a.width,height:a.height});
+              const pixels=pixelmatch(a.data,b.data,diff.data,a.width,a.height,{threshold:0.1,includeAA:false});
+              const ratio=pixels/(a.width*a.height);
+              results.push({file,pixels,ratio,ok:ratio<=0.001});
+              if(pixels)writeFileSync(root+'/diff/'+file,PNG.sync.write(diff));
+            }catch(e){results.push({file,ok:false,reason:e.message})}
+          }
+          writeFileSync(root+'/comparison.json',JSON.stringify(results,null,2));
+          console.log(JSON.stringify(results,null,2));
+          if(files.length!==50||readdirSync(root+'/candidate').filter(f=>f.endsWith('.png')).length!==50||results.some(r=>!r.ok))process.exitCode=1;
+          JS
+          exit "$status"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-comparison
+          path: visual-results/
