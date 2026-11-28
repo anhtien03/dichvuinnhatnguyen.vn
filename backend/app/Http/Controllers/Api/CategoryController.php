@@ -11,46 +11,28 @@ use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
-    public function index()
+    private function visibleQuery(Request $request)
     {
-        $categories = Category::with([
-                'parent:id,name,slug',
-                'children' => function ($q) {
-                    $q->withCount('products')
-                      ->orderBy('sort_order', 'asc')
-                      ->orderBy('id', 'asc');
-                },
-            ])
-            ->withCount(['products', 'children'])
-            ->orderBy('sort_order', 'asc')
-            ->orderBy('id', 'asc')
-            ->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => $categories,
-        ]);
+        $admin = $request->is('api/v1/admin/categories', 'api/v1/admin/categories/*')
+            && $request->user()?->hasPermission('categories.manage');
+        $filter = fn ($q) => $admin ? $q : $q->where('is_active', true);
+        return $filter(Category::query())->with([
+            'parent' => fn ($q) => $filter($q)->select('id','name','slug'),
+            'children' => fn ($q) => $filter($q)->withCount(['products' => $filter])->orderBy('sort_order')->orderBy('id'),
+        ])->withCount(['products' => $filter, 'children' => $filter]);
     }
 
-    public function show($slugOrId)
+    public function index(Request $request)
     {
-        $category = Category::with([
-                'parent:id,name,slug',
-                'children' => function ($q) {
-                    $q->withCount('products')
-                      ->orderBy('sort_order', 'asc')
-                      ->orderBy('id', 'asc');
-                },
-            ])
-            ->withCount(['products', 'children'])
-            ->where('slug', $slugOrId)
-            ->orWhere('id', $slugOrId)
-            ->firstOrFail();
+        return response()->json(['success' => true, 'data' => $this->visibleQuery($request)->orderBy('sort_order')->orderBy('id')->get()]);
+    }
 
-        return response()->json([
-            'success' => true,
-            'data' => $category,
-        ]);
+    public function show(Request $request, $slugOrId)
+    {
+        $category = $this->visibleQuery($request)->where(function ($q) use ($slugOrId) {
+            $q->where('slug', $slugOrId)->orWhere('id', $slugOrId);
+        })->firstOrFail();
+        return response()->json(['success' => true, 'data' => $category]);
     }
 
     public function store(Request $request)
