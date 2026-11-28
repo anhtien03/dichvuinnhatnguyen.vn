@@ -53,6 +53,7 @@ Route::prefix('v1')->group(function () {
 
         // Quote Requests Management
         Route::get('/admin/quotes', [QuoteRequestController::class, 'index'])->middleware('permission:quotes.view');
+        Route::get('/admin/quotes/{id}/file', [QuoteRequestController::class, 'download'])->middleware('permission:quotes.view');
         Route::get('/admin/quotes/{id}', [QuoteRequestController::class, 'show'])->middleware('permission:quotes.view');
         Route::put('/admin/quotes/{id}', [QuoteRequestController::class, 'update'])->middleware('permission:quotes.process');
         Route::delete('/admin/quotes/{id}', [QuoteRequestController::class, 'destroy'])->middleware('permission:quotes.delete');
