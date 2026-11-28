@@ -67,3 +67,5 @@ jobs:
         continue-on-error: true
         run: |
           php artisan test --filter='AdvancedPermissionSecurityTest::test_(string_false|update_lock|password_change|dashboard)'
+      - name: Pricing permission regression (required)
+        run: php artisan test --filter=PricingPermissionTest
