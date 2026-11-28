@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 import { writeFile } from 'node:fs/promises';
-const base='http://127.0.0.1:4173', origin='https://dichvuinnhatnguyen.vn';
+const base=process.env.SEO_BASE_URL || 'http://127.0.0.1:4173', origin='https://dichvuinnhatnguyen.vn';
 const browser=await chromium.launch(), results=[];
 const check=(id,name,ok,detail='')=>{results.push({id,name,ok:!!ok,detail});console.log(ok?'PASS':'FAIL',id,name,typeof detail==='object'?JSON.stringify(detail):detail)};
 const category={id:1,slug:'fixture-category',name:'Danh mục kiểm thử',is_active:true};
@@ -18,7 +18,7 @@ const fixture=async(page,mode='normal')=>page.route('**/api/**',async route=>{
 const inspect=page=>page.evaluate(()=>({title:document.title,desc:document.querySelector('meta[name=description]')?.content,canonical:document.querySelector('link[rel=canonical]')?.href,h1:[...document.querySelectorAll('main h1')].map(e=>e.textContent.trim()),og:document.querySelector('meta[property="og:title"]')?.content,schemas:[...document.querySelectorAll('script[type="application/ld+json"]')].map(e=>e.textContent),links:[...document.querySelectorAll('a[href]')].map(e=>e.getAttribute('href')),body:document.body.innerText}));
 try{
  const raw=await browser.newPage({javaScriptEnabled:false});
- const page=await browser.newPage();await fixture(page);
+ const page=await browser.newPage();if(!process.env.SEO_BASE_URL) await fixture(page);
  await page.addInitScript(()=>{
  window.__seoPerf={lcp:0,cls:0,eventMax:0,shifts:[]};
  let first=-1,last=-1,sum=0;
@@ -47,7 +47,7 @@ try{
    check('T12',path,a.h1.length===1&&JSON.stringify(a.h1)===JSON.stringify(b.h1)&&a.title===b.title&&a.canonical===b.canonical);
    if(path.includes('fixture-product')||path.includes('fixture-post')){
     let valid=false;try{valid=b.schemas.some(s=>{const j=JSON.parse(s);return j['@type']===(path.includes('product')?'Product':'Article')})}catch{}
-    check('T06',path,valid&&!!b.og);
+    check('T06',path,valid&&!!b.og&&a.schemas.some(s=>JSON.parse(s)['@type']===(path.includes('product')?'Product':'Article'))&&!!a.og);
    }
    const invalid=b.links.filter(x=>x.startsWith('/')&&!x.startsWith('//')&&!paths.includes(x.split(/[?#]/)[0])&&!/^\/(san-pham|danh-muc|tin-tuc)\/[^/]+$/.test(x.split(/[?#]/)[0])&&!x.startsWith('/he-thong-admin'));
    check('T07','internal route shape '+path,invalid.length===0,invalid);
