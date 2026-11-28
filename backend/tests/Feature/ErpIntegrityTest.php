@@ -288,4 +288,40 @@ class ErpIntegrityTest extends TestCase
         $this->assertDatabaseCount('erp_code_sequences',0);
         $this->assertSame('NN-02012026-001', DB::transaction(fn()=>\App\Services\ErpCodeSequence::next('erp_orders','NN-02012026-')));
     }
+
+    public function test_concurrency_finance_monthly_commission_snapshot(): void
+    {
+        $o=$this->order(['discount_mode'=>'monthly_commission','commission_rate'=>12]);
+        $this->assertEquals(120000,$o->commission_amount);
+        $this->assertEquals(0,$o->discount);
+        $this->assertEquals(1130000,$o->total_amount);
+        $this->assertEquals(270000,$o->profit_amount);
+        $this->putJson('/api/v1/admin/erp/orders/'.$o->id,['notes'=>'Unrelated edit'])->assertOk();
+        $this->assertEquals(120000,$o->fresh()->commission_amount);
+    }
+    public function test_concurrency_finance_row_discount_and_vat(): void
+    {
+        $o=$this->order(['items'=>[['product_name'=>'Print','quantity'=>100,'unit_price'=>10000,'cost_price'=>6000,'discount_type'=>'percent','discount_value'=>10]]]);
+        $this->assertEquals(900000,$o->subtotal);
+        $this->assertEquals(90000,$o->vat_amount);
+        $this->assertEquals(1020000,$o->total_amount);
+        $this->assertEquals(240000,$o->profit_amount);
+    }
+    public function test_concurrency_finance_partial_payment_survives_edit(): void
+    {
+        $o=$this->order(['paid_amount'=>300000]);
+        $this->putJson('/api/v1/admin/erp/orders/'.$o->id,['shipping_fee_customer'=>40000])->assertOk();
+        $o->refresh();
+        $this->assertEquals(1140000,$o->total_amount);
+        $this->assertEquals(300000,$o->paid_amount);
+        $this->assertEquals(840000,$o->total_amount-$o->paid_amount);
+        $this->assertSame('partial',$o->payment_status);
+        $this->assertEquals($o->paid_amount,$o->payments()->sum('amount'));
+    }
+    public function test_concurrency_finance_rejects_invalid_commission_rate(): void
+    {
+        $o=$this->order();
+        $this->putJson('/api/v1/admin/erp/orders/'.$o->id,['commission_rate'=>101])->assertUnprocessable();
+        $this->assertEquals(340000,$o->fresh()->profit_amount);
+    }
 }
