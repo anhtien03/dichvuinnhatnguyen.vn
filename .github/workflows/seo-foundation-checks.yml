@@ -80,3 +80,6 @@ jobs:
       - name: ERP integrity regression (required)
         if: ${{ !cancelled() }}
         run: php artisan test --filter=ErpIntegrityTest::test_target_
+      - name: ERP concurrency and replay contracts (required diagnostic gate)
+        if: ${{ !cancelled() }}
+        run: php artisan test --filter=ErpIntegrityTest::test_concurrency_
