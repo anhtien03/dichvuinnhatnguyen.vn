@@ -91,20 +91,15 @@ jobs:
       - run: npm run build
       - run: npm install --no-save --package-lock=false playwright@1.51.1
       - run: npx playwright install --with-deps chromium
-      - name: Run browser SEO diagnostic
-        run: |
-          npm run preview -- --host 127.0.0.1 --port 4173 --strictPort > /tmp/ui-preview.log 2>&1 &
-          preview_pid=$!
-          trap 'kill "$preview_pid" 2>/dev/null || true' EXIT
-          ready=0
-          for i in $(seq 1 30); do
-            if curl -fs http://127.0.0.1:4173/ >/dev/null; then ready=1; break; fi
-            if ! kill -0 "$preview_pid" 2>/dev/null; then break; fi
-            sleep 1
-          done
-          cat /tmp/ui-preview.log
-          if [ "$ready" != 1 ]; then echo "::error::Vite preview failed to start on port 4173"; exit 1; fi
-          node tests/seo-browser-diagnostic.mjs
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3, simplexml
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+        working-directory: backend
+      - name: Run integrated HTTP SEO diagnostic
+        run: bash scripts/seo-integration.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
