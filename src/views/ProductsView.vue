@@ -34,8 +34,8 @@
             <span class="text-xs font-bold text-brand-gold uppercase tracking-wider block mb-1">
               {{ isRootCatalogView && !searchKeyword ? 'TỔNG HỢP DANH MỤC ẤN PHẨM TRỰC TIẾP TẠI XƯỞNG' : 'DANH MỤC ẤN PHẨM CHI TIẾT' }}
             </span>
-            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight flex items-center flex-wrap gap-3">
-              <span>{{ headerTitle }}</span>
+            <div class="flex items-center flex-wrap gap-3">
+              <h1 class="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">{{ headerTitle }}</h1>
               <span
                 v-if="!isRootCatalogView || searchKeyword"
                 class="text-xs font-bold px-3 py-1 rounded-full bg-brand-blue/10 text-brand-blue border border-brand-blue/20"
@@ -48,7 +48,7 @@
               >
                 {{ categoriesWithMeta.length }} ngành hàng in ấn
               </span>
-            </h1>
+            </div>
             <p class="text-xs sm:text-sm text-slate-600 mt-2 max-w-2xl leading-relaxed">
               {{ headerDescription }}
             </p>
