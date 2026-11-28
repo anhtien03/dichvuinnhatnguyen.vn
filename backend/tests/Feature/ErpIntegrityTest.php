@@ -127,4 +127,114 @@ class ErpIntegrityTest extends TestCase
     {
         $this->postJson('/api/v1/admin/erp/cashbook',['type'=>'receipt','category'=>'other','amount'=>100,'payment_method'=>'cash','order_id'=>999,'description'=>'Fixture','entry_date'=>'2026-11-28'])->assertUnprocessable();
     }
+
+    private function cashPayload(array $extra=[]): array
+    {
+        return array_replace(['type'=>'receipt','category'=>'other','amount'=>100,'payment_method'=>'cash','description'=>'Fixture','entry_date'=>'2026-11-28'],$extra);
+    }
+    public function test_concurrency_order_codes_distinct_sequentially(): void
+    {
+        $a=$this->order(); $b=$this->order();
+        $this->assertNotSame($a->code,$b->code);
+    }
+    public function test_concurrency_order_code_date_prefix(): void
+    {
+        $o=$this->order(['order_date'=>'2026-11-28']);
+        $this->assertStringStartsWith('NN-28112026-',$o->code);
+    }
+    public function test_concurrency_order_code_unique_constraint(): void
+    {
+        $this->order();
+        $indexes=Schema::getIndexes('erp_orders');
+        $this->assertTrue(collect($indexes)->contains(fn($i)=>$i['unique'] && $i['columns']===['code']), 'Fixture has no unique code index; verify production migrations separately.');
+    }
+    public function test_concurrency_payment_replay(): void
+    {
+        $o=$this->order(); $url='/api/v1/admin/erp/orders/'.$o->id.'/payments';
+        $h=['Idempotency-Key'=>'11111111-1111-4111-8111-111111111111'];
+        $this->postJson($url,['amount'=>100],$h)->assertSuccessful();
+        $this->postJson($url,['amount'=>100],$h)->assertSuccessful();
+        $this->assertSame(1,$o->payments()->count());
+        $this->assertEquals(100,$o->fresh()->paid_amount);
+    }
+    public function test_concurrency_payment_key_conflict(): void
+    {
+        $o=$this->order(); $url='/api/v1/admin/erp/orders/'.$o->id.'/payments';
+        $h=['Idempotency-Key'=>'11111111-1111-4111-8111-111111111111'];
+        $this->postJson($url,['amount'=>100],$h)->assertSuccessful();
+        $this->postJson($url,['amount'=>200],$h)->assertStatus(409);
+        $this->assertEquals(100,$o->fresh()->paid_amount);
+    }
+    public function test_concurrency_payment_distinct_keys_same_amount(): void
+    {
+        $o=$this->order(); $url='/api/v1/admin/erp/orders/'.$o->id.'/payments';
+        foreach (['11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-222222222222'] as $key)
+            $this->postJson($url,['amount'=>100],['Idempotency-Key'=>$key])->assertSuccessful();
+        $this->assertSame(2,$o->payments()->count());
+        $this->assertEquals(200,$o->fresh()->paid_amount);
+    }
+    public function test_concurrency_payment_invalid_key(): void
+    {
+        $o=$this->order();
+        $this->postJson('/api/v1/admin/erp/orders/'.$o->id.'/payments',['amount'=>100],['Idempotency-Key'=>str_repeat('x',300)])->assertUnprocessable();
+        $this->assertSame(0,$o->payments()->count());
+    }
+    public function test_concurrency_customer_duplicate_create(): void
+    {
+        $p=['name'=>'Fixture','phone'=>'0900000000'];
+        $this->postJson('/api/v1/admin/erp/customers',$p)->assertCreated();
+        $this->postJson('/api/v1/admin/erp/customers',$p)->assertUnprocessable();
+        $this->assertDatabaseCount('erp_customers',1);
+    }
+    public function test_concurrency_customer_duplicate_update(): void
+    {
+        $a=ErpCustomer::create(['name'=>'A','phone'=>'0900000000']);
+        $b=ErpCustomer::create(['name'=>'B','phone'=>'0900000001']);
+        $this->putJson('/api/v1/admin/erp/customers/'.$b->id,['phone'=>$a->phone])->assertUnprocessable();
+        $this->assertSame('0900000001',$b->fresh()->phone);
+    }
+    public function test_concurrency_customer_order_reuses_phone(): void
+    {
+        $a=$this->order(); $b=$this->order();
+        $this->assertEquals($a->customer_id,$b->customer_id);
+        $this->assertDatabaseCount('erp_customers',1);
+    }
+    public function test_concurrency_cash_codes_distinct_sequentially(): void
+    {
+        $url='/api/v1/admin/erp/cashbook';
+        $a=$this->postJson($url,$this->cashPayload())->assertCreated();
+        $b=$this->postJson($url,$this->cashPayload())->assertCreated();
+        $this->assertNotSame($a->json('data.code'),$b->json('data.code'));
+    }
+    public function test_concurrency_cash_code_prefixes(): void
+    {
+        $url='/api/v1/admin/erp/cashbook';
+        foreach (['receipt'=>'PT-','payment'=>'PC-'] as $type=>$prefix)
+            $this->assertStringStartsWith($prefix,$this->postJson($url,$this->cashPayload(['type'=>$type]))->assertCreated()->json('data.code'));
+    }
+    public function test_concurrency_cash_replay(): void
+    {
+        $url='/api/v1/admin/erp/cashbook'; $h=['Idempotency-Key'=>'11111111-1111-4111-8111-111111111111'];
+        $this->postJson($url,$this->cashPayload(),$h)->assertSuccessful();
+        $this->postJson($url,$this->cashPayload(),$h)->assertSuccessful();
+        $this->assertDatabaseCount('erp_cashbook_entries',1);
+    }
+    public function test_concurrency_cash_key_conflict(): void
+    {
+        $url='/api/v1/admin/erp/cashbook'; $h=['Idempotency-Key'=>'11111111-1111-4111-8111-111111111111'];
+        $this->postJson($url,$this->cashPayload(),$h)->assertSuccessful();
+        $this->postJson($url,$this->cashPayload(['amount'=>200]),$h)->assertStatus(409);
+        $this->assertDatabaseCount('erp_cashbook_entries',1);
+    }
+    public function test_concurrency_cash_distinct_keys_same_amount(): void
+    {
+        foreach (['11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-222222222222'] as $key)
+            $this->postJson('/api/v1/admin/erp/cashbook',$this->cashPayload(),['Idempotency-Key'=>$key])->assertSuccessful();
+        $this->assertDatabaseCount('erp_cashbook_entries',2);
+    }
+    public function test_concurrency_import_accepts_per_order_commission(): void
+    {
+        $this->postJson('/api/v1/admin/erp/customers/import',['customers'=>[['name'=>'Fixture','phone'=>'0900000000','commission_type'=>'per_order']]])->assertOk();
+        $this->assertDatabaseHas('erp_customers',['phone'=>'0900000000','commission_type'=>'per_order']);
+    }
 }
