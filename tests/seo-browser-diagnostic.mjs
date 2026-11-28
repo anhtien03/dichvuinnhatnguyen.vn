@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 import { writeFile } from 'node:fs/promises';
 const base='http://127.0.0.1:4173', origin='https://dichvuinnhatnguyen.vn';
 const browser=await chromium.launch(), results=[];
-const check=(id,name,ok,detail='')=>{results.push({id,name,ok:!!ok,detail});console.log(ok?'PASS':'FAIL',id,name,detail)};
+const check=(id,name,ok,detail='')=>{results.push({id,name,ok:!!ok,detail});console.log(ok?'PASS':'FAIL',id,name,typeof detail==='object'?JSON.stringify(detail):detail)};
 const category={id:1,slug:'fixture-category',name:'Danh mục kiểm thử',is_active:true};
 const product={id:1,slug:'fixture-product',name:'Ấn phẩm kiểm thử',category_id:1,category,is_active:true,base_price:1000,min_quantity:100,unit:'cái',image:'/logo.png',description:'Mô tả kiểm thử',specs:{quantities:[{count:100,label:'100',pricePerUnit:1000},{count:200,label:'200',pricePerUnit:900}],sizes:[{value:'a',label:'Khổ A',extra:0},{value:'b',label:'Khổ B',extra:200}],materials:[],finishings:[]}};
 const post={id:1,slug:'fixture-post',title:'Bài viết kiểm thử',excerpt:'Mô tả bài viết',content:'<p>Nội dung kiểm thử</p>',is_published:true};
