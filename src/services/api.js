@@ -278,6 +278,7 @@ const SESSION_PREFIX = 'inn_pub_v2:'
       deleteAdminProduct: (id) => apiRequest(`/admin/products/${id}`, { method: 'DELETE' }),
 
       // Admin Categories
+      getAdminCategories: () => apiRequest('/admin/categories', { cache: 'no-store' }),
       createAdminCategory: (data) => apiRequest('/admin/categories', { method: 'POST', body: data }),
       updateAdminCategory: (id, data) => apiRequest(`/admin/categories/${id}`, { method: 'PUT', body: data }),
       deleteAdminCategory: (id) => apiRequest(`/admin/categories/${id}`, { method: 'DELETE' }),
