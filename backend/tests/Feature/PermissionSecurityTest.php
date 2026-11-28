@@ -59,17 +59,28 @@ class PermissionSecurityTest extends TestCase
         $this->assertFalse($user->hasPermission('users.manage'));
     }
 
-    // Target security contract: expected to expose current gaps until SEC 1.7.
+    // Dedicated pricing route and type-specific SEO authorization.
     public function test_pricing_only_manager_must_not_be_blocked_by_product_permission(): void
     {
         $this->staff(['pricing.manage' => true]);
-        $route = app('router')->getRoutes()->match(\Illuminate\Http\Request::create('/api/v1/admin/products/1', 'PUT'));
-        $this->assertContains('permission:pricing.manage', $route->gatherMiddleware(), 'Current shared product endpoint does not enforce pricing.manage; replace this test with dedicated pricing endpoint tests in SEC 1.7.');
+        $route = app('router')->getRoutes()->match(\Illuminate\Http\Request::create('/api/v1/admin/products/1/pricing', 'PUT'));
+        $this->assertContains('permission:pricing.manage', $route->gatherMiddleware(), 'Dedicated pricing endpoint must enforce pricing.manage.');
     }
 
     public function test_seo_endpoint_has_business_permission(): void
     {
-        $route = app('router')->getRoutes()->match(\Illuminate\Http\Request::create('/api/v1/admin/seo/optimize', 'POST'));
-        $this->assertNotEmpty(array_filter($route->gatherMiddleware(), fn ($m) => str_starts_with($m, 'permission:')), 'SEO endpoint lacks a business permission middleware.');
+        config(['services.gemini.api_key' => '']);
+        \Illuminate\Support\Facades\Http::fake();
+        $url = '/api/v1/admin/seo/optimize';
+        $this->staff();
+        $this->postJson($url, ['title'=>'Fixture'])->assertForbidden();
+        foreach (['product'=>'products.manage','post'=>'posts.manage','category'=>'categories.manage'] as $type=>$permission) {
+            $this->staff([$permission=>true]);
+            $this->postJson($url, ['title'=>'Fixture','type'=>$type])->assertStatus(503);
+            foreach (['product','post','category'] as $other) {
+                if ($other !== $type) $this->postJson($url, ['title'=>'Fixture','type'=>$other])->assertForbidden();
+            }
+        }
+        \Illuminate\Support\Facades\Http::assertNothingSent();
     }
 }
