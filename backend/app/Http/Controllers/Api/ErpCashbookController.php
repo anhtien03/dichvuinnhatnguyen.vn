@@ -14,6 +14,7 @@ class ErpCashbookController extends Controller
 {
     public function index(Request $request)
     {
+        $request->validate(['per_page'=>'sometimes|integer|min:1|max:100']);
         $query = ErpCashbookEntry::with('order');
 
         if ($request->filled('type')) {
