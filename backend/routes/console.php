@@ -20,6 +20,7 @@ Artisan::command('seo:render {--origin=http://127.0.0.1:4173}', function () {
         foreach ($xml->url as $url) {
             $route = parse_url((string) $url->loc, PHP_URL_PATH);
             try {
+                if (\App\Services\PublicSeoSnapshot::read($route)) continue;
                 $process = new \Symfony\Component\Process\Process(
                     ['node', 'scripts/render-public-page.mjs', $route],
                     base_path('..'), ['RENDER_ORIGIN' => $this->option('origin')]
@@ -41,3 +42,7 @@ Artisan::command('seo:render {--origin=http://127.0.0.1:4173}', function () {
         fclose($lock);
     }
 })->purpose('Generate versioned public HTML snapshots outside request handling');
+
+\Illuminate\Support\Facades\Schedule::command('seo:render')
+    ->everyMinute()->withoutOverlapping(60)
+    ->when(fn () => config('seo.snapshots') && config('seo.auto_refresh'));
