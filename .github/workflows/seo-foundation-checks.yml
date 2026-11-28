@@ -56,8 +56,7 @@ jobs:
       - name: RBAC regression checks
         run: |
           php artisan test --filter='PermissionSecurityTest::test_(guest|staff|inactive|explicit)'
-      - name: RBAC target contract (known gaps, diagnostic only)
-        continue-on-error: true
+      - name: Pricing route and SEO authorization (required)
         run: |
           php artisan test --filter='PermissionSecurityTest::test_(pricing|seo)'
       - name: Privilege escalation regression (required)
