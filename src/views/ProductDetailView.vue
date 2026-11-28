@@ -879,11 +879,17 @@ function applyProductSEO(prod) {
   })
 }
 
+let requestVersion = 0
 async function loadProduct() {
+  const version = ++requestVersion
+  const currentPath = route.path
+  const isCurrent = () => version === requestVersion && route.path === currentPath
+  product.value = null
   const slug = route.params.slug
   isLoading.value = true
   try {
     const res = await api.getProductBySlug(slug)
+    if (!isCurrent()) return
     if (res?.data) {
       const p = res.data
       let pSpecs = p.specs
@@ -914,9 +920,11 @@ async function loadProduct() {
       return
     }
   } catch (err) {
+    if (!isCurrent()) return
+    if (err.status === 404) document.querySelector('meta[name="robots"]')?.setAttribute('content', 'noindex, follow')
     console.warn('Product data request failed')
   } finally {
-    isLoading.value = false
+    if (isCurrent()) isLoading.value = false
   }
   product.value = null
 }
@@ -932,6 +940,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  requestVersion++
   window.removeEventListener('scroll', handleScroll)
 })
 
