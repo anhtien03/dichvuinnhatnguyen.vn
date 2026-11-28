@@ -155,7 +155,7 @@
               <td class="py-4 px-5">
                 <div v-if="quote.file_path">
                   <a
-                    :href="quote.file_path"
+                    href="#" @click.prevent="downloadQuoteFile(quote)"
                     target="_blank"
                     download
                     class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 text-[11px] font-bold border border-blue-500/20 transition-colors"
@@ -258,7 +258,7 @@
           </div>
           <div v-if="editingQuote.file_path" class="pt-2 border-t flex items-center justify-between" :class="isDarkMode ? 'border-[#2E3A47]' : 'border-slate-200'">
             <span class="text-slate-400">File thiết kế:</span>
-            <a :href="editingQuote.file_path" target="_blank" download class="text-blue-500 hover:underline flex items-center gap-1 font-bold">
+            <a href="#" @click.prevent="downloadQuoteFile(editingQuote)" target="_blank" download class="text-blue-500 hover:underline flex items-center gap-1 font-bold">
               <Download class="w-3.5 h-3.5" />
               <span>{{ editingQuote.file_name || 'Tải file in' }}</span>
             </a>
@@ -344,6 +344,27 @@ import {
 import { api } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
 import { swalToast, swalError, swalDelete } from '../../utils/swal'
+ 
+async function downloadQuoteFile(quote) {
+  try {
+    const response = await fetch('/api/v1/admin/quotes/' + encodeURIComponent(quote.id) + '/file', {
+      headers: { Authorization: 'Bearer ' + (localStorage.getItem('admin_token') || ''), Accept: 'application/octet-stream' },
+      cache: 'no-store',
+    })
+    if (!response.ok) throw new Error('Không thể tải file')
+    const url = URL.createObjectURL(await response.blob())
+    const link = document.createElement('a')
+    link.href = url
+    link.download = quote.file_name || 'design'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  } catch (error) {
+    swalError('Không thể tải file. Vui lòng kiểm tra quyền truy cập.')
+  }
+}
+
 
 const router = useRouter()
 const { isDarkMode } = useAdminTheme()
