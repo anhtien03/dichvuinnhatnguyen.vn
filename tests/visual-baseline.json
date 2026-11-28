@@ -1,0 +1,6 @@
+{
+  "revision": "92dac39eab26a4177ef6d2c27f504c4d58dd6a97",
+  "playwright": "1.51.1",
+  "runner": "ubuntu-24.04",
+  "expectedScreenshots": 50
+}
