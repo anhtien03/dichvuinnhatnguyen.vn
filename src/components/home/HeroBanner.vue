@@ -110,9 +110,9 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <h2 class="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight uppercase">
+              <h1 class="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight uppercase">
                 BẠN CẦN IN ?
-              </h2>
+              </h1>
               <div class="inline-flex items-center min-h-[40px]">
                 <span class="text-xl sm:text-2xl lg:text-3xl font-black text-brand-blue tracking-tight">
                   {{ displayText }}&#8203;
