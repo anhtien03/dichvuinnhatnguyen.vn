@@ -10,10 +10,25 @@ http=$!
 SEO_RENDER_PROXY=1 npm run preview -- --host 127.0.0.1 --port 4173 --strictPort >/tmp/seo-render.log 2>&1 &
 render=$!
 trap 'kill "$http" "$render" 2>/dev/null || true; rm -f "$DB_DATABASE"; cat /tmp/seo-http.log /tmp/seo-render.log' EXIT
-for url in http://127.0.0.1:8000/sitemap.xml http://127.0.0.1:4173/; do
-  for i in $(seq 1 30); do curl -fs "$url" >/dev/null && break; sleep 1; done
-  curl -fs "$url" >/dev/null
-done
+probe() {
+  local url="$1" code body
+  body=$(mktemp)
+  for i in $(seq 1 30); do
+    code=$(curl -sS --connect-timeout 2 --max-time 5 -o "$body" -w '%{http_code}' "$url") || code=000
+    echo "Readiness $url attempt=$i HTTP=$code"
+    if [ "$code" = 200 ]; then rm -f "$body"; return 0; fi
+    sleep 1
+  done
+  echo "Readiness failed: $url HTTP=$code"
+  head -c 2000 "$body"; echo
+  rm -f "$body"
+  tail -n 60 backend/storage/logs/laravel.log 2>/dev/null || true
+  return 1
+}
+probe http://127.0.0.1:8000/sitemap.xml
+probe http://127.0.0.1:8000/api/v1/products/fixture-product
+probe http://127.0.0.1:4173/
+probe http://127.0.0.1:4173/api/v1/products/fixture-product
 (cd backend && php artisan seo:render)
 python3 - <<'PY'
 from html.parser import HTMLParser
