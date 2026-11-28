@@ -106,7 +106,7 @@ class ErpCustomerController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:50',
+            'phone' => 'required|string|max:50|unique:erp_customers,phone',
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
             'company_name' => 'nullable|string|max:255',
@@ -144,7 +144,7 @@ class ErpCustomerController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'phone' => 'sometimes|required|string|max:50',
+            'phone' => ['sometimes','required','string','max:50', \Illuminate\Validation\Rule::unique('erp_customers','phone')->ignore($customer->id)],
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
             'company_name' => 'nullable|string|max:255',
@@ -187,7 +187,7 @@ class ErpCustomerController extends Controller
             'customers.*.tax_code' => 'nullable|string',
             'customers.*.tag' => 'nullable|string',
             'customers.*.commission_rate' => 'sometimes|required|numeric|min:0|max:100',
-            'customers.*.commission_type' => 'nullable|string|in:monthly,direct',
+            'customers.*.commission_type' => 'nullable|string|in:monthly,per_order,direct',
             'customers.*.notes' => 'nullable|string',
         ]);
         $imported = \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
