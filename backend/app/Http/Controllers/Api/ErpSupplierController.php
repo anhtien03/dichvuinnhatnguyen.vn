@@ -199,8 +199,6 @@ class ErpSupplierController extends Controller
 
     public function recordPayment(Request $request, $id)
     {
-        $supplier = ErpSupplier::findOrFail($id);
-
         $validated = $request->validate([
             'order_item_id' => 'nullable|integer|exists:erp_order_items,id',
             'amount' => 'required|numeric|min:1',
@@ -210,6 +208,8 @@ class ErpSupplierController extends Controller
             'paid_at' => 'nullable|date',
         ]);
 
+        return \App\Services\ErpIdempotency::run($request, 'supplier-payment:'.$id, $validated, function () use ($id, $validated) {
+        $supplier = ErpSupplier::whereKey($id)->lockForUpdate()->firstOrFail();
         if (!empty($validated['order_item_id'])) {
             ErpOrderItem::where('id', $validated['order_item_id'])
                 ->where('supplier_id', $supplier->id)
@@ -232,6 +232,7 @@ class ErpSupplierController extends Controller
             'message' => 'Đã ghi nhận thanh toán công nợ xưởng',
             'data' => $payment
         ]);
+        });
     }
 }
 
