@@ -54,6 +54,29 @@ class PublicPageController extends Controller
         $html = preg_replace_callback('~<meta\\s+name="description"[^>]*>~i', fn () => '<meta name="description" content="'.e($description).'">', $html, 1);
         $head = '<link rel="canonical" href="'.e($canonical).'"><meta name="robots" content="'.e($robots).'">';
         $html = str_replace('</head>', $head.'</head>', $html);
+        if ($exists && !$admin && !$request->has('product') && config('seo.snapshots')) {
+            $snapshot = \App\Services\PublicSeoSnapshot::read('/'.implode('/', array_map('rawurlencode', explode('/', $path))));
+            if (!$snapshot) {
+                return response('Trang đang được cập nhật. Vui lòng thử lại sau.', 503)
+                    ->header('Retry-After', '60')->header('Cache-Control', 'no-store');
+            }
+            $html = preg_replace_callback('~<div id="app"></div>~', fn () => '<div id="app">'.$snapshot['html'].'</div>', $html, 1, $count);
+            abort_unless($count === 1, 503, 'Frontend shell mismatch');
+            $html = preg_replace_callback('~<title>.*?</title>~is', fn () => '<title>'.e($snapshot['title']).'</title>', $html, 1);
+            $html = preg_replace_callback('~<meta\\s+name="description"[^>]*>~i', fn () => '<meta name="description" content="'.e($snapshot['description']).'">', $html, 1);
+            $html = preg_replace_callback('~<link rel="canonical"[^>]*>~i', fn () => '<link rel="canonical" href="'.e($snapshot['canonical']).'">', $html, 1);
+            $extra = '';
+            foreach ($snapshot['metadata'] ?? [] as $meta) {
+                $key = $meta['property'] ?? $meta['name'] ?? '';
+                if (!preg_match('~^(og:|twitter:)[a-z0-9_:]+$~i', $key)) continue;
+                $attribute = $meta['property'] ? 'property' : 'name';
+                $extra .= '<meta '.$attribute.'="'.e($key).'" content="'.e($meta['content']).'">';
+            }
+            foreach ($snapshot['schemas'] ?? [] as $schema) {
+                $extra .= '<script type="application/ld+json">'.json_encode($schema, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR).'</script>';
+            }
+            $html = str_replace('</head>', $extra.'</head>', $html);
+        }
         $response = response($html, ($exists || $admin) ? 200 : 404)
             ->header('Content-Type', 'text/html; charset=UTF-8')
             ->header('Cache-Control', 'no-store');
