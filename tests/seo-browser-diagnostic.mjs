@@ -19,6 +19,16 @@ const inspect=page=>page.evaluate(()=>({title:document.title,desc:document.query
 try{
  const raw=await browser.newPage({javaScriptEnabled:false});
  const page=await browser.newPage();await fixture(page);
+ await page.addInitScript(()=>{
+ window.__seoPerf={lcp:0,cls:0,eventMax:0};
+ for(const type of ['largest-contentful-paint','layout-shift','event']){
+  try{new PerformanceObserver(list=>{for(const e of list.getEntries()){
+   if(type==='largest-contentful-paint')window.__seoPerf.lcp=e.startTime;
+   if(type==='layout-shift'&&!e.hadRecentInput)window.__seoPerf.cls+=e.value;
+   if(type==='event'&&e.interactionId)window.__seoPerf.eventMax=Math.max(window.__seoPerf.eventMax,e.duration);
+  }}).observe({type,buffered:true,...(type==='event'?{durationThreshold:16}:{})})}catch{}
+ }
+ });
  const titles=new Set();
  for(const path of paths){
   try{
@@ -26,6 +36,8 @@ try{
    check('T01',path,response.status()===200&&a.h1.length===1&&a.body.trim().length>40,a.h1);
    check('T02','raw '+path,!!a.title&&!!a.desc&&a.canonical===origin+path);
    await page.goto(base+path);await page.waitForTimeout(900);const b=await inspect(page);
+   const perf=await page.evaluate(()=>({...window.__seoPerf,load:performance.getEntriesByType('navigation')[0]?.loadEventEnd}));
+   check('T10','lab '+path,perf.lcp>0&&perf.lcp<=2500&&perf.cls<=0.1,perf);
    check('T02','client '+path,!!b.title&&!!b.desc&&b.canonical===origin+path&&!titles.has(b.title));titles.add(b.title);
    check('T12',path,a.h1.length===1&&JSON.stringify(a.h1)===JSON.stringify(b.h1)&&a.title===b.title&&a.canonical===b.canonical);
    if(path.includes('fixture-product')||path.includes('fixture-post')){
