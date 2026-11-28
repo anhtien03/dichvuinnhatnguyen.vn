@@ -171,9 +171,10 @@ async function renderSingleRoute(browserRef, routePath) {
                 JSON.parse(s.textContent)
               ),
             }));
+            const flattenedSchemas = rendered.schemas.flatMap((s) => (Array.isArray(s?.['@graph']) ? s['@graph'] : [s]));
             if (
               rendered.h1 !== category.name ||
-              !rendered.schemas.some(
+              !flattenedSchemas.some(
                 (s) => s['@type'] === 'CollectionPage' && s.url === 'https://dichvuinnhatnguyen.vn/danh-muc/' + slug
               )
             ) {
