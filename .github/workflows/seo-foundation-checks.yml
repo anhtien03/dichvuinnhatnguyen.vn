@@ -53,3 +53,8 @@ jobs:
       - run: composer install --no-interaction --prefer-dist
       - run: php -r 'file_put_contents(".env", "APP_ENV=testing\nAPP_KEY=base64:".base64_encode(random_bytes(32))."\n");'
       - run: php artisan test --filter=CatalogSecurityTest
+      - name: RBAC regression checks
+        run: php artisan test --filter='PermissionSecurityTest::test_(guest|staff|inactive|explicit)'
+      - name: RBAC target contract (known gaps, diagnostic only)
+        continue-on-error: true
+        run: php artisan test --filter='PermissionSecurityTest::test_(pricing|seo)'
