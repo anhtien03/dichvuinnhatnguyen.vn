@@ -49,7 +49,7 @@ class QuoteRequestController extends Controller
             $file = $request->file('file');
             $ext = strtolower($file->getClientOriginalExtension());
             $banned = ['php', 'phtml', 'php3', 'php4', 'php5', 'php7', 'phps', 'cgi', 'pl', 'exe', 'sh', 'bat', 'com', 'jar', 'py', 'vbs', 'scr', 'js', 'html', 'htm'];
-            if (in_array($ext, $banned)) {
+            if (in_array($ext, $banned) || !in_array($ext, ['pdf','ai','psd','cdr','zip','rar','7z','jpg','jpeg','png','tiff'], true)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Tệp tin bị từ chối vì lý do bảo mật máy chủ.'
@@ -81,10 +81,12 @@ class QuoteRequestController extends Controller
             $fileName = $file->getClientOriginalName();
             $fileSize = $file->getSize();
             $fileType = $file->getClientOriginalExtension();
-            $storedPath = $file->store('quotes', 'public');
-            $filePath = '/storage/' . $storedPath;
+            $storedPath = $file->store('quotes', 'local');
+            abort_unless($storedPath, 500, 'File storage failed.');
+            $filePath = $storedPath;
         }
 
+        try {
         $quote = QuoteRequest::create([
             'code' => $code,
             'customer_name' => $validated['customer_name'],
@@ -101,6 +103,11 @@ class QuoteRequestController extends Controller
             'file_type' => $fileType,
             'status' => 'pending',
         ]);
+
+        } catch (\Throwable $e) {
+            if ($filePath) Storage::disk('local')->delete($filePath);
+            throw $e;
+        }
 
         // Send email notifications safely (Admin alert + Customer confirmation)
         try {
@@ -203,13 +210,35 @@ class QuoteRequestController extends Controller
     /**
      * Delete quote
      */
+    private function fileLocation(QuoteRequest $quote): array
+    {
+        $path = (string) $quote->file_path;
+        $legacy = str_starts_with($path, '/storage/');
+        $relative = $legacy ? substr($path, 9) : $path;
+        abort_unless(preg_match('~\Aquotes/[A-Za-z0-9_-]+\.[A-Za-z0-9]+\z~D', $relative), 404);
+        return [$legacy ? 'public' : 'local', $relative];
+    }
+
+    public function download($id)
+    {
+        $quote = QuoteRequest::findOrFail($id);
+        [$disk, $path] = $this->fileLocation($quote);
+        abort_unless(Storage::disk($disk)->exists($path), 404);
+        $name = preg_replace('/[\x00-\x1f\x7f\/\\\\]/', '_', $quote->file_name ?: basename($path));
+        return Storage::disk($disk)->download($path, $name, [
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Type' => 'application/octet-stream',
+        ]);
+    }
+
     public function destroy($id)
     {
         $quote = QuoteRequest::findOrFail($id);
 
         if ($quote->file_path) {
-            $relative = str_replace('/storage/', '', $quote->file_path);
-            Storage::disk('public')->delete($relative);
+            [$disk, $relative] = $this->fileLocation($quote);
+            abort_unless(Storage::disk($disk)->delete($relative), 500, 'File deletion failed.');
         }
 
         $quote->delete();
