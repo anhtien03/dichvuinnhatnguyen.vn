@@ -1,0 +1,59 @@
+name: Public UI regression
+on:
+  push:
+    branches: [feature/seo-foundation-v1]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  layout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm install --no-save --package-lock=false playwright@1.51.1
+      - run: npx playwright install --with-deps chromium
+      - name: Capture layout baseline
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/ui-preview.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
+          mkdir -p ui-baseline
+          node --input-type=module <<'JS'
+          import { chromium } from 'playwright';
+          import { writeFile } from 'node:fs/promises';
+          const browser = await chromium.launch();
+          const results = [];
+          try {
+            for (const [width,height] of [[1920,1080],[1366,768],[768,1024],[390,844],[360,800]]) {
+              const page = await browser.newPage({viewport:{width,height}, reducedMotion:'reduce'});
+              await page.route('**/api/**', route => route.fulfill({json:{data:[]}}));
+              for (const [name,path] of [['home','/'],['catalog','/san-pham'],['news','/tin-tuc'],['quote','/yeu-cau-bao-gia'],['about','/gioi-thieu'],['contact','/lien-he'],['login','/he-thong-admin/login']]) {
+                const errors=[];
+                const handler=e=>errors.push(e.message);
+                page.on('pageerror',handler);
+                await page.goto('http://127.0.0.1:4173'+path);
+                await page.waitForTimeout(800);
+                await page.screenshot({path:'ui-baseline/'+name+'-'+width+'.png',fullPage:true,animations:'disabled'});
+                const metrics=await page.evaluate(()=>({width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,app:!!document.querySelector('#app')?.children.length}));
+                results.push({name,width,height,...metrics,errors});
+                page.off('pageerror',handler);
+              }
+              await page.close();
+            }
+          } finally {
+            await browser.close();
+            await writeFile('ui-baseline/results.json',JSON.stringify(results,null,2));
+          }
+          if(results.some(r=>!r.app||r.scrollWidth>r.width+1||r.errors.length)) process.exitCode=1;
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-baseline
+          path: ui-baseline/
