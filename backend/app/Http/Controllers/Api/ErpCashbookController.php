@@ -73,6 +73,7 @@ class ErpCashbookController extends Controller
             'entry_date' => 'required|date',
         ]);
 
+        return \App\Services\ErpIdempotency::run($request, 'cashbook-create', $validated, function () use ($validated) {
         // Auto generate code PT-YYMM-XXX or PC-YYMM-XXX
         $prefix = ($validated['type'] === 'receipt') ? 'PT' : 'PC';
         $period = date('ym');
@@ -102,6 +103,7 @@ class ErpCashbookController extends Controller
             'message' => 'Đã tạo phiếu sổ quỹ',
             'data' => $entry->load('order')
         ], 201);
+        });
     }
 
     public function show($id)
