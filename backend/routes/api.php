@@ -64,6 +64,7 @@ Route::prefix('v1')->group(function () {
 
         // Products Management
         Route::post('/admin/products', [ProductController::class, 'store'])->middleware('permission:products.manage');
+        Route::put('/admin/products/{id}/pricing', [ProductController::class, 'updatePricing'])->middleware('permission:pricing.manage');
         Route::put('/admin/products/{id}', [ProductController::class, 'update'])->middleware('permission:products.manage');
         Route::delete('/admin/products/{id}', [ProductController::class, 'destroy'])->middleware('permission:products.manage');
 
