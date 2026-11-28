@@ -89,17 +89,24 @@ export function setMetaTags({
   // 5. Canonical Link (đã chuẩn hóa ở trên via setCanonicalLink)
 
   // 6. Schema.org JSON-LD Structured Data
+  document.querySelectorAll('script[data-schema="dynamic"]').forEach((el) => el.remove())
   if (schema) {
-    let script = document.querySelector('script[data-schema="dynamic"]')
-    if (!script) {
-      script = document.createElement('script')
+    const defaultContext = (!Array.isArray(schema) && schema['@context']) || 'https://schema.org'
+    const items = Array.isArray(schema)
+      ? schema
+      : Array.isArray(schema['@graph'])
+        ? schema['@graph']
+        : [schema]
+
+    for (const item of items) {
+      if (!item || typeof item !== 'object') continue
+      const payload = item['@context'] ? item : { '@context': defaultContext, ...item }
+      const script = document.createElement('script')
       script.setAttribute('type', 'application/ld+json')
       script.setAttribute('data-schema', 'dynamic')
+      script.textContent = JSON.stringify(payload)
       document.head.appendChild(script)
     }
-    script.textContent = JSON.stringify(schema)
-  } else {
-    document.querySelector('script[data-schema="dynamic"]')?.remove()
   }
 }
 
