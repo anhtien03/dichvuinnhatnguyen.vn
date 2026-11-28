@@ -66,27 +66,9 @@ class ErpOrderController extends Controller
         ]);
     }
 
-    private function buildNextOrderCode(string $dateStr, ?int $excludeId = null): string
+    private function buildNextOrderCode(string $dateStr, bool $reserve = true): string
     {
-        $prefix = "NN-{$dateStr}-";
-
-        $codes = ErpOrder::where('code', 'like', "{$prefix}%")
-            ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
-            ->lockForUpdate()
-            ->pluck('code');
-
-        $maxNum = 0;
-        foreach ($codes as $code) {
-            if (preg_match('/-(\d+)$/', $code, $matches)) {
-                $num = (int) $matches[1];
-                if ($num > $maxNum) {
-                    $maxNum = $num;
-                }
-            }
-        }
-
-        $nextNum = str_pad($maxNum + 1, 3, '0', STR_PAD_LEFT);
-        return $prefix . $nextNum;
+        return \App\Services\ErpCodeSequence::next('erp_orders', "NN-{$dateStr}-", $reserve);
     }
 
     public function generateNextCode(Request $request)
@@ -111,7 +93,7 @@ class ErpOrderController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'code' => $this->buildNextOrderCode($dateStr, $excludeId)
+            'code' => $this->buildNextOrderCode($dateStr, false)
         ]);
     }
 
@@ -502,7 +484,7 @@ class ErpOrderController extends Controller
                 $expectedPrefix = "NN-{$newDateStr}-";
 
                 if (!str_starts_with($order->code, $expectedPrefix)) {
-                    $order->code = $this->buildNextOrderCode($newDateStr, $order->id);
+                    $order->code = $this->buildNextOrderCode($newDateStr);
                 }
 
                 $order->created_at = $parsedDate->setTimeFrom($order->created_at ?? now());
