@@ -21,7 +21,7 @@ class BannerController extends Controller
         }
 
         // For public endpoints, only show active banners
-        if (!$request->user() && !$request->boolean('all')) {
+        if (!$request->is('api/v1/admin/banners') || !$request->user()?->hasPermission('banners.manage')) {
             $query->where('is_active', true);
         }
 
