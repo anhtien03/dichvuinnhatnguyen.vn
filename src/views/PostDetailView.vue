@@ -903,11 +903,17 @@ async function loadSidebarData() {
   }
 }
 
+let requestVersion = 0
 async function fetchPost() {
+  const version = ++requestVersion
+  const currentPath = route.path
+  const isCurrent = () => version === requestVersion && route.path === currentPath
+  post.value = null
   try {
     isLoading.value = true
     const slug = route.params.slug
     const res = await api.getPostBySlug(slug)
+    if (!isCurrent()) return
     if (res.data) {
       post.value = res.data
 
@@ -933,10 +939,12 @@ async function fetchPost() {
       })
     }
   } catch (err) {
+    if (!isCurrent()) return
+    if (err.status === 404) document.querySelector('meta[name="robots"]')?.setAttribute('content', 'noindex, follow')
     console.error('Failed to load post', err)
     post.value = null
   } finally {
-    isLoading.value = false
+    if (isCurrent()) isLoading.value = false
   }
 }
 
@@ -952,6 +960,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  requestVersion++
   window.removeEventListener('scroll', handleScroll)
 })
 </script>
