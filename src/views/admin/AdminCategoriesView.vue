@@ -192,7 +192,7 @@ const alertMessage = ref('')
 async function loadCategories() {
   isLoading.value = true
   try {
-    const res = await api.getCategories()
+    const res = await api.getAdminCategories()
     categories.value = res.data || []
   } catch (err) {
     console.error('Lỗi tải danh mục', err)
