@@ -490,7 +490,12 @@ function applyPeriodFilter() {
   fetchEntries()
 }
 
+let entryRequestKey = null
+let entrySubmitting = false
+
 function openCreateModal(t) {
+  if (entrySubmitting) return
+  entryRequestKey = crypto.randomUUID()
   entryForm.type = t
   entryForm.amount = 0
   entryForm.category = t === 'receipt' ? 'other' : 'shipping'
@@ -503,8 +508,10 @@ function openCreateModal(t) {
 }
 
 async function submitEntry() {
+  if (entrySubmitting) return
+  entrySubmitting = true
   try {
-    await api.createErpCashbook(entryForm)
+    await api.createErpCashbook(entryForm, entryRequestKey)
     isModalOpen.value = false
     swalToast('Đã lưu phiếu thu/chi thành công')
     fetchEntries()
