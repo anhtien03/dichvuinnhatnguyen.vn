@@ -27,6 +27,13 @@ class SeoAiController extends Controller
             'content' => ['nullable', 'string', 'max:100000'],
         ]);
 
+        $permission = match ($validated['type'] ?? 'product') {
+            'post' => 'posts.manage',
+            'category' => 'categories.manage',
+            default => 'products.manage',
+        };
+        abort_unless($request->user()?->hasPermission($permission), 403);
+
         $apiKey = (string) config('services.gemini.api_key', '');
         if (trim($apiKey) === '') {
             return response()->json([
