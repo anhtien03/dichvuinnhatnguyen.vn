@@ -35,7 +35,7 @@ class PostController extends Controller
         }
 
         // For public requests (unauthenticated or all=false), only show published
-        if (!$request->user() && !$request->boolean('all')) {
+        if (!$request->is('api/v1/admin/posts') || !$request->user()?->hasPermission('posts.manage')) {
             $query->where('is_published', true);
         }
 
@@ -52,11 +52,15 @@ class PostController extends Controller
     /**
      * Display the specified post by slug or ID.
      */
-    public function show($slugOrId)
+    public function show(Request $request, $slugOrId)
     {
+        $query = Post::query();
+        if (!$request->is('api/v1/admin/posts/*') || !$request->user()?->hasPermission('posts.manage')) {
+            $query->where('is_published', true);
+        }
         $post = is_numeric($slugOrId)
-            ? Post::findOrFail($slugOrId)
-            : Post::where('slug', $slugOrId)->firstOrFail();
+            ? $query->findOrFail($slugOrId)
+            : $query->where('slug', $slugOrId)->firstOrFail();
 
         return response()->json([
             'success' => true,
