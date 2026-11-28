@@ -356,7 +356,7 @@ class ErpOrderController extends Controller
             'followers' => 'nullable|string',
             'order_date' => 'nullable|date',
             'notes' => 'nullable|string',
-            'production_stage' => 'nullable|string',
+            'production_stage' => 'nullable|string|in:cho_duyet_file,thiet_ke,gui_file_in,dang_in,gia_cong,da_in_xong,dang_giao,hoan_thanh',
             'is_vat_required' => 'nullable|boolean',
             'invoice_number' => 'nullable|string',
             'invoice_date' => 'nullable|date',
@@ -384,9 +384,13 @@ class ErpOrderController extends Controller
             'items.*.specifications' => 'nullable|string',
         ]);
 
-        return DB::transaction(function () use ($order, $validated) {
+        return DB::transaction(function () use ($order, $validated, $request) {
             $order = ErpOrder::whereKey($order->id)->lockForUpdate()->firstOrFail();
+            if (isset($validated['production_stage']) && $validated['production_stage'] !== $order->production_stage) {
+                abort_unless($request->user()->hasPermission('orders.stage'), 403);
+            }
             if (isset($validated['items'])) {
+                abort_if(DB::table('erp_supplier_payments')->whereIn('order_item_id', $order->items()->select('id'))->exists(), 409, 'Đơn đã phát sinh thanh toán nhà cung cấp; không thể thay thế dòng sản phẩm.');
                 // Remove existing items and recreate
                 $order->items()->delete();
                 $subtotal = 0;
@@ -483,7 +487,11 @@ class ErpOrderController extends Controller
             if (isset($validated['printer_name'])) $order->printer_name = $validated['printer_name'];
             if (isset($validated['followers'])) $order->followers = $validated['followers'];
             if (isset($validated['notes'])) $order->notes = $validated['notes'];
-            if (isset($validated['production_stage'])) $order->production_stage = $validated['production_stage'];
+            if (isset($validated['production_stage'])) {
+                $order->production_stage = $validated['production_stage'];
+                if ($order->production_stage === 'hoan_thanh') $order->status = 'completed';
+                elseif ($order->status === 'completed') $order->status = 'in_progress';
+            }
             if (isset($validated['is_vat_required'])) $order->is_vat_required = $validated['is_vat_required'];
             if (isset($validated['invoice_number'])) $order->invoice_number = $validated['invoice_number'];
             if (isset($validated['invoice_date'])) $order->invoice_date = $validated['invoice_date'];
@@ -521,6 +529,8 @@ class ErpOrderController extends Controller
         $order->production_stage = $validated['stage'];
         if ($validated['stage'] === 'hoan_thanh') {
             $order->status = 'completed';
+        } elseif ($order->status === 'completed') {
+            $order->status = 'in_progress';
         }
         $order->save();
 
@@ -588,8 +598,11 @@ class ErpOrderController extends Controller
 
     public function destroy($id)
     {
-        $order = ErpOrder::findOrFail($id);
-        $order->delete();
+        DB::transaction(function () use ($id) {
+            $order = ErpOrder::whereKey($id)->lockForUpdate()->firstOrFail();
+            abort_if($order->paid_amount > 0 || $order->payments()->exists() || DB::table('erp_supplier_payments')->whereIn('order_item_id', $order->items()->select('id'))->exists() || DB::table('erp_cashbook_entries')->where('order_id', $id)->exists(), 409, 'Không thể xóa đơn đã phát sinh giao dịch.');
+            $order->delete();
+        });
 
         return response()->json([
             'status' => 'success',
