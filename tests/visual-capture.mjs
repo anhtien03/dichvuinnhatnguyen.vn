@@ -7,6 +7,7 @@ const output=process.env.UI_OUTPUT||'ui-baseline';
 await import('node:fs/promises').then(fs=>fs.mkdir(output,{recursive:true}));
 try {
   for (const [width,height] of [[1920,1080],[1366,768],[768,1024],[390,844],[360,800]]) {
+    if(process.env.UI_WIDTH && Number(process.env.UI_WIDTH)!==width) continue;
     const page = await browser.newPage({viewport:{width,height}, reducedMotion:'reduce',locale:'vi-VN',timezoneId:'Asia/Ho_Chi_Minh'});
     page.setDefaultTimeout(10000);
     const category={id:1,slug:'fixture-category',name:'Danh mục kiểm thử',is_active:true};
