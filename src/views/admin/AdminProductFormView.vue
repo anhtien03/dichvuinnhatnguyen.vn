@@ -151,7 +151,7 @@
                   </label>
                   <div class="relative">
                     <input
-                      v-model.number="form.base_price"
+                      v-model.number="form.base_price" :disabled="!can('pricing.manage')"
                       type="number"
                       min="0"
                       step="any"
@@ -961,7 +961,7 @@
                 <label class="relative inline-flex items-center cursor-pointer shrink-0">
                   <input
                     type="checkbox"
-                    v-model="form.specs.hide_pricing"
+                    v-model="form.specs.hide_pricing" :disabled="!can('pricing.manage')"
                     class="sr-only peer"
                   />
                   <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
@@ -1963,7 +1963,7 @@ async function handleSubmit() {
     if (isEditMode.value) {
       if (!can('pricing.manage')) {
         delete payload.base_price
-        delete payload.specs
+        payload.specs = { custom_specs: form.value.specs?.custom_specs || [] }
       }
       await api.updateAdminProduct(route.params.id, payload)
       successMessage.value = 'Đã cập nhật ấn phẩm & cấu hình SEO thành công! Đang chuyển hướng...'
