@@ -18,18 +18,20 @@ if (($argv[1] ?? '') === 'worker') {
     if (str_starts_with($mode,'http-')) {
         $user=new \App\Models\User(['is_active'=>true,'custom_permissions'=>['orders.create'=>true,'orders.payment'=>true,'cashbook.create'=>true]]);
         $user->id=1; $user->setRelation('role',null);
+        if ($mode==='http-denied') $user->custom_permissions=[];
+        if ($mode==='http-fault') \App\Models\ErpOrder::updating(function(){ throw new RuntimeException('Injected payment failure'); });
         \Laravel\Sanctum\Sanctum::actingAs($user);
         $path='/api/v1/admin/erp/cashbook';
         $payload=['type'=>$mode==='http-expense'?'payment':'receipt','category'=>'other','amount'=>100,'payment_method'=>'cash','description'=>'Fixture','entry_date'=>'2026-11-28'];
         if ($mode==='http-order') {
             $path='/api/v1/admin/erp/orders';
             $payload=['customer_name'=>'Fixture','customer_phone'=>'090000'.str_pad((string)$i,4,'0',STR_PAD_LEFT),'items'=>[['product_name'=>'Print','quantity'=>100,'unit_price'=>100]]];
-        } elseif (in_array($mode,['http-replay','http-distinct'],true)) {
+        } elseif (in_array($mode,['http-replay','http-distinct','http-fault','http-retry'],true)) {
             $path='/api/v1/admin/erp/orders/1/payments'; $payload=['amount'=>100];
         }
-        $request=Request::create($path,'POST',[],[],[],['CONTENT_TYPE'=>'application/json','HTTP_ACCEPT'=>'application/json','HTTP_IDEMPOTENCY_KEY'=>$mode==='http-replay'?'shared-http':'http-'.$mode.'-'.$i],json_encode($payload));
+        $request=Request::create($path,'POST',[],[],[],['CONTENT_TYPE'=>'application/json','HTTP_ACCEPT'=>'application/json','HTTP_IDEMPOTENCY_KEY'=>$mode==='http-replay'?'shared-http':($mode==='http-cash-replay'?'shared-cash':(in_array($mode,['http-fault','http-retry'],true)?'fault-retry':'http-'.$mode.'-'.$i))],json_encode($payload));
         $response=app(\Illuminate\Contracts\Http\Kernel::class)->handle($request);
-        check($response->getStatusCode()===($mode==='http-replay'||$mode==='http-distinct'?200:201),$mode.' HTTP '.$response->getStatusCode().' '.$response->getContent());
+        check($response->getStatusCode()===match($mode){'http-denied'=>403,'http-fault'=>500,'http-replay','http-distinct','http-retry'=>200,default=>201},$mode.' HTTP '.$response->getStatusCode().' '.$response->getContent());
         exit(0);
     }
     if (in_array($mode,['sequence','receipt','expense'],true)) {
@@ -129,3 +131,28 @@ foreach(['http-order','http-receipt','http-expense','http-replay','http-distinct
     }
     echo "$mode: PASS (20 workers)\n";
 }
+
+function runExtraWorkers(string $mode,int $count): void {
+    $workers=[];
+    for($i=0;$i<$count;$i++){
+        $p=proc_open([PHP_BINARY,__FILE__,'worker',$mode,(string)$i],[0=>['file','/dev/null','r'],1=>STDOUT,2=>STDERR],$pipes);
+        check(is_resource($p),'Worker launch failed'); $workers[]=$p;
+    }
+    $failed=0; foreach($workers as $p) if(proc_close($p)!==0) $failed++;
+    check($failed===0,"$mode failures: $failed");
+}
+$cashBefore=DB::table('erp_cashbook_entries')->count();
+runExtraWorkers('http-denied',20);
+check(DB::table('erp_cashbook_entries')->count()===$cashBefore,'Denied requests mutated cashbook');
+runExtraWorkers('http-cash-replay',20);
+check(DB::table('erp_cashbook_entries')->count()===$cashBefore+1,'Cash replay count mismatch');
+check((int)DB::table('erp_cashbook_entries')->sum('amount')===4100,'Cash replay sum mismatch');
+runExtraWorkers('http-fault',1);
+check(DB::table('erp_order_payments')->where('order_id',1)->count()===21,'Fault leaked payment');
+check((int)DB::table('erp_orders')->where('id',1)->value('paid_amount')===2100,'Fault changed paid amount');
+runExtraWorkers('http-retry',1);
+check(DB::table('erp_order_payments')->where('order_id',1)->count()===22,'Retry payment count mismatch');
+check((int)DB::table('erp_orders')->where('id',1)->value('paid_amount')===2200,'Retry paid amount mismatch');
+DB::table('erp_ci_records')->insert(['code'=>'NN-02012026-999','amount'=>100]);
+check(DB::transaction(fn()=>ErpCodeSequence::next('erp_ci_records','NN-02012026-'))==='NN-02012026-1000','Sequence overflow at 999');
+echo "HTTP denial, cash replay, payment fault/retry and sequence overflow: PASS\n";
