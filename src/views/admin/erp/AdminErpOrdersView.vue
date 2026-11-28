@@ -1630,6 +1630,8 @@ async function submitPayment() {
     fetchOrders()
   } catch (err) {
     swalError('Không thể ghi nhận', err.message)
+  } finally {
+    paymentSubmitting = false
   }
 }
 
