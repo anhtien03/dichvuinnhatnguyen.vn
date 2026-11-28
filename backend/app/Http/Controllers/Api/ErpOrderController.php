@@ -369,10 +369,23 @@ class ErpOrderController extends Controller
             'shipping_fee_customer' => 'nullable|numeric|min:0',
             'shipping_fee_shop' => 'nullable|numeric|min:0',
             'surcharge' => 'nullable|numeric|min:0',
-            'items' => 'nullable|array',
+            'items' => 'sometimes|required|array|min:1',
+            'items.*.product_name' => 'required|string',
+            'items.*.quantity' => 'required|numeric|min:0.01',
+            'items.*.unit' => 'nullable|string',
+            'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.discount_type' => 'nullable|string',
+            'items.*.discount_value' => 'nullable|numeric|min:0',
+            'items.*.supplier_id' => 'nullable|integer',
+            'items.*.supplier_name' => 'nullable|string',
+            'items.*.cost_price' => 'nullable|numeric|min:0',
+            'items.*.vat_input_rate' => 'nullable|numeric|min:0',
+            'items.*.vat_input_deductible' => 'nullable|boolean',
+            'items.*.specifications' => 'nullable|string',
         ]);
 
         return DB::transaction(function () use ($order, $validated) {
+            $order = ErpOrder::whereKey($order->id)->lockForUpdate()->firstOrFail();
             if (isset($validated['items'])) {
                 // Remove existing items and recreate
                 $order->items()->delete();
@@ -530,6 +543,8 @@ class ErpOrderController extends Controller
             'paid_at' => 'nullable|date',
         ]);
 
+        return DB::transaction(function () use ($id, $validated) {
+        $order = ErpOrder::whereKey($id)->lockForUpdate()->firstOrFail();
         $order->payments()->create([
             'amount' => $validated['amount'],
             'payment_method' => $validated['payment_method'] ?? 'bank_acb',
@@ -545,6 +560,8 @@ class ErpOrderController extends Controller
             $order->payment_status = 'paid';
         } elseif ($newPaidTotal > 0) {
             $order->payment_status = 'partial';
+        } else {
+            $order->payment_status = 'unpaid';
         }
         $order->save();
 
@@ -553,6 +570,7 @@ class ErpOrderController extends Controller
             'message' => 'Đã thêm lượt thanh toán',
             'data' => $order->load('payments')
         ]);
+        });
     }
 
     public function requestDelete(Request $request, $id)
