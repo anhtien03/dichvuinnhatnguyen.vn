@@ -20,37 +20,38 @@ class DashboardController extends Controller
     public function stats(Request $request)
     {
         $user = $request->user();
+        abort_unless($user?->is_active, 403);
 
-        $totalQuotes = QuoteRequest::count();
-        $pendingQuotes = QuoteRequest::where('status', 'pending')->count();
-        $contactedQuotes = QuoteRequest::where('status', 'contacted')->count();
-        $approvedQuotes = QuoteRequest::where('status', 'approved')->count();
-        $completedQuotes = QuoteRequest::where('status', 'completed')->count();
+        $totalQuotes = $user->hasPermission('quotes.view') ? QuoteRequest::count() : 0;
+        $pendingQuotes = $user->hasPermission('quotes.view') ? QuoteRequest::where('status', 'pending')->count() : 0;
+        $contactedQuotes = $user->hasPermission('quotes.view') ? QuoteRequest::where('status', 'contacted')->count() : 0;
+        $approvedQuotes = $user->hasPermission('quotes.view') ? QuoteRequest::where('status', 'approved')->count() : 0;
+        $completedQuotes = $user->hasPermission('quotes.view') ? QuoteRequest::where('status', 'completed')->count() : 0;
 
-        $totalProducts = Product::count();
-        $activeProducts = Product::where('is_active', true)->count();
-        $totalCategories = Category::count();
+        $totalProducts = $user->hasPermission('products.manage') ? Product::count() : 0;
+        $activeProducts = $user->hasPermission('products.manage') ? Product::where('is_active', true)->count() : 0;
+        $totalCategories = $user->hasPermission('categories.manage') ? Category::count() : 0;
 
-        $totalPosts = Post::count();
-        $publishedPosts = Post::where('is_published', true)->count();
-        $totalBanners = Banner::count();
-        $activeBanners = Banner::where('is_active', true)->count();
+        $totalPosts = $user->hasPermission('posts.manage') ? Post::count() : 0;
+        $publishedPosts = $user->hasPermission('posts.manage') ? Post::where('is_published', true)->count() : 0;
+        $totalBanners = $user->hasPermission('banners.manage') ? Banner::count() : 0;
+        $activeBanners = $user->hasPermission('banners.manage') ? Banner::where('is_active', true)->count() : 0;
 
-        $recentQuotes = QuoteRequest::with('product')
+        $recentQuotes = $user->hasPermission('quotes.view') ? QuoteRequest::with('product')
             ->orderBy('id', 'desc')
             ->take(5)
-            ->get();
+            ->get() : collect();
 
-        $recentPosts = Post::orderBy('id', 'desc')
+        $recentPosts = $user->hasPermission('posts.manage') ? Post::orderBy('id', 'desc')
             ->take(5)
-            ->get();
+            ->get() : collect();
 
         // 1. Chart Series (Đơn hàng mới + Khách hàng mới) for day / week / month
         $now = Carbon::now();
         $sixMonthsAgo = $now->copy()->startOfMonth()->subMonths(5);
 
-        $orderDates = ErpOrder::where('created_at', '>=', $sixMonthsAgo)->pluck('created_at');
-        $customerDates = ErpCustomer::where('created_at', '>=', $sixMonthsAgo)->pluck('created_at');
+        $orderDates = $user->hasPermission('orders.view') ? ErpOrder::where('created_at', '>=', $sixMonthsAgo)->pluck('created_at') : collect();
+        $customerDates = $user->hasPermission('clients.view') ? ErpCustomer::where('created_at', '>=', $sixMonthsAgo)->pluck('created_at') : collect();
 
         // Daily (last 7 days)
         $daySeries = [];
@@ -95,8 +96,8 @@ class DashboardController extends Controller
         }
 
         // 2. Top Printed Products from ERP Order Items
-        $totalOrderItems = (int) ErpOrderItem::whereHas('order')->count();
-        $topProductsRaw = ErpOrderItem::whereHas('order')
+        $totalOrderItems = $user->hasPermission('orders.view') ? (int) ErpOrderItem::whereHas('order')->count() : 0;
+        $topProductsRaw = $user->hasPermission('orders.view') ? ErpOrderItem::whereHas('order')
             ->select(
                 'product_name',
                 DB::raw('COUNT(DISTINCT order_id) as orders_count'),
@@ -107,7 +108,7 @@ class DashboardController extends Controller
             ->orderByDesc('orders_count')
             ->orderByDesc('total_qty')
             ->take(5)
-            ->get();
+            ->get() : collect();
 
         $topProducts = $topProductsRaw->map(function ($row) use ($totalOrderItems) {
             $pct = $totalOrderItems > 0 ? round(($row->items_count / $totalOrderItems) * 100) : 0;
