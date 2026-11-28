@@ -18,6 +18,7 @@ class ErpIntegrityTest extends TestCase
         $this->assertSame('sqlite', config('database.default'));
         $this->assertSame(':memory:', config('database.connections.sqlite.database'));
         (require database_path('migrations/2026_11_28_235900_create_erp_request_keys_table.php'))->up();
+        (require database_path('migrations/2026_11_29_000002_create_erp_code_sequences.php'))->up();
         $models = ['ErpOrder','ErpOrderItem','ErpOrderPayment','ErpCustomer','ErpSupplier','ErpSupplierPayment','ErpCashbookEntry'];
         foreach ($models as $name) {
             $class = 'App\\Models\\'.$name;
@@ -266,5 +267,25 @@ class ErpIntegrityTest extends TestCase
             $this->assertSame('Duplicate cashbook codes exist. Reconcile records before migration.', $e->getMessage());
         }
         $this->assertDatabaseCount('erp_cashbook_entries',2);
+    }
+
+    public function test_concurrency_sequence_preserves_legacy_maximum_and_preview(): void
+    {
+        DB::table('erp_orders')->insert(['code'=>'NN-01012026-099']);
+        $prefix = 'NN-01012026-';
+        $this->assertSame($prefix.'100', \App\Services\ErpCodeSequence::next('erp_orders',$prefix,false));
+        $this->assertDatabaseCount('erp_code_sequences',0);
+        $this->assertSame($prefix.'100', DB::transaction(fn()=>\App\Services\ErpCodeSequence::next('erp_orders',$prefix)));
+        $this->assertSame($prefix.'101', DB::transaction(fn()=>\App\Services\ErpCodeSequence::next('erp_orders',$prefix)));
+    }
+
+    public function test_concurrency_sequence_rollback(): void
+    {
+        DB::beginTransaction();
+        try {
+            $this->assertSame('NN-02012026-001', \App\Services\ErpCodeSequence::next('erp_orders','NN-02012026-'));
+        } finally { DB::rollBack(); }
+        $this->assertDatabaseCount('erp_code_sequences',0);
+        $this->assertSame('NN-02012026-001', DB::transaction(fn()=>\App\Services\ErpCodeSequence::next('erp_orders','NN-02012026-')));
     }
 }
