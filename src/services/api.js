@@ -333,7 +333,7 @@ const SESSION_PREFIX = 'inn_pub_v2:'
       updateErpOrder: (id, data) => apiRequest(`/admin/erp/orders/${id}`, { method: 'PUT', body: data }),
       deleteErpOrder: (id) => apiRequest(`/admin/erp/orders/${id}`, { method: 'DELETE' }),
       updateErpOrderStage: (id, stage) => apiRequest(`/admin/erp/orders/${id}/stage`, { method: 'POST', body: { stage } }),
-      addErpOrderPayment: (id, data) => apiRequest(`/admin/erp/orders/${id}/payments`, { method: 'POST', body: data }),
+      addErpOrderPayment: (id, data, key) => apiRequest(`/admin/erp/orders/${id}/payments`, { method: 'POST', body: data, headers: key ? { 'Idempotency-Key': key } : {} }),
       requestErpOrderDelete: (id, reason) => apiRequest(`/admin/erp/orders/${id}/request-delete`, { method: 'POST', body: { reason } }),
       getErpOrderVietQR: (id, bank = 'acb') => apiRequest(`/admin/erp/orders/${id}/vietqr?bank=${bank}`),
 
@@ -370,7 +370,7 @@ const SESSION_PREFIX = 'inn_pub_v2:'
         const query = new URLSearchParams(params).toString()
         return apiRequest(`/admin/erp/cashbook${query ? '?' + query : ''}`)
       },
-      createErpCashbook: (data) => apiRequest('/admin/erp/cashbook', { method: 'POST', body: data }),
+      createErpCashbook: (data, key) => apiRequest('/admin/erp/cashbook', { method: 'POST', body: data, headers: key ? { 'Idempotency-Key': key } : {} }),
       getErpCashbookStats: (params = {}) => {
         const query = new URLSearchParams(params).toString()
         return apiRequest(`/admin/erp/cashbook/statistics${query ? '?' + query : ''}`)
