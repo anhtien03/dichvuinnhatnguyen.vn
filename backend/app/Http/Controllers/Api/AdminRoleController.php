@@ -59,6 +59,7 @@ class AdminRoleController extends Controller
      */
     public function updatePermissions(Request $request, $id)
     {
+        abort_unless(request()->user()?->is_active && request()->user()->isSuperAdmin(), 403);
         $role = Role::findOrFail($id);
 
         if ($role->slug === 'super_admin') {
@@ -87,6 +88,7 @@ class AdminRoleController extends Controller
      */
     public function store(Request $request)
     {
+        abort_unless(request()->user()?->is_active && request()->user()->isSuperAdmin(), 403);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:100|unique:roles,slug',
@@ -100,6 +102,8 @@ class AdminRoleController extends Controller
         ]);
 
         $slug = $validated['slug'] ?? Str::slug($validated['name'], '_');
+
+        abort_if($slug === 'super_admin', 422, 'Reserved role slug.');
 
         $role = Role::create([
             'name' => $validated['name'],
@@ -125,6 +129,7 @@ class AdminRoleController extends Controller
      */
     public function update(Request $request, $id)
     {
+        abort_unless(request()->user()?->is_active && request()->user()->isSuperAdmin(), 403);
         $role = Role::findOrFail($id);
 
         $validated = $request->validate([
@@ -150,6 +155,7 @@ class AdminRoleController extends Controller
      */
     public function destroy($id)
     {
+        abort_unless(request()->user()?->is_active && request()->user()->isSuperAdmin(), 403);
         $role = Role::withCount('users')->findOrFail($id);
 
         if ($role->is_system) {
