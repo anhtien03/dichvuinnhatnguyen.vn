@@ -273,6 +273,7 @@ const SESSION_PREFIX = 'inn_pub_v2:'
 
       // Admin Products
       createAdminProduct: (data) => apiRequest('/admin/products', { method: 'POST', body: data }),
+      updateAdminProductPricing: (id, data) => apiRequest(`/admin/products/${id}/pricing`, { method: 'PUT', body: data }),
       updateAdminProduct: (id, data) => apiRequest(`/admin/products/${id}`, { method: 'PUT', body: data }),
       deleteAdminProduct: (id) => apiRequest(`/admin/products/${id}`, { method: 'DELETE' }),
 
