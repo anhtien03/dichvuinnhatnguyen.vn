@@ -66,6 +66,10 @@ jobs:
       - name: Remaining RBAC security diagnostics (known gaps)
         continue-on-error: true
         run: |
-          php artisan test --filter='AdvancedPermissionSecurityTest::test_(string_false|update_lock|password_change|dashboard)'
+          php artisan test --filter='AdvancedPermissionSecurityTest::test_(string_false|update_lock|password_change)'
       - name: Pricing permission regression (required)
         run: php artisan test --filter=PricingPermissionTest
+      - name: Dashboard and hidden content regression (required)
+        run: php artisan test --filter=DashboardContentSecurityTest
+      - name: Dashboard quote regression (required)
+        run: php artisan test --filter=test_dashboard_does_not_disclose_quotes_to_staff
