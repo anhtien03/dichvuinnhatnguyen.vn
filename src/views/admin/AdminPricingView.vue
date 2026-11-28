@@ -952,7 +952,7 @@ import {
   Zap,
   PhoneCall
 } from 'lucide-vue-next'
-import { api } from '../../services/api'
+import { api, can } from '../../services/api'
 import { useAdminTheme } from '../../composables/useAdminTheme'
 import { swalToast, swalConfirm } from '../../utils/swal'
 
@@ -1376,6 +1376,7 @@ async function savePricingConfig() {
       }
     }
 
+    if (!can('products.manage')) delete payload.specs.custom_specs
     const res = await api.updateAdminProductPricing(selectedProduct.value.id, payload)
     if (res?.data) {
       selectedProduct.value.specs = res.data.specs
