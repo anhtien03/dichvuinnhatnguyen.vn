@@ -553,7 +553,7 @@ class ErpOrderController extends Controller
             'paid_at' => 'nullable|date',
         ]);
 
-        return DB::transaction(function () use ($id, $validated) {
+        return \App\Services\ErpIdempotency::run($request, 'order-payment:'.$id, $validated, function () use ($id, $validated) {
         $order = ErpOrder::whereKey($id)->lockForUpdate()->firstOrFail();
         $order->payments()->create([
             'amount' => $validated['amount'],
