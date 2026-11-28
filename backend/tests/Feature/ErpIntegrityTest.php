@@ -17,6 +17,7 @@ class ErpIntegrityTest extends TestCase
         $this->assertSame('testing', app()->environment());
         $this->assertSame('sqlite', config('database.default'));
         $this->assertSame(':memory:', config('database.connections.sqlite.database'));
+        (require database_path('migrations/2026_11_28_235900_create_erp_request_keys_table.php'))->up();
         $models = ['ErpOrder','ErpOrderItem','ErpOrderPayment','ErpCustomer','ErpSupplier','ErpSupplierPayment','ErpCashbookEntry'];
         foreach ($models as $name) {
             $class = 'App\\Models\\'.$name;
