@@ -27,6 +27,17 @@ try {
       if(name==='product') await page.locator('#calculator-section').waitFor({timeout:10000});
       if(name==='post') await page.getByRole('heading',{name:post.title,exact:true}).waitFor({timeout:10000});
       await page.evaluate(async()=>{await document.fonts.ready; await Promise.all([...document.images].filter(i=>i.loading!=='lazy').map(i=>i.decode().catch(()=>{})));});
+      // Exercise lazy content before capturing the full document.
+      await page.evaluate(async () => {
+        for (let y=0; y<document.documentElement.scrollHeight; y+=Math.max(1,innerHeight/2)) {
+          window.scrollTo(0,y);
+          await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+        }
+        window.scrollTo(0,0);
+        await Promise.all([...document.images].map(i=>i.decode().catch(()=>{})));
+        await document.fonts.ready;
+      });
+      await page.waitForLoadState('networkidle',{timeout:15000});
       await page.waitForTimeout(1500);
       await page.screenshot({path:output+'/'+name+'-'+width+'.png',fullPage:true,animations:'disabled'});
       const metrics=await page.evaluate(()=>({width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,app:!!document.querySelector('#app')?.children.length,h1:[...document.querySelectorAll('main h1')].map(e=>e.textContent.trim()),canonical:document.querySelector('link[rel=canonical]')?.href,robots:document.querySelector('meta[name=robots]')?.content,title:document.title}));
