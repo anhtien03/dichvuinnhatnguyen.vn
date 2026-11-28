@@ -116,6 +116,11 @@ class ProductController extends Controller
             }
         }
 
+        if (!$request->user()->hasPermission('pricing.manage')) {
+            $validated['base_price'] = 0;
+            $validated['specs'] = ['hide_pricing' => true, 'custom_specs' => $validated['specs']['custom_specs'] ?? []];
+        }
+
         $product = Product::create($validated);
 
         if (SiteSetting::get('google_indexing_auto_publish', true)) {
@@ -158,6 +163,10 @@ class ProductController extends Controller
             'canonical_url' => 'nullable|string|max:500',
         ]);
 
+        if (!$request->user()->hasPermission('pricing.manage')) {
+            abort_if(array_key_exists('base_price', $validated) || array_key_exists('specs', $validated), 403, 'Pricing permission required.');
+        }
+
         $product->update($validated);
 
         if (SiteSetting::get('google_indexing_auto_publish', true)) {
@@ -172,6 +181,26 @@ class ProductController extends Controller
             'message' => 'Cập nhật ấn phẩm thành công',
             'data' => $product->load('category'),
         ]);
+    }
+
+    public function updatePricing(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'base_price' => 'sometimes|required|numeric|min:0',
+            'specs' => 'sometimes|required|array:hide_pricing,quantities,sizes,materials,finishings,custom_specs',
+            'specs.hide_pricing' => 'sometimes|boolean',
+            'specs.quantities' => 'sometimes|array',
+            'specs.sizes' => 'sometimes|array',
+            'specs.materials' => 'sometimes|array',
+            'specs.finishings' => 'sometimes|array',
+            'specs.custom_specs' => 'sometimes|array',
+        ]);
+        $product = Product::where('is_active', true)->findOrFail($id);
+        if (isset($validated['specs'])) {
+            $validated['specs'] = array_replace($product->specs ?? [], $validated['specs']);
+        }
+        $product->update($validated);
+        return response()->json(['success' => true, 'data' => $product]);
     }
 
     public function destroy($id)
