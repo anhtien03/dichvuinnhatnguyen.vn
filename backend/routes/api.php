@@ -58,6 +58,8 @@ Route::prefix('v1')->group(function () {
         Route::delete('/admin/quotes/{id}', [QuoteRequestController::class, 'destroy'])->middleware('permission:quotes.delete');
 
         // Categories Management
+        Route::get('/admin/categories', [CategoryController::class, 'index'])->middleware('permission:categories.manage');
+        Route::get('/admin/categories/{id}', [CategoryController::class, 'show'])->middleware('permission:categories.manage');
         Route::post('/admin/categories', [CategoryController::class, 'store'])->middleware('permission:categories.manage');
         Route::put('/admin/categories/{id}', [CategoryController::class, 'update'])->middleware('permission:categories.manage');
         Route::delete('/admin/categories/{id}', [CategoryController::class, 'destroy'])->middleware('permission:categories.manage');
