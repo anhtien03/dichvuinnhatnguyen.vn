@@ -16,7 +16,7 @@ function check($condition, $message) { if (!$condition) throw new RuntimeExcepti
 if (($argv[1] ?? '') === 'worker') {
     $mode=$argv[2]; $i=(int)$argv[3];
     if (str_starts_with($mode,'http-')) {
-        $user=new \App\Models\User(['is_active'=>true,'custom_permissions'=>['orders.create'=>true,'orders.payment'=>true,'cashbook.create'=>true]]);
+        $user=new \App\Models\User(['is_active'=>true,'custom_permissions'=>['orders.create'=>true,'orders.edit'=>true,'orders.delete'=>true,'orders.payment'=>true,'cashbook.create'=>true]]);
         $user->id=1; $user->setRelation('role',null);
         if ($mode==='http-denied') $user->custom_permissions=[];
         if ($mode==='http-fault') \App\Models\ErpOrder::updating(function(){ throw new RuntimeException('Injected payment failure'); });
@@ -29,9 +29,17 @@ if (($argv[1] ?? '') === 'worker') {
         } elseif (in_array($mode,['http-replay','http-distinct','http-fault','http-retry'],true)) {
             $path='/api/v1/admin/erp/orders/1/payments'; $payload=['amount'=>100];
         }
-        $request=Request::create($path,'POST',[],[],[],['CONTENT_TYPE'=>'application/json','HTTP_ACCEPT'=>'application/json','HTTP_IDEMPOTENCY_KEY'=>$mode==='http-replay'?'shared-http':($mode==='http-cash-replay'?'shared-cash':(in_array($mode,['http-fault','http-retry'],true)?'fault-retry':'http-'.$mode.'-'.$i))],json_encode($payload));
+        $method='POST';
+        if ($mode==='http-race-edit') { $path='/api/v1/admin/erp/orders/2'; $method='PUT'; $payload=['notes'=>'Race edit','shipping_fee_customer'=>500]; }
+        if ($mode==='http-race-pay') { $path='/api/v1/admin/erp/orders/2/payments'; $payload=['amount'=>100]; }
+        if ($mode==='http-race-delete') { $path='/api/v1/admin/erp/orders/'.(3+$i); $method='DELETE'; $payload=[]; }
+        if ($mode==='http-race-delete-pay') { $path='/api/v1/admin/erp/orders/'.(3+$i).'/payments'; $payload=['amount'=>100]; }
+        if ($mode==='http-create-fault') { $path='/api/v1/admin/erp/orders'; $payload=['customer_name'=>'Fault fixture','customer_phone'=>'0999999999','order_date'=>'2025-01-01','items'=>[['product_name'=>'Print','quantity'=>100,'unit_price'=>100]]]; \App\Models\ErpOrder::creating(function(){throw new RuntimeException('Injected create failure');}); }
+        $request=Request::create($path,$method,[],[],[],['CONTENT_TYPE'=>'application/json','HTTP_ACCEPT'=>'application/json','HTTP_IDEMPOTENCY_KEY'=>$mode==='http-replay'?'shared-http':($mode==='http-cash-replay'?'shared-cash':(in_array($mode,['http-fault','http-retry'],true)?'fault-retry':'http-'.$mode.'-'.$i))],json_encode($payload));
         $response=app(\Illuminate\Contracts\Http\Kernel::class)->handle($request);
-        check($response->getStatusCode()===match($mode){'http-denied'=>403,'http-fault'=>500,'http-replay','http-distinct','http-retry'=>200,default=>201},$mode.' HTTP '.$response->getStatusCode().' '.$response->getContent());
+        if ($mode==='http-race-delete' && $response->getStatusCode()===409) exit(0);
+        if ($mode==='http-race-delete-pay' && $response->getStatusCode()===404) exit(0);
+        check($response->getStatusCode()===match($mode){'http-denied'=>403,'http-fault','http-create-fault'=>500,'http-race-edit','http-race-pay','http-race-delete','http-race-delete-pay'=>200,'http-replay','http-distinct','http-retry'=>200,default=>201},$mode.' HTTP '.$response->getStatusCode().' '.$response->getContent());
         exit(0);
     }
     if (in_array($mode,['sequence','receipt','expense'],true)) {
@@ -156,3 +164,43 @@ check((int)DB::table('erp_orders')->where('id',1)->value('paid_amount')===2200,'
 DB::table('erp_ci_records')->insert(['code'=>'NN-02012026-999','amount'=>100]);
 check(DB::transaction(fn()=>ErpCodeSequence::next('erp_ci_records','NN-02012026-'))==='NN-02012026-1000','Sequence overflow at 999');
 echo "HTTP denial, cash replay, payment fault/retry and sequence overflow: PASS\n";
+
+$failures=[];
+function diagnostic(string $name, callable $fn): void {
+    global $failures;
+    try { $fn(); echo "$name: PASS\n"; }
+    catch (Throwable $e) { $failures[]=$name; echo "$name: FAIL ".$e->getMessage()."\n"; }
+}
+function mixedWorkers(array $modes,int $count): void {
+    $workers=[];
+    for($i=0;$i<$count;$i++) foreach($modes as $mode) {
+        $p=proc_open([PHP_BINARY,__FILE__,'worker',$mode,(string)$i],[0=>['file','/dev/null','r'],1=>STDOUT,2=>STDERR],$pipes);
+        check(is_resource($p),'Worker launch failed'); $workers[]=$p;
+    }
+    $failed=0; foreach($workers as $p) if(proc_close($p)!==0) $failed++;
+    check($failed===0,"Mixed worker failures: $failed");
+}
+diagnostic('E5 edit/payment race',function(){
+    mixedWorkers(['http-race-edit','http-race-pay'],10);
+    $o=DB::table('erp_orders')->where('id',2)->first();
+    $q=DB::table('erp_order_payments')->where('order_id',2);
+    check($q->count()===10 && (float)$q->sum('amount')===1000.0,'Payment rows mismatch');
+    check((float)$o->paid_amount===1000.0 && (float)$o->total_amount===10500.0 && $o->payment_status==='partial','Order financial state mismatch');
+});
+diagnostic('E5 delete/payment race',function(){
+    mixedWorkers(['http-race-delete','http-race-delete-pay'],10);
+    for($id=3;$id<13;$id++){
+        $o=DB::table('erp_orders')->where('id',$id)->first();
+        $q=DB::table('erp_order_payments')->where('order_id',$id);
+        check($o ? ($q->count()===1 && (float)$o->paid_amount===100.0) : $q->count()===0,"Invalid final state for order $id");
+    }
+});
+diagnostic('E5 create fault rollback',function(){
+    $before=DB::table('erp_orders')->count();
+    $seq=DB::table('erp_code_sequences')->where('prefix','NN-01012025-')->first();
+    runExtraWorkers('http-create-fault',1);
+    check(DB::table('erp_orders')->count()===$before,'Order leaked');
+    check(DB::table('erp_code_sequences')->where('prefix','NN-01012025-')->first()==$seq,'Sequence leaked');
+    check(!DB::table('erp_customers')->where('phone','0999999999')->exists(),'Customer leaked');
+});
+check(!$failures,'E5 failed groups: '.implode(', ',$failures));
