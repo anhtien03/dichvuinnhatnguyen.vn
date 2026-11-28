@@ -46,3 +46,26 @@ test('authenticated reads bypass public cache', async () => {
     assert.equal(calls,2)
   } finally { localStorage.removeItem('admin_token') }
 })
+
+test('ERP payment and cashbook forward stable retry keys without automatic write retry', async () => {
+  for (const submit of [
+    (data,key) => api.addErpOrderPayment(42,data,key),
+    (data,key) => api.createErpCashbook(data,key)
+  ]) {
+    const calls = []
+    globalThis.fetch = async (url,options) => {
+      calls.push({url,key:options.headers['Idempotency-Key'],body:JSON.parse(options.body)})
+      if (calls.length === 1) throw new TypeError('network failure')
+      return ok()
+    }
+    const payload = {amount:100}
+    await assert.rejects(submit(payload,'fixture-key-1'), TypeError)
+    assert.equal(calls.length,1)
+    await submit(payload,'fixture-key-1')
+    await submit(payload,'fixture-key-2')
+    assert.equal(calls.length,3)
+    assert.deepEqual(calls.map(c=>c.key),['fixture-key-1','fixture-key-1','fixture-key-2'])
+    assert.deepEqual(calls[0],calls[1])
+    assert.deepEqual(calls[2].body,payload)
+  }
+})
