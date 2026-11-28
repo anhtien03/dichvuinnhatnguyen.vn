@@ -1376,7 +1376,7 @@ async function savePricingConfig() {
       }
     }
 
-    const res = await api.updateAdminProduct(selectedProduct.value.id, payload)
+    const res = await api.updateAdminProductPricing(selectedProduct.value.id, payload)
     if (res?.data) {
       selectedProduct.value.specs = res.data.specs
       // Update in products array
