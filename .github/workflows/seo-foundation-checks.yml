@@ -133,3 +133,52 @@ jobs:
       - run: php -r 'file_put_contents(".env", "APP_ENV=testing\nAPP_KEY=base64:".base64_encode(random_bytes(32))."\n");'
       - name: Parallel ERP service contracts (required)
         run: php tests/erp-parallel.php
+
+  migration-diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ':memory:'
+      DB_URL: ''
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+      - run: php -r 'file_put_contents(".env", "APP_ENV=testing\nAPP_KEY=base64:".base64_encode(random_bytes(32))."\n");'
+      - name: Full migration and database constraints
+        run: |
+          php <<'PHP'
+          <?php
+          require 'vendor/autoload.php';
+          $app=require 'bootstrap/app.php';
+          $kernel=$app->make(Illuminate\Contracts\Console\Kernel::class);
+          $kernel->bootstrap();
+          if (!app()->environment('testing') || config('database.default')!=='sqlite' || config('database.connections.sqlite.database')!==':memory:') exit(2);
+          $status=$kernel->call('migrate',['--force'=>true]);
+          echo $kernel->output();
+          if ($status!==0) exit($status);
+          $failed=false;
+          foreach (['erp_orders','erp_cashbook_entries'] as $table) {
+              $ok=collect(Illuminate\Support\Facades\Schema::getIndexes($table))->contains(fn($i)=>$i['unique'] && $i['columns']===['code']);
+              echo "$table unique code: ".($ok?'PASS':'FAIL').PHP_EOL;
+              $failed=$failed||!$ok;
+          }
+          foreach (['erp_order_items','erp_order_payments','erp_cashbook_entries'] as $table) {
+              $ok=collect(Illuminate\Support\Facades\Schema::getForeignKeys($table))->contains(fn($i)=>$i['columns']===['order_id'] && $i['foreign_table']==='erp_orders');
+              echo "$table order FK: ".($ok?'PASS':'FAIL').PHP_EOL;
+              $failed=$failed||!$ok;
+          }
+          exit($failed?1:0);
+          PHP
