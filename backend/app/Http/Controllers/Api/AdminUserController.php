@@ -11,6 +11,12 @@ use Illuminate\Validation\Rule;
 
 class AdminUserController extends Controller
 {
+    // Privilege-bearing account changes are reserved for active Super Admins.
+    private function requireSuperAdmin(Request $request): void
+    {
+        abort_unless($request->user()?->is_active && $request->user()->isSuperAdmin(), 403);
+    }
+
     /**
      * Display a listing of staff / users.
      */
@@ -64,6 +70,7 @@ class AdminUserController extends Controller
      */
     public function store(Request $request)
     {
+        $this->requireSuperAdmin($request);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
@@ -130,6 +137,7 @@ class AdminUserController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $this->requireSuperAdmin($request);
         $user = User::findOrFail($id);
 
         $validated = $request->validate([
@@ -147,6 +155,10 @@ class AdminUserController extends Controller
             'password.min' => 'Mật khẩu phải có tối thiểu 6 ký tự.',
             'role_id.required' => 'Vui lòng chọn vai trò cho nhân viên.',
         ]);
+
+        if ($user->isSuperAdmin() && ($user->id === $request->user()->id || User::whereHas('role', fn ($q) => $q->where('slug', 'super_admin'))->where('is_active', true)->count() <= 1)) {
+            abort_if((int) $validated['role_id'] !== (int) $user->role_id || !$request->boolean('is_active', true), 422, 'Cannot demote or deactivate protected administrator.');
+        }
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
@@ -183,7 +195,9 @@ class AdminUserController extends Controller
      */
     public function destroy(Request $request, $id)
     {
+        $this->requireSuperAdmin($request);
         $user = User::findOrFail($id);
+        abort_if($user->isSuperAdmin(), 422, 'Cannot remove or deactivate Super Admin through this endpoint.');
 
         if ($user->id === $request->user()->id) {
             return response()->json([
@@ -213,7 +227,9 @@ class AdminUserController extends Controller
      */
     public function toggleActive(Request $request, $id)
     {
+        $this->requireSuperAdmin($request);
         $user = User::findOrFail($id);
+        abort_if($user->isSuperAdmin(), 422, 'Cannot remove or deactivate Super Admin through this endpoint.');
 
         if ($user->id === $request->user()->id) {
             return response()->json([
