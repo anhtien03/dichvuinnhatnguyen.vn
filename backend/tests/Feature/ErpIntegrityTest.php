@@ -324,4 +324,42 @@ class ErpIntegrityTest extends TestCase
         $this->putJson('/api/v1/admin/erp/orders/'.$o->id,['commission_rate'=>101])->assertUnprocessable();
         $this->assertEquals(340000,$o->fresh()->profit_amount);
     }
+
+    public function test_concurrency_cash_statistics_and_ledger_reconcile(): void
+    {
+        $url='/api/v1/admin/erp/cashbook';
+        $this->postJson($url,$this->cashPayload(['amount'=>500]))->assertCreated();
+        $this->postJson($url,$this->cashPayload(['type'=>'payment','amount'=>200]))->assertCreated();
+        $this->postJson($url,$this->cashPayload(['amount'=>999,'entry_date'=>'2026-12-01']))->assertCreated();
+        $range='from_date=2026-11-01&to_date=2026-11-30';
+        $r=$this->getJson($url.'/statistics?'.$range)->assertOk();
+        $this->assertEquals(500,$r->json('data.total_receipts'));
+        $this->assertEquals(200,$r->json('data.total_payments'));
+        $this->assertEquals(300,$r->json('data.combined_net_balance'));
+        $items=collect($this->getJson($url.'/account-ledger?payment_method=cash&'.$range)->assertOk()->json('data.items'));
+        $this->assertEquals(300,$items->where('direction','in')->sum('amount')-$items->where('direction','out')->sum('amount'));
+    }
+    public function test_concurrency_supplier_payment_replay_contract(): void
+    {
+        $id=$this->postJson('/api/v1/admin/erp/suppliers',['name'=>'Fixture'])->assertCreated()->json('data.id');
+        $url='/api/v1/admin/erp/suppliers/'.$id.'/payments';
+        $h=['Idempotency-Key'=>'supplier-fixture-replay'];
+        $this->postJson($url,['amount'=>100],$h)->assertSuccessful();
+        $this->postJson($url,['amount'=>100],$h)->assertSuccessful();
+        $this->assertDatabaseCount('erp_supplier_payments',1);
+    }
+    public function test_concurrency_supplier_payment_rejects_foreign_item(): void
+    {
+        $id=$this->postJson('/api/v1/admin/erp/suppliers',['name'=>'Fixture'])->assertCreated()->json('data.id');
+        $o=$this->order();
+        $this->postJson('/api/v1/admin/erp/suppliers/'.$id.'/payments',['amount'=>100,'order_item_id'=>$o->items()->firstOrFail()->id])->assertNotFound();
+        $this->assertDatabaseCount('erp_supplier_payments',0);
+    }
+    public function test_concurrency_cash_pagination_is_bounded(): void
+    {
+        $r=$this->getJson('/api/v1/admin/erp/cashbook?per_page=100000');
+        if ($r->status()===422) { $this->assertUnprocessable(); return; }
+        $r->assertOk();
+        $this->assertLessThanOrEqual(100,$r->json('data.per_page'));
+    }
 }
