@@ -22,6 +22,14 @@ class AdvancedPermissionSecurityTest extends TestCase
         Schema::create('roles', function(Blueprint $t) {
             $t->id(); $t->string('name'); $t->string('slug')->unique(); $t->timestamps();
         });
+        Schema::create('permissions', function(Blueprint $t) {
+            $t->id(); $t->string('slug')->unique(); $t->string('name'); $t->timestamps();
+        });
+        Schema::create('role_permissions', function(Blueprint $t) {
+            $t->unsignedBigInteger('role_id');
+            $t->unsignedBigInteger('permission_id');
+            $t->primary(['role_id', 'permission_id']);
+        });
         Schema::create('users', function(Blueprint $t) {
             $t->id(); $t->string('name'); $t->string('email')->unique(); $t->string('password');
             $t->unsignedBigInteger('role_id'); $t->string('phone')->nullable();
