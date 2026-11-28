@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class AdminUserController extends Controller
@@ -79,6 +80,7 @@ class AdminUserController extends Controller
             'role_id' => 'required|exists:roles,id',
             'is_active' => 'boolean',
             'custom_permissions' => 'nullable|array',
+            'custom_permissions.*' => 'boolean',
         ], [
             'name.required' => 'Vui lòng nhập họ tên nhân viên.',
             'email.required' => 'Vui lòng nhập email đăng nhập.',
@@ -148,6 +150,7 @@ class AdminUserController extends Controller
             'role_id' => 'required|exists:roles,id',
             'is_active' => 'boolean',
             'custom_permissions' => 'nullable|array',
+            'custom_permissions.*' => 'boolean',
         ], [
             'name.required' => 'Vui lòng nhập họ tên nhân viên.',
             'email.required' => 'Vui lòng nhập email đăng nhập.',
@@ -180,7 +183,13 @@ class AdminUserController extends Controller
             $user->custom_permissions = $validated['custom_permissions'];
         }
 
-        $user->save();
+        DB::transaction(function () use ($user) {
+            $revoke = !$user->is_active || $user->isDirty('password');
+            $user->save();
+            if ($revoke) {
+                $user->tokens()->delete();
+            }
+        });
         $user->load('role');
 
         return response()->json([
