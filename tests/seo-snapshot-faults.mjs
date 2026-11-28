@@ -4,12 +4,16 @@ import {createHash} from 'node:crypto';
 const base='http://127.0.0.1:8000';
 const route='/san-pham/fixture-product';
 const file='backend/storage/app/private/seo-snapshots/'+createHash('sha256').update(route).digest('hex')+'.json';
-const get=(path,headers={})=>fetch(base+path,{headers});
+const get = async (path, headers = {}) => {
+ const res = await fetch(base + path, { headers });
+ const body = await res.text();
+ return { status: res.status, body };
+};
 assert.equal((await get('/san-pham/hidden-fixture')).status,404);
 assert.equal((await get('/api/v1/products/hidden-fixture?all=1')).status,404);
 const normal=await get(route);assert.equal(normal.status,200);
 const bot=await get(route,{'User-Agent':'Googlebot'});assert.equal(bot.status,200);
-assert.equal(await normal.text(),await bot.text());
+assert.equal(normal.body,bot.body);
 const original=await readFile(file);
 try {
  await writeFile(file,'{broken');
