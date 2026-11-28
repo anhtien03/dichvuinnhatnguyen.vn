@@ -75,3 +75,5 @@ jobs:
         run: php artisan test --filter=test_dashboard_does_not_disclose_quotes_to_staff
       - name: Quote file security regression (required)
         run: php artisan test --filter=QuoteFileSecurityTest
+      - name: Authentication security regression (required)
+        run: php artisan test --filter=AuthenticationSecurityTest
