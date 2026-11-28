@@ -104,4 +104,57 @@ class PricingPermissionTest extends TestCase
     {
         $this->getJson('/api/v1/products/fixture')->assertOk()->assertJsonPath('data.base_price',1000)->assertJsonPath('data.specs.quantities.0.pricePerUnit',1000);
     }
+
+    public function test_invalid_base_price_is_rejected_without_mutation(): void
+    {
+        $this->staff(['pricing.manage'=>true]);
+        foreach ([-1, 'invalid', null] as $price) {
+            $this->putJson('/api/v1/admin/products/1/pricing',['base_price'=>$price])->assertUnprocessable();
+        }
+        $this->assertSame(1000, Product::findOrFail(1)->base_price);
+    }
+
+    public function test_unknown_spec_keys_are_rejected(): void
+    {
+        $this->staff(['pricing.manage'=>true]);
+        $before = Product::findOrFail(1)->specs;
+        $this->putJson('/api/v1/admin/products/1/pricing',['specs'=>['unknown'=>true]])->assertUnprocessable();
+        $this->assertSame($before, Product::findOrFail(1)->specs);
+    }
+
+    public function test_sequential_partial_pricing_updates_preserve_other_fields(): void
+    {
+        $this->staff(['pricing.manage'=>true]);
+        $this->putJson('/api/v1/admin/products/1/pricing',['specs'=>['quantities'=>[['count'=>100,'pricePerUnit'=>1200]]]])->assertOk();
+        $this->putJson('/api/v1/admin/products/1/pricing',['specs'=>['hide_pricing'=>true]])->assertOk();
+        $p = Product::findOrFail(1);
+        $this->assertSame(1200,$p->specs['quantities'][0]['pricePerUnit']);
+        $this->assertTrue($p->specs['hide_pricing']);
+        $this->assertSame('A4',$p->specs['custom_specs'][0]['value']);
+    }
+
+    // Target contracts: diagnostic until the shared specs ownership policy is implemented.
+    public function test_target_product_manager_can_edit_custom_specs_only(): void
+    {
+        $this->staff(['products.manage'=>true]);
+        $this->putJson('/api/v1/admin/products/1',['specs'=>['custom_specs'=>[['name'=>'Paper','value'=>'A3']]]])->assertOk();
+        $p = Product::findOrFail(1);
+        $this->assertSame('A3',$p->specs['custom_specs'][0]['value']);
+        $this->assertSame(1000,$p->specs['quantities'][0]['pricePerUnit']);
+    }
+
+    public function test_target_pricing_manager_cannot_edit_custom_specs(): void
+    {
+        $this->staff(['pricing.manage'=>true]);
+        $this->putJson('/api/v1/admin/products/1/pricing',['specs'=>['custom_specs'=>[['name'=>'Paper','value'=>'A3']]]])->assertForbidden();
+        $this->assertSame('A4',Product::findOrFail(1)->specs['custom_specs'][0]['value']);
+    }
+
+    public function test_target_invalid_quantity_is_rejected(): void
+    {
+        $this->staff(['pricing.manage'=>true]);
+        $before = Product::findOrFail(1)->specs;
+        $this->putJson('/api/v1/admin/products/1/pricing',['specs'=>['quantities'=>[['count'=>0,'pricePerUnit'=>-100]]]])->assertUnprocessable();
+        $this->assertSame($before,Product::findOrFail(1)->specs);
+    }
 }
