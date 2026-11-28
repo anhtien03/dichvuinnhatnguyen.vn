@@ -20,11 +20,16 @@ try{
  const raw=await browser.newPage({javaScriptEnabled:false});
  const page=await browser.newPage();await fixture(page);
  await page.addInitScript(()=>{
- window.__seoPerf={lcp:0,cls:0,eventMax:0};
+ window.__seoPerf={lcp:0,cls:0,eventMax:0,shifts:[]};
+ let first=-1,last=-1,sum=0;
  for(const type of ['largest-contentful-paint','layout-shift','event']){
   try{new PerformanceObserver(list=>{for(const e of list.getEntries()){
    if(type==='largest-contentful-paint')window.__seoPerf.lcp=e.startTime;
-   if(type==='layout-shift'&&!e.hadRecentInput)window.__seoPerf.cls+=e.value;
+   if(type==='layout-shift'&&!e.hadRecentInput){
+    if(first<0||e.startTime-last>=1000||e.startTime-first>=5000){first=e.startTime;sum=0;}
+    last=e.startTime;sum+=e.value;window.__seoPerf.cls=Math.max(window.__seoPerf.cls,sum);
+    window.__seoPerf.shifts.push({time:e.startTime,value:e.value,sources:(e.sources||[]).map(s=>({tag:s.node?.nodeName,id:s.node?.id,classes:typeof s.node?.className==='string'?s.node.className.slice(0,200):'',previous:s.previousRect?.toJSON(),current:s.currentRect?.toJSON()}))});
+   }
    if(type==='event'&&e.interactionId)window.__seoPerf.eventMax=Math.max(window.__seoPerf.eventMax,e.duration);
   }}).observe({type,buffered:true,...(type==='event'?{durationThreshold:16}:{})})}catch{}
  }
@@ -35,7 +40,7 @@ try{
    const response=await raw.goto(base+path);const a=await inspect(raw);
    check('T01',path,response.status()===200&&a.h1.length===1&&a.body.trim().length>40,a.h1);
    check('T02','raw '+path,!!a.title&&!!a.desc&&a.canonical===origin+path);
-   await page.goto(base+path);await page.waitForTimeout(900);const b=await inspect(page);
+   await page.goto(base+path);await page.waitForTimeout(5000);const b=await inspect(page);
    const perf=await page.evaluate(()=>({...window.__seoPerf,load:performance.getEntriesByType('navigation')[0]?.loadEventEnd}));
    check('T10','lab '+path,perf.lcp>0&&perf.lcp<=2500&&perf.cls<=0.1,perf);
    check('T02','client '+path,!!b.title&&!!b.desc&&b.canonical===origin+path&&!titles.has(b.title));titles.add(b.title);
