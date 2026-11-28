@@ -73,3 +73,8 @@ jobs:
         run: php artisan test --filter=DashboardContentSecurityTest
       - name: Dashboard quote regression (required)
         run: php artisan test --filter=test_dashboard_does_not_disclose_quotes_to_staff
+      - name: Quote file existing security regression (required)
+        run: php artisan test --filter=QuoteFileSecurityTest::test_executable_extension_is_rejected
+      - name: Quote file target security contracts (diagnostic)
+        continue-on-error: true
+        run: php artisan test --filter=QuoteFileSecurityTest::test_target_
