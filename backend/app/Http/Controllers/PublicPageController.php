@@ -54,7 +54,7 @@ class PublicPageController extends Controller
         $html = preg_replace_callback('~<meta\\s+name="description"[^>]*>~i', fn () => '<meta name="description" content="'.e($description).'">', $html, 1);
         $head = '<link rel="canonical" href="'.e($canonical).'"><meta name="robots" content="'.e($robots).'">';
         $html = str_replace('</head>', $head.'</head>', $html);
-        if ($exists && !$admin && !$request->has('product') && config('seo.snapshots')) {
+        if ($exists && !$admin && !($path === 'yeu-cau-bao-gia' && $request->has('product')) && config('seo.snapshots')) {
             $snapshot = \App\Services\PublicSeoSnapshot::read('/'.implode('/', array_map('rawurlencode', explode('/', $path))));
             if (!$snapshot) {
                 return response('Trang đang được cập nhật. Vui lòng thử lại sau.', 503)
@@ -66,6 +66,9 @@ class PublicPageController extends Controller
             $html = preg_replace_callback('~<meta\\s+name="description"[^>]*>~i', fn () => '<meta name="description" content="'.e($snapshot['description']).'">', $html, 1);
             $html = preg_replace_callback('~<link rel="canonical"[^>]*>~i', fn () => '<link rel="canonical" href="'.e($snapshot['canonical']).'">', $html, 1);
             $extra = '';
+            if (!empty($snapshot['bootstrap'])) {
+                $extra .= '<script type="application/json" id="public-seo-bootstrap">'.json_encode($snapshot['bootstrap'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR).'</script>';
+            }
             foreach ($snapshot['metadata'] ?? [] as $meta) {
                 $key = $meta['property'] ?? $meta['name'] ?? '';
                 if (!preg_match('~^(og:|twitter:)[a-z0-9_:]+$~i', $key)) continue;
@@ -73,7 +76,7 @@ class PublicPageController extends Controller
                 $extra .= '<meta '.$attribute.'="'.e($key).'" content="'.e($meta['content']).'">';
             }
             foreach ($snapshot['schemas'] ?? [] as $schema) {
-                $extra .= '<script type="application/ld+json">'.json_encode($schema, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR).'</script>';
+                $extra .= '<script type="application/ld+json" data-seo-snapshot="true">'.json_encode($schema, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR).'</script>';
             }
             $html = str_replace('</head>', $extra.'</head>', $html);
         }
