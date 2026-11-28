@@ -14,7 +14,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required|string',
+            'password' => 'required|string|max:1024',
         ]);
 
         $user = User::with('role')->where('email', $request->email)->first();
@@ -33,7 +33,12 @@ class AuthController extends Controller
 
         // Allow concurrent multi-device login (PC, laptop, mobile) without kicking other devices
         $deviceName = $request->header('User-Agent') ? substr($request->header('User-Agent'), 0, 50) : 'admin-device';
-        $token = $user->createToken($deviceName)->plainTextToken;
+        $minutes = (int) config('sanctum.expiration');
+        $user->tokens()->where(function ($query) use ($minutes) {
+            $query->where('expires_at', '<=', now())
+                ->orWhere('created_at', '<=', now()->subMinutes($minutes));
+        })->delete();
+        $token = $user->createToken($deviceName, ['*'], now()->addMinutes($minutes))->plainTextToken;
 
         return response()->json([
             'success' => true,
@@ -45,7 +50,9 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $token = $request->user()->currentAccessToken();
+        if ($token instanceof \Laravel\Sanctum\PersonalAccessToken) $token->delete();
+        else abort(401);
 
         return response()->json([
             'success' => true,
