@@ -17,7 +17,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: node --test tests/api-client.test.mjs tests/pricing-regression.test.mjs
-      - run: npm run build
+      - name: Frontend build
+        if: ${{ !cancelled() }}
+        run: npm run build
   backend-static:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -54,28 +56,38 @@ jobs:
       - run: php -r 'file_put_contents(".env", "APP_ENV=testing\nAPP_KEY=base64:".base64_encode(random_bytes(32))."\n");'
       - run: php artisan test --filter=CatalogSecurityTest
       - name: RBAC regression checks
+        if: ${{ !cancelled() }}
         run: |
           php artisan test --filter='PermissionSecurityTest::test_(guest|staff|inactive|explicit)'
       - name: Pricing route and SEO authorization (required)
+        if: ${{ !cancelled() }}
         run: |
           php artisan test --filter='PermissionSecurityTest::test_(pricing|seo)'
       - name: Privilege escalation regression (required)
+        if: ${{ !cancelled() }}
         run: |
           php artisan test --filter='AdvancedPermissionSecurityTest::test_(self_promotion_is_denied|root_edit_is_denied|grant_unheld_permission_is_denied|last_root_cannot_be_demoted|toggle_lock_revokes_tokens)$'
       - name: Permission and token revocation regression (required)
+        if: ${{ !cancelled() }}
         run: |
           php artisan test --filter='AdvancedPermissionSecurityTest::test_(string_false|update_lock|password_change)'
       - name: Pricing permission regression (required)
+        if: ${{ !cancelled() }}
         run: php artisan test --filter=PricingPermissionTest
       - name: Dashboard and hidden content regression (required)
+        if: ${{ !cancelled() }}
         run: php artisan test --filter=DashboardContentSecurityTest
       - name: Dashboard quote regression (required)
+        if: ${{ !cancelled() }}
         run: php artisan test --filter=test_dashboard_does_not_disclose_quotes_to_staff
       - name: Quote file security regression (required)
+        if: ${{ !cancelled() }}
         run: php artisan test --filter=QuoteFileSecurityTest
       - name: Authentication security regression (required)
+        if: ${{ !cancelled() }}
         run: php artisan test --filter=AuthenticationSecurityTest
       - name: ERP financial regression (required)
+        if: ${{ !cancelled() }}
         run: php artisan test --filter='ErpIntegrityTest::test_(financial_formula_and_sequential_payments|invalid_item_update_does_not_mutate_order|payment_failure_rolls_back|payment_permission_is_independent)$'
       - name: ERP integrity regression (required)
         if: ${{ !cancelled() }}
