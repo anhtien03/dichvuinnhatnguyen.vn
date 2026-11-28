@@ -9,13 +9,13 @@ const browser = await chromium.launch({headless:true,timeout:10000});
 const timer = setTimeout(() => { console.error('Render deadline exceeded'); process.exit(1); }, 30000);
 try {
   const page = await browser.newPage({locale:'vi-VN',timezoneId:'Asia/Ho_Chi_Minh',serviceWorkers:'block'});
-  const errors = [], pending = new Set(), responses = new Map();
+  const errors = [], pending = new Set(), responses = new Map(), categoryReads = [];
   const isApi = url => new URL(url).pathname.startsWith('/api/');
   page.on('pageerror', e => errors.push(e.message));
   page.on('request', r => {if(isApi(r.url())) pending.add(r);});
   page.on('requestfinished', r => pending.delete(r));
   page.on('requestfailed', r => {pending.delete(r);if(isApi(r.url())) errors.push('API request failed');});
-  page.on('response', r => {if(isApi(r.url())) {responses.set(new URL(r.url()).pathname,r.status());if(!r.ok()) errors.push('API HTTP '+r.status());}});
+  page.on('response', r => {if(isApi(r.url())) {responses.set(new URL(r.url()).pathname,r.status());if(!r.ok()) errors.push('API HTTP '+r.status()+' '+new URL(r.url()).pathname); if(r.ok() && new URL(r.url()).pathname==='/api/v1/categories') categoryReads.push(r.json());}});
   await page.route('**/*', route => {
     const req=route.request(), url=new URL(req.url());
     if(url.origin!==origin.origin || !['GET','HEAD'].includes(req.method())) return route.abort();
@@ -33,7 +33,14 @@ try {
   if(detail){
     const endpoint={ 'san-pham':'products','danh-muc':'categories','tin-tuc':'posts' }[detail[1]];
     const expected='/api/v1/'+endpoint+'/'+detail[2];
-    if(![...responses].some(([p,status])=>decodeURIComponent(p)===decodeURIComponent(expected)&&status===200)) throw new Error('Missing successful detail API response');
+    if(detail[1]==='danh-muc'){
+      const slug=decodeURIComponent(detail[2]);
+      const lists=await Promise.all(categoryReads);
+      const category=lists.flatMap(r=>Array.isArray(r.data)?r.data:[]).find(c=>c.slug===slug && c.is_active!==false && c.is_active!==0);
+      if(!category || responses.get('/api/v1/products')!==200) throw new Error('Missing category or product list data: '+slug);
+      const rendered=await page.evaluate(()=>({h1:document.querySelector('main h1')?.textContent.trim(),schemas:[...document.querySelectorAll('script[type="application/ld+json"]')].map(s=>JSON.parse(s.textContent))}));
+      if(rendered.h1!==category.name || !rendered.schemas.some(s=>s['@type']==='CollectionPage' && s.url==='https://dichvuinnhatnguyen.vn/danh-muc/'+slug)) throw new Error('Category content or CollectionPage schema mismatch: '+slug);
+    }else if(![...responses].some(([p,status])=>decodeURIComponent(p)===decodeURIComponent(expected)&&status===200)) throw new Error('Missing successful detail API response: '+expected);
   }
   if(errors.length||pending.size) throw new Error('Incomplete public data: '+errors.join('; '));
   const result=await page.evaluate(()=>{
