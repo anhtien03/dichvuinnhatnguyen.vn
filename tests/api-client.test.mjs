@@ -81,50 +81,54 @@ test('SEO bootstrap serves valid public route without duplicate fetch and falls 
   try {
     let calls = 0
     globalThis.fetch = async () => { calls++; return ok() }
-    globalThis.window = { location: { pathname: '/san-pham/in-namecard' } }
+    globalThis.window = { location: { pathname: '/tin-tuc/bai-viet-mau' } }
     setBootstrap({
-      route: '/san-pham/in-namecard',
+      route: '/tin-tuc/bai-viet-mau',
       generatedAt: Date.now(),
       ttlMs: 60000,
       responses: {
-        '/products/in-namecard': { success: true, data: { slug: 'in-namecard', base_price: 50000 } },
+        '/posts/bai-viet-mau': { success: true, data: { slug: 'bai-viet-mau', title: 'Bài viết mẫu' } },
         '/settings': { success: true, data: { site_name: 'In Ấn Nhật Nguyên' } }
       }
     })
-    const prod = await api.getProductBySlug('in-namecard')
+    const post = await api.getPostBySlug('bai-viet-mau')
     const settings = await api.getSettings()
-    assert.equal(prod.data.slug, 'in-namecard')
+    assert.equal(post.data.slug, 'bai-viet-mau')
     assert.equal(settings.data.site_name, 'In Ấn Nhật Nguyên')
     assert.equal(calls, 0)
 
-    // Route mismatch must fall back to fetch
-    globalThis.window = { location: { pathname: '/san-pham/khac' } }
-    await api.getProductBySlug('khac')
+    // Product detail always fetches live pricing even if bootstrap is present
+    await api.getProductBySlug('in-namecard')
     assert.equal(calls, 1)
 
+    // Route mismatch must fall back to fetch
+    globalThis.window = { location: { pathname: '/tin-tuc/khac' } }
+    await api.getPostBySlug('khac')
+    assert.equal(calls, 2)
+
     // Expired TTL must fall back to fetch
-    globalThis.window = { location: { pathname: '/san-pham/in-namecard' } }
+    globalThis.window = { location: { pathname: '/tin-tuc/bai-viet-mau' } }
     setBootstrap({
-      route: '/san-pham/in-namecard',
+      route: '/tin-tuc/bai-viet-mau',
       generatedAt: Date.now() - 120000,
       ttlMs: 60000,
-      responses: { '/products/in-namecard': { success: true, data: { slug: 'in-namecard' } } }
+      responses: { '/posts/bai-viet-mau': { success: true, data: { slug: 'bai-viet-mau' } } }
     })
-    assert.equal(readSeoBootstrap('/products/in-namecard'), null)
-    await api.getProductBySlug('in-namecard')
-    assert.equal(calls, 2)
+    assert.equal(readSeoBootstrap('/posts/bai-viet-mau'), null)
+    await api.getPostBySlug('bai-viet-mau')
+    assert.equal(calls, 3)
 
     // Admin token must bypass bootstrap
     localStorage.setItem('admin_token', 'fixture-token')
     setBootstrap({
-      route: '/san-pham/in-namecard',
+      route: '/tin-tuc/bai-viet-mau',
       generatedAt: Date.now(),
       ttlMs: 60000,
-      responses: { '/products/in-namecard': { success: true, data: { slug: 'in-namecard' } } }
+      responses: { '/posts/bai-viet-mau': { success: true, data: { slug: 'bai-viet-mau' } } }
     })
-    assert.equal(readSeoBootstrap('/products/in-namecard'), null)
-    await api.getProductBySlug('in-namecard')
-    assert.equal(calls, 3)
+    assert.equal(readSeoBootstrap('/posts/bai-viet-mau'), null)
+    await api.getPostBySlug('bai-viet-mau')
+    assert.equal(calls, 4)
   } finally {
     localStorage.removeItem('admin_token')
     resetSeoBootstrapCacheForTest()

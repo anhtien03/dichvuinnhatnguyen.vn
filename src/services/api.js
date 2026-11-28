@@ -315,7 +315,7 @@ const SESSION_PREFIX = 'inn_pub_v2:'
       getCategories: () => cachedPublicRequest('/categories'),
       getCategoryBySlug: (slug) => publicBootstrapOrRequest(`/categories/${slug}`),
       getProducts: (params = {}) => params.all ? apiRequest(buildPublicPath('/products', params), { cache: 'no-store' }) : cachedPublicRequest('/products', params),
-      getProductBySlug: (slug) => publicBootstrapOrRequest(`/products/${slug}`),
+      getProductBySlug: (slug) => apiRequest(`/products/${slug}`),
       getAdminProduct: (id) => apiRequest(`/products/${encodeURIComponent(id)}?all=1`, { cache: 'no-store' }),
       getBanners: (params = {}) => cachedPublicRequest('/banners', params),
       getPosts: (params = {}) => cachedPublicRequest('/posts', params),
