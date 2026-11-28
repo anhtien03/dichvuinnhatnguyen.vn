@@ -164,9 +164,16 @@ class ProductController extends Controller
         ]);
 
         if (!$request->user()->hasPermission('pricing.manage')) {
-            abort_if(array_key_exists('base_price', $validated) || array_key_exists('specs', $validated), 403, 'Pricing permission required.');
+            abort_if(array_key_exists('base_price', $validated), 403, 'Pricing permission required.');
+            if (array_key_exists('specs', $validated)) {
+                abort_unless(is_array($validated['specs']) && array_keys($validated['specs']) === ['custom_specs'], 403, 'Pricing permission required.');
+            }
         }
 
+        if (isset($validated['specs'])) {
+            $request->validate(['specs.custom_specs' => 'sometimes|array', 'specs.custom_specs.*.name' => 'required|string|max:255', 'specs.custom_specs.*.value' => 'required|string|max:2000', 'specs.quantities.*.count' => 'required|integer|min:1', 'specs.quantities.*.pricePerUnit' => 'required|numeric|min:0']);
+            $validated['specs'] = array_replace($product->specs ?? [], $validated['specs']);
+        }
         $product->update($validated);
 
         if (SiteSetting::get('google_indexing_auto_publish', true)) {
@@ -190,11 +197,14 @@ class ProductController extends Controller
             'specs' => 'sometimes|required|array:hide_pricing,quantities,sizes,materials,finishings,custom_specs',
             'specs.hide_pricing' => 'sometimes|boolean',
             'specs.quantities' => 'sometimes|array',
+            'specs.quantities.*.count' => 'required|integer|min:1',
+            'specs.quantities.*.pricePerUnit' => 'required|numeric|min:0',
             'specs.sizes' => 'sometimes|array',
             'specs.materials' => 'sometimes|array',
             'specs.finishings' => 'sometimes|array',
             'specs.custom_specs' => 'sometimes|array',
         ]);
+        abort_if(array_key_exists('custom_specs', $validated['specs'] ?? []) && !$request->user()->hasPermission('products.manage'), 403, 'Product permission required.');
         $product = Product::where('is_active', true)->findOrFail($id);
         if (isset($validated['specs'])) {
             $validated['specs'] = array_replace($product->specs ?? [], $validated['specs']);
