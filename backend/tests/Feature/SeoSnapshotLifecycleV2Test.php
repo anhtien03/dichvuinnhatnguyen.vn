@@ -243,6 +243,8 @@ class SeoSnapshotLifecycleV2Test extends TestCase
     {
         \App\Models\SiteSetting::create(['key' => 'site_name', 'value' => 'In Ấn Nhật Nguyên']);
         \App\Models\SiteSetting::create(['key' => 'google_indexing_credentials_json', 'value' => '{"private_key":"SECRET"}']);
+        \App\Models\SiteSetting::create(['key' => 'google_indexing_auto_publish', 'value' => '1']);
+        \App\Models\SiteSetting::create(['key' => 'custom_unlisted_internal_flag', 'value' => 'internal']);
         \App\Models\SiteSetting::create(['key' => 'webhook_secret', 'value' => 'super-secret-value']);
 
         $res = $this->getJson('/api/v1/settings');
@@ -250,6 +252,8 @@ class SeoSnapshotLifecycleV2Test extends TestCase
         $data = $res->json('data');
         $this->assertSame('In Ấn Nhật Nguyên', $data['site_name'] ?? null);
         $this->assertArrayNotHasKey('google_indexing_credentials_json', $data);
+        $this->assertArrayNotHasKey('google_indexing_auto_publish', $data);
+        $this->assertArrayNotHasKey('custom_unlisted_internal_flag', $data);
         $this->assertArrayNotHasKey('webhook_secret', $data);
 
         // JSON-LD & bootstrap script breakout escaping
@@ -266,6 +270,24 @@ class SeoSnapshotLifecycleV2Test extends TestCase
     {
         $this->get('/san-pham/../../etc/passwd')->assertStatus(404);
         $this->artisan('seo:render', ['--origin' => 'https://evil.example'])->assertExitCode(1);
+    }
+
+    public function test_broken_or_cross_domain_canonical_url_falls_back_to_self_canonical(): void
+    {
+        config(['seo.snapshots' => false]);
+        $cat = Category::create(['name' => 'Cat Canon', 'slug' => 'cat-canon', 'is_active' => true]);
+        Product::create([
+            'category_id' => $cat->id,
+            'name' => 'In BIB Chạy Bộ',
+            'slug' => 'in-bib-chay-bo',
+            'canonical_url' => 'https://dichvuinnhatnguyen.vn/san-pham/bib-chay-bo',
+            'base_price' => 10000,
+            'is_active' => true,
+        ]);
+
+        $html = $this->get('/san-pham/in-bib-chay-bo')->assertStatus(200)->getContent();
+        $this->assertStringContainsString('<link rel="canonical" href="https://dichvuinnhatnguyen.vn/san-pham/in-bib-chay-bo">', $html);
+        $this->assertStringNotContainsString('/san-pham/bib-chay-bo', $html);
     }
 
     public function test_public_settings_excludes_service_account_json_and_update_succeeds_without_error(): void

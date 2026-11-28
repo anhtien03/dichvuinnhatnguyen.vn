@@ -52,13 +52,29 @@ class PublicPageController extends Controller
                 'danh-muc' => $record->name . ' - Giá Gốc Trực Tiếp Tại Xưởng TPHCM | Nhật Nguyên',
                 'tin-tuc' => $record->title . ' - Cẩm Nang In Ấn',
             };
-            $description = $record->meta_description ?: strip_tags($record->description ?? $record->excerpt ?? '') ?: $description;
+            $rawFallbackDesc = trim((string) preg_replace('/\s+/u', ' ', strip_tags((string) ($record->description ?? $record->excerpt ?? ''))));
+            $fallbackDesc = $rawFallbackDesc !== '' ? mb_substr($rawFallbackDesc, 0, 160) : $description;
+            $description = $record->meta_description ?: $fallbackDesc;
         }
         if ($admin) $title = 'Quản trị - In Ấn Nhật Nguyên';
         if (!str_contains($title, 'Nhật Nguyên')) $title .= ' | In Ấn Nhật Nguyên';
-        $canonical = ($record && !empty($record->canonical_url))
-            ? $record->canonical_url
-            : 'https://dichvuinnhatnguyen.vn/' . implode('/', array_map('rawurlencode', explode('/', $path)));
+        $defaultCanonical = 'https://dichvuinnhatnguyen.vn/' . implode('/', array_map('rawurlencode', explode('/', $path)));
+        $customCanonical = ($record && !empty($record->canonical_url)) ? trim((string) $record->canonical_url) : '';
+        $canonical = $defaultCanonical;
+        if ($customCanonical !== '' && str_starts_with($customCanonical, 'https://dichvuinnhatnguyen.vn/') && filter_var($customCanonical, FILTER_VALIDATE_URL)) {
+            $customPath = trim((string) (parse_url($customCanonical, PHP_URL_PATH) ?? ''), '/');
+            $customParts = $customPath === '' ? [] : explode('/', rawurldecode($customPath));
+            $customValid = in_array($customPath, ['', 'san-pham', 'yeu-cau-bao-gia', 'tin-tuc', 'gioi-thieu', 'lien-he'], true)
+                || (count($customParts) === 2 && match ($customParts[0]) {
+                    'san-pham' => \App\Models\Product::where('slug', $customParts[1])->where('is_active', true)->exists(),
+                    'danh-muc' => \App\Models\Category::where('slug', $customParts[1])->where('is_active', true)->exists(),
+                    'tin-tuc' => \App\Models\Post::where('slug', $customParts[1])->where('is_published', true)->exists(),
+                    default => false,
+                });
+            if ($customValid) {
+                $canonical = $customCanonical;
+            }
+        }
         $robots = $admin ? 'noindex, nofollow' : ((!$exists || ($path === 'yeu-cau-bao-gia' && $request->has('product'))) ? 'noindex, follow' : 'index, follow');
         $html = preg_replace_callback('~<title>.*?</title>~is', fn () => '<title>'.e($title).'</title>', $html, 1);
         $html = preg_replace_callback('~<meta\\s+name="description"[^>]*>~i', fn () => '<meta name="description" content="'.e($description).'">', $html, 1);

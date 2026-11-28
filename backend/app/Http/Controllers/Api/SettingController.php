@@ -8,6 +8,28 @@ use Illuminate\Http\Request;
 
 class SettingController extends Controller
 {
+    public const PUBLIC_ALLOWLIST = [
+        'site_name',
+        'brand_name',
+        'slogan',
+        'hotline_1',
+        'hotline_2',
+        'phone',
+        'zalo',
+        'email',
+        'address',
+        'address_factory',
+        'address_office',
+        'working_hours',
+        'meta_title_default',
+        'meta_description_default',
+        'google_site_verification',
+        'google_analytics_id',
+        'facebook_url',
+        'tiktok_url',
+        'youtube_url',
+    ];
+
     public function index(Request $request)
     {
         $isAuthenticated = $request->user('sanctum') !== null;
@@ -16,7 +38,7 @@ class SettingController extends Controller
                 if ($isAuthenticated) {
                     return true;
                 }
-                return !preg_match('/(key|secret|token|password|credential|private|service_account|webhook)/i', (string) $item->key);
+                return in_array((string) $item->key, self::PUBLIC_ALLOWLIST, true);
             })
             ->mapWithKeys(function ($item) {
                 $decoded = json_decode($item->value, true);

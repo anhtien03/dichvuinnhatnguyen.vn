@@ -22,7 +22,27 @@ const concurrency = Math.max(1, Math.min(4, Number(process.env.RENDER_CONCURRENC
 const maxRssMb = Math.max(256, Number(process.env.RENDER_MAX_RSS_MB || 768));
 
 const STATIC_PATHS = new Set(['/', '/san-pham', '/tin-tuc', '/gioi-thieu', '/lien-he', '/yeu-cau-bao-gia']);
-const SENSITIVE_KEY_RE = /(key|secret|token|password|credential|private|service_account|webhook)/i;
+const PUBLIC_SETTINGS_ALLOWLIST = new Set([
+  'site_name',
+  'brand_name',
+  'slogan',
+  'hotline_1',
+  'hotline_2',
+  'phone',
+  'zalo',
+  'email',
+  'address',
+  'address_factory',
+  'address_office',
+  'working_hours',
+  'meta_title_default',
+  'meta_description_default',
+  'google_site_verification',
+  'google_analytics_id',
+  'facebook_url',
+  'tiktok_url',
+  'youtube_url',
+]);
 
 function validatePublicPath(path) {
   if (!STATIC_PATHS.has(path) && !/^\/(san-pham|danh-muc|tin-tuc)\/[\p{L}\p{N}_%-]+$/u.test(path)) {
@@ -30,28 +50,24 @@ function validatePublicPath(path) {
   }
 }
 
-function redactSensitiveKeys(value) {
-  if (Array.isArray(value)) {
-    return value
-      .filter((item) => !(item && typeof item === 'object' && 'key' in item && SENSITIVE_KEY_RE.test(String(item.key || ''))))
-      .map((item) => redactSensitiveKeys(item));
-  }
-  if (value && typeof value === 'object') {
-    const clean = {};
-    for (const [k, v] of Object.entries(value)) {
-      if (!SENSITIVE_KEY_RE.test(k)) {
-        clean[k] = redactSensitiveKeys(v);
-      }
+function allowlistSettingsObject(obj) {
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return {};
+  const clean = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (PUBLIC_SETTINGS_ALLOWLIST.has(k)) {
+      clean[k] = v;
     }
-    return clean;
   }
-  return value;
+  return clean;
 }
 
 function sanitizeBootstrapValue(endpointPath, payload) {
   if (!payload || typeof payload !== 'object') return null;
   if (endpointPath === '/settings') {
-    return redactSensitiveKeys(payload);
+    if (payload.data && typeof payload.data === 'object') {
+      return { ...payload, data: allowlistSettingsObject(payload.data) };
+    }
+    return allowlistSettingsObject(payload);
   }
   return payload;
 }
