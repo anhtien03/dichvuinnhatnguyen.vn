@@ -71,4 +71,39 @@ class QuoteFileSecurityTest extends TestCase
         Sanctum::actingAs($u);
         $this->getJson('/api/v1/admin/quotes/1/file')->assertForbidden();
     }
+
+    public function test_authorized_download_and_legacy_download(): void
+    {
+        $this->upload()->assertCreated();
+        $quote = \App\Models\QuoteRequest::firstOrFail();
+        $u = new User(['is_active'=>true,'custom_permissions'=>['quotes.view'=>true]]);
+        $u->setRelation('role',null);
+        Sanctum::actingAs($u);
+        $this->get('/api/v1/admin/quotes/'.$quote->id.'/file')->assertOk()->assertDownload('design.pdf')->assertHeader('X-Content-Type-Options','nosniff');
+        Storage::disk('public')->put('quotes/legacy.pdf','legacy');
+        $quote->update(['file_path'=>'/storage/quotes/legacy.pdf']);
+        $this->get('/api/v1/admin/quotes/'.$quote->id.'/file')->assertOk()->assertDownload('design.pdf');
+        $quote->update(['file_path'=>'/storage/quotes/../secret.pdf']);
+        $this->get('/api/v1/admin/quotes/'.$quote->id.'/file')->assertNotFound();
+    }
+
+    public function test_inactive_staff_cannot_download(): void
+    {
+        $u = new User(['is_active'=>false,'custom_permissions'=>['quotes.view'=>true]]);
+        $u->setRelation('role',null);
+        Sanctum::actingAs($u);
+        $this->getJson('/api/v1/admin/quotes/1/file')->assertForbidden();
+    }
+
+    public function test_database_failure_cleans_uploaded_file(): void
+    {
+        \App\Models\QuoteRequest::creating(function () { throw new \RuntimeException('fixture failure'); });
+        try {
+            $this->upload()->assertStatus(500);
+            $this->assertSame([],Storage::disk('local')->allFiles('quotes'));
+            $this->assertDatabaseCount('quote_requests',0);
+        } finally {
+            \App\Models\QuoteRequest::flushEventListeners();
+        }
+    }
 }
