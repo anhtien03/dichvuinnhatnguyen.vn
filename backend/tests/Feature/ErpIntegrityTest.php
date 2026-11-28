@@ -34,6 +34,7 @@ class ErpIntegrityTest extends TestCase
                 $t->timestamps();
             });
         }
+        (require database_path('migrations/2026_11_29_000001_add_unique_code_to_erp_cashbook_entries.php'))->up();
         $this->staff(['orders.create'=>true,'orders.edit'=>true,'orders.payment'=>true,'orders.stage'=>true,'orders.delete'=>true,'clients.manage'=>true,'suppliers.manage'=>true,'cashbook.create'=>true,'cashbook.view'=>true]);
     }
     private function staff(array $permissions): void
@@ -239,5 +240,31 @@ class ErpIntegrityTest extends TestCase
     {
         $this->postJson('/api/v1/admin/erp/customers/import',['customers'=>[['name'=>'Fixture','phone'=>'0900000000','commission_type'=>'per_order']]])->assertOk();
         $this->assertDatabaseHas('erp_customers',['phone'=>'0900000000','commission_type'=>'per_order']);
+    }
+
+    public function test_concurrency_cash_code_unique_constraint(): void
+    {
+        $this->postJson('/api/v1/admin/erp/cashbook',$this->cashPayload())->assertCreated();
+        $row = (array) DB::table('erp_cashbook_entries')->first();
+        unset($row['id']);
+        $this->expectException(\Illuminate\Database\QueryException::class);
+        DB::table('erp_cashbook_entries')->insert($row);
+    }
+
+    public function test_concurrency_cash_unique_migration_rejects_existing_duplicates(): void
+    {
+        $migration = require database_path('migrations/2026_11_29_000001_add_unique_code_to_erp_cashbook_entries.php');
+        $migration->down();
+        $this->postJson('/api/v1/admin/erp/cashbook',$this->cashPayload())->assertCreated();
+        $row = (array) DB::table('erp_cashbook_entries')->first();
+        unset($row['id']);
+        DB::table('erp_cashbook_entries')->insert($row);
+        try {
+            $migration->up();
+            $this->fail('Migration accepted duplicate codes');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('Duplicate cashbook codes exist. Reconcile records before migration.', $e->getMessage());
+        }
+        $this->assertDatabaseCount('erp_cashbook_entries',2);
     }
 }
