@@ -44,7 +44,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 
     // 3. Admin Protected Routes (Bearer Token via Sanctum & Granular RBAC Permissions)
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', \App\Http\Middleware\EnsureActiveAccount::class])->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/auth/me', [AuthController::class, 'me']);
 
