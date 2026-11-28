@@ -77,12 +77,7 @@ class ErpCashbookController extends Controller
         // Auto generate code PT-YYMM-XXX or PC-YYMM-XXX
         $prefix = ($validated['type'] === 'receipt') ? 'PT' : 'PC';
         $period = date('ym');
-        $last = ErpCashbookEntry::where('code', 'like', "{$prefix}-{$period}-%")->latest('id')->first();
-        $seq = 1;
-        if ($last && preg_match('/-(\d+)$/', $last->code, $m)) {
-            $seq = (int)$m[1] + 1;
-        }
-        $code = sprintf("%s-%s-%03d", $prefix, $period, $seq);
+        $code = \App\Services\ErpCodeSequence::next('erp_cashbook_entries', "{$prefix}-{$period}-");
 
         $entry = ErpCashbookEntry::create([
             'code' => $code,
