@@ -1606,7 +1606,12 @@ async function loadVietQR() {
 }
 
 // Payment modal
+let paymentRequestKey = null
+let paymentSubmitting = false
+
 function openPaymentModal(order) {
+  if (paymentSubmitting) return
+  paymentRequestKey = crypto.randomUUID()
   currentPaymentOrder.value = order
   paymentForm.amount = Math.max(0, order.total_amount - order.paid_amount)
   paymentForm.payment_method = 'bank_acb'
@@ -1615,9 +1620,11 @@ function openPaymentModal(order) {
 }
 
 async function submitPayment() {
+  if (paymentSubmitting) return
   if (!currentPaymentOrder.value || paymentForm.amount <= 0) return
+  paymentSubmitting = true
   try {
-    await api.addErpOrderPayment(currentPaymentOrder.value.id, paymentForm)
+    await api.addErpOrderPayment(currentPaymentOrder.value.id, paymentForm, paymentRequestKey)
     isPaymentModalOpen.value = false
     swalToast('Đã ghi nhận thanh toán')
     fetchOrders()
