@@ -58,6 +58,9 @@ jobs:
       - name: RBAC target contract (known gaps, diagnostic only)
         continue-on-error: true
         run: php artisan test --filter='PermissionSecurityTest::test_(pricing|seo)'
-      - name: Advanced RBAC security diagnostics (known gaps)
+      - name: Privilege escalation regression (required)
+        run: php artisan test --filter='AdvancedPermissionSecurityTest::test_(self_promotion_is_denied|root_edit_is_denied|grant_unheld_permission_is_denied|last_root_cannot_be_demoted|toggle_lock_revokes_tokens)
+
+      - name: Remaining RBAC security diagnostics (known gaps)
         continue-on-error: true
-        run: php artisan test --filter=AdvancedPermissionSecurityTest
+        run: php artisan test --filter='AdvancedPermissionSecurityTest::test_(string_false|update_lock|password_change|dashboard)'
