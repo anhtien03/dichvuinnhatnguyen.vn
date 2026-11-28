@@ -10,6 +10,9 @@ try {
     if(process.env.UI_WIDTH && Number(process.env.UI_WIDTH)!==width) continue;
     const page = await browser.newPage({viewport:{width,height}, reducedMotion:'reduce',locale:'vi-VN',timezoneId:'Asia/Ho_Chi_Minh'});
     page.setDefaultTimeout(10000);
+    // Keep external font/network availability identical for all three captures.
+    // Production fonts are unchanged; this is an isolated visual fixture.
+    await page.route(/^https:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com)\//, route => route.abort());
     const category={id:1,slug:'fixture-category',name:'Danh mục kiểm thử',is_active:true};
     const product={id:1,slug:'fixture-product',name:'Ấn phẩm kiểm thử',category_id:1,category,is_active:true,base_price:1000,min_quantity:100,unit:'cái',image:'/logo.png',description:'Mô tả kiểm thử',specs:{quantities:[{count:100,label:'100',pricePerUnit:1000}],sizes:[],materials:[],finishings:[]}};
     const post={id:1,slug:'fixture-post',title:'Bài viết kiểm thử',excerpt:'Mô tả bài viết',content:'<p>Nội dung kiểm thử</p>',is_published:true,published_at:'2026-01-01T00:00:00Z'};
@@ -43,6 +46,13 @@ try {
           Promise.all([document.fonts.ready,...images.map(i=>i.decode().catch(()=>{}))]),
           sleep(4000)
         ]);
+      });
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+        await Promise.all(document.getAnimations().filter(a => {
+          const timing = a.effect?.getComputedTiming();
+          return timing && Number.isFinite(timing.endTime);
+        }).map(a => a.finished.catch(() => {})));
       });
       await page.waitForTimeout(500);
       await page.screenshot({path:output+'/'+name+'-'+width+'.png',fullPage:true,animations:'disabled',timeout:15000});
