@@ -177,30 +177,31 @@ class ErpCustomerController extends Controller
 
     public function import(Request $request)
     {
-        $items = $request->input('customers', []);
-        if (!is_array($items) || empty($items)) {
-            return response()->json(['status' => 'error', 'message' => 'Dữ liệu nhập không hợp lệ'], 422);
-        }
-
-        $imported = 0;
-        foreach ($items as $item) {
-            if (empty($item['phone'])) continue;
-            ErpCustomer::updateOrCreate(
-                ['phone' => trim($item['phone'])],
-                [
-                    'name' => $item['name'] ?? 'Khách lẻ',
-                    'email' => $item['email'] ?? null,
-                    'address' => $item['address'] ?? null,
-                    'company_name' => $item['company_name'] ?? null,
-                    'tax_code' => $item['tax_code'] ?? null,
-                    'tag' => $item['tag'] ?? 'regular',
-                    'commission_rate' => $item['commission_rate'] ?? 0,
-                    'commission_type' => $item['commission_type'] ?? 'monthly',
-                    'notes' => $item['notes'] ?? null,
-                ]
-            );
-            $imported++;
-        }
+        $validated = $request->validate([
+            'customers' => 'required|array|min:1',
+            'customers.*.phone' => 'required|string|max:50',
+            'customers.*.name' => 'sometimes|required|string|max:255',
+            'customers.*.email' => 'nullable|email|max:255',
+            'customers.*.address' => 'nullable|string',
+            'customers.*.company_name' => 'nullable|string',
+            'customers.*.tax_code' => 'nullable|string',
+            'customers.*.tag' => 'nullable|string',
+            'customers.*.commission_rate' => 'sometimes|required|numeric|min:0|max:100',
+            'customers.*.commission_type' => 'nullable|string|in:monthly,direct',
+            'customers.*.notes' => 'nullable|string',
+        ]);
+        $imported = \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+            foreach ($validated['customers'] as $item) {
+                $customer = ErpCustomer::firstOrNew(['phone' => trim($item['phone'])]);
+                unset($item['phone']);
+                if (!$customer->exists) {
+                    $customer->fill(['name'=>'Khách lẻ','tag'=>'regular','commission_rate'=>0,'commission_type'=>'monthly']);
+                }
+                $customer->fill($item);
+                $customer->save();
+            }
+            return count($validated['customers']);
+        });
 
         return response()->json([
             'status' => 'success',
