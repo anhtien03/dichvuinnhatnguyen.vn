@@ -36,5 +36,10 @@ app.use(createPinia())
 app.use(router)
 app.directive('reveal', vReveal)
 
-app.mount('#app')
+// Resolve the initial lazy route before mounting the shared layout.
+// Otherwise the footer can paint above the still-empty router view.
+router.isReady().then(() => app.mount('#app')).catch(error => {
+  console.error('[Initial navigation]', error)
+  app.mount('#app')
+})
 
