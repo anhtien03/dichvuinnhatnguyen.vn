@@ -135,6 +135,10 @@ jobs:
   visual-comparison:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        width: [1920, 1366, 768, 390, 360]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -161,9 +165,9 @@ jobs:
           done
           mkdir -p visual-results
           status=0
-          UI_BASE_URL=http://127.0.0.1:4174 UI_OUTPUT=visual-results/reference node tests/visual-capture.mjs || status=1
-          UI_BASE_URL=http://127.0.0.1:4174 UI_OUTPUT=visual-results/repeat node tests/visual-capture.mjs || status=1
-          UI_BASE_URL=http://127.0.0.1:4173 UI_OUTPUT=visual-results/candidate node tests/visual-capture.mjs || status=1
+          UI_BASE_URL=http://127.0.0.1:4174 UI_OUTPUT=visual-results/reference UI_WIDTH=${{ matrix.width }} timeout --kill-after=10s 180s node tests/visual-capture.mjs || status=1
+          UI_BASE_URL=http://127.0.0.1:4174 UI_OUTPUT=visual-results/repeat UI_WIDTH=${{ matrix.width }} timeout --kill-after=10s 180s node tests/visual-capture.mjs || status=1
+          UI_BASE_URL=http://127.0.0.1:4173 UI_OUTPUT=visual-results/candidate UI_WIDTH=${{ matrix.width }} timeout --kill-after=10s 180s node tests/visual-capture.mjs || status=1
           node --input-type=module <<'JS' || status=1
           import {readFileSync,writeFileSync,readdirSync,mkdirSync} from 'node:fs';
           import {PNG} from 'pngjs';
@@ -179,17 +183,17 @@ jobs:
               const diff=new PNG({width:a.width,height:a.height});
               const pixels=pixelmatch(a.data,b.data,diff.data,a.width,a.height,{threshold:0.1,includeAA:false});
               const ratio=pixels/(a.width*a.height);
-              results.push({file,pixels,ratio,ok:ratio<=0.001});
+              results.push({target,file,pixels,ratio,ok:ratio<=0.001});
               if(pixels)writeFileSync(root+'/diff/'+target+'-'+file,PNG.sync.write(diff));
-            }catch(e){results.push({file,ok:false,reason:e.message})}
+            }catch(e){results.push({target,file,ok:false,reason:e.message})}
           }
           writeFileSync(root+'/comparison.json',JSON.stringify(results,null,2));
           console.log(JSON.stringify(results,null,2));
-          if(files.length!==50||readdirSync(root+'/repeat').filter(f=>f.endsWith('.png')).length!==50||readdirSync(root+'/candidate').filter(f=>f.endsWith('.png')).length!==50||results.some(r=>!r.ok))process.exitCode=1;
+          if(files.length!==10||readdirSync(root+'/repeat').filter(f=>f.endsWith('.png')).length!==10||readdirSync(root+'/candidate').filter(f=>f.endsWith('.png')).length!==10||results.some(r=>!r.ok))process.exitCode=1;
           JS
           exit "$status"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: visual-comparison
+          name: visual-comparison-${{ matrix.width }}
           path: visual-results/
