@@ -1,0 +1,70 @@
+# Example Nginx configuration for SEO Hybrid Snapshot V2
+# Adjust server_name, root, and fastcgi_pass to match your VPS environment.
+
+server {
+    listen 80;
+    server_name dichvuinnhatnguyen.vn www.dichvuinnhatnguyen.vn;
+
+    root /var/www/innhatnguyen.vn/dist;
+    index index.html;
+
+    # Static Vite assets — immutable long cache
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # Uploaded storage files
+    location /storage/ {
+        alias /var/www/innhatnguyen.vn/backend/storage/app/public/;
+        expires 30d;
+        add_header Cache-Control "public";
+        try_files $uri =404;
+    }
+
+    # robots.txt and sitemap.xml
+    location = /robots.txt {
+        root /var/www/innhatnguyen.vn/public;
+        try_files $uri =404;
+    }
+
+    # Backend API and Admin — never cache, pass directly to Laravel PHP-FPM
+    location ~ ^/(api|sanctum)/ {
+        add_header Cache-Control "no-store, no-cache, must-revalidate" always;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME /var/www/innhatnguyen.vn/backend/public/index.php;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+    }
+
+    # Public HTML routes & SPA shell — served via PublicPageController
+    location / {
+        add_header Cache-Control "no-store" always;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME /var/www/innhatnguyen.vn/backend/public/index.php;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+    }
+}
+
+# Isolated loopback render origin for `php artisan seo:render` (Playwright worker)
+# Set SEO_RENDER_ORIGIN=http://127.0.0.1:4173 in backend/.env
+server {
+    listen 127.0.0.1:4173;
+    server_name 127.0.0.1 localhost;
+
+    root /var/www/innhatnguyen.vn/dist;
+
+    location /assets/ {
+        try_files $uri =404;
+    }
+
+    location /api/ {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME /var/www/innhatnguyen.vn/backend/public/index.php;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+    }
+
+    location / {
+        try_files $uri /index.html;
+    }
+}

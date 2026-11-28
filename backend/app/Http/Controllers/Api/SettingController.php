@@ -8,13 +8,21 @@ use Illuminate\Http\Request;
 
 class SettingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $settings = SiteSetting::all()->mapWithKeys(function ($item) {
-            $decoded = json_decode($item->value, true);
-            $val = (json_last_error() === JSON_ERROR_NONE) ? $decoded : $item->value;
-            return [$item->key => $val];
-        })->toArray();
+        $isAuthenticated = $request->user('sanctum') !== null;
+        $settings = SiteSetting::all()
+            ->filter(function ($item) use ($isAuthenticated) {
+                if ($isAuthenticated) {
+                    return true;
+                }
+                return !preg_match('/(key|secret|token|password|credential|private|webhook)/i', (string) $item->key);
+            })
+            ->mapWithKeys(function ($item) {
+                $decoded = json_decode($item->value, true);
+                $val = (json_last_error() === JSON_ERROR_NONE) ? $decoded : $item->value;
+                return [$item->key => $val];
+            })->toArray();
 
         // Nếu database chưa lưu mã google_site_verification, tự động đọc mã hiện tại từ file HTML
         // để trên giao diện Admin không bao giờ bị rỗng khi F5

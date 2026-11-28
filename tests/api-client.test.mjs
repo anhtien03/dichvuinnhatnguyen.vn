@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { api, apiRequest } from '../src/services/api.js'
+import { api, apiRequest, readSeoBootstrap, resetSeoBootstrapCacheForTest } from '../src/services/api.js'
 
 const storage = () => {
   const map = new Map()
@@ -67,5 +67,68 @@ test('ERP payment and cashbook forward stable retry keys without automatic write
     assert.deepEqual(calls.map(c=>c.key),['fixture-key-1','fixture-key-1','fixture-key-2'])
     assert.deepEqual(calls[0],calls[1])
     assert.deepEqual(calls[2].body,payload)
+  }
+})
+
+test('SEO bootstrap serves valid public route without duplicate fetch and falls back when expired, mismatched, or admin', async () => {
+  const prevDoc = globalThis.document
+  const setBootstrap = (payload) => {
+    resetSeoBootstrapCacheForTest()
+    globalThis.document = {
+      getElementById: (id) => id === 'public-seo-bootstrap' ? { textContent: JSON.stringify(payload) } : null
+    }
+  }
+  try {
+    let calls = 0
+    globalThis.fetch = async () => { calls++; return ok() }
+    globalThis.window = { location: { pathname: '/san-pham/in-namecard' } }
+    setBootstrap({
+      route: '/san-pham/in-namecard',
+      generatedAt: Date.now(),
+      ttlMs: 60000,
+      responses: {
+        '/products/in-namecard': { success: true, data: { slug: 'in-namecard', base_price: 50000 } },
+        '/settings': { success: true, data: { site_name: 'In Ấn Nhật Nguyên' } }
+      }
+    })
+    const prod = await api.getProductBySlug('in-namecard')
+    const settings = await api.getSettings()
+    assert.equal(prod.data.slug, 'in-namecard')
+    assert.equal(settings.data.site_name, 'In Ấn Nhật Nguyên')
+    assert.equal(calls, 0)
+
+    // Route mismatch must fall back to fetch
+    globalThis.window = { location: { pathname: '/san-pham/khac' } }
+    await api.getProductBySlug('khac')
+    assert.equal(calls, 1)
+
+    // Expired TTL must fall back to fetch
+    globalThis.window = { location: { pathname: '/san-pham/in-namecard' } }
+    setBootstrap({
+      route: '/san-pham/in-namecard',
+      generatedAt: Date.now() - 120000,
+      ttlMs: 60000,
+      responses: { '/products/in-namecard': { success: true, data: { slug: 'in-namecard' } } }
+    })
+    assert.equal(readSeoBootstrap('/products/in-namecard'), null)
+    await api.getProductBySlug('in-namecard')
+    assert.equal(calls, 2)
+
+    // Admin token must bypass bootstrap
+    localStorage.setItem('admin_token', 'fixture-token')
+    setBootstrap({
+      route: '/san-pham/in-namecard',
+      generatedAt: Date.now(),
+      ttlMs: 60000,
+      responses: { '/products/in-namecard': { success: true, data: { slug: 'in-namecard' } } }
+    })
+    assert.equal(readSeoBootstrap('/products/in-namecard'), null)
+    await api.getProductBySlug('in-namecard')
+    assert.equal(calls, 3)
+  } finally {
+    localStorage.removeItem('admin_token')
+    resetSeoBootstrapCacheForTest()
+    globalThis.document = prevDoc
+    globalThis.window = { location: { pathname: '/' } }
   }
 })

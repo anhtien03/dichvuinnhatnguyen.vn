@@ -21,6 +21,9 @@ try {
  const stale=JSON.parse(original);stale.version='invalid';
  await writeFile(file,JSON.stringify(stale));
  assert.equal((await get(route)).status,503);
+ const badChecksum=JSON.parse(original);badChecksum.checksum='0'.repeat(64);
+ await writeFile(file,JSON.stringify(badChecksum));
+ assert.equal((await get(route)).status,503);
 } finally {await writeFile(file,original);}
 await rename(file,file+'.test-backup');
 try {assert.equal((await get(route)).status,503);}

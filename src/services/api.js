@@ -182,12 +182,76 @@ const SESSION_PREFIX = 'inn_pub_v2:'
       }
     }
 
+    let seoBootstrapCache
+    function normalizePathname(p) {
+      try {
+        return decodeURIComponent(String(p || '/'))
+      } catch {
+        return String(p || '/')
+      }
+    }
+
+    export function resetSeoBootstrapCacheForTest() {
+      seoBootstrapCache = undefined
+    }
+
+    export function readSeoBootstrap(fullPath) {
+      if (typeof document === 'undefined' || getAdminToken()) return null
+      if (seoBootstrapCache === undefined) {
+        seoBootstrapCache = null
+        const el = document.getElementById('public-seo-bootstrap')
+        if (el && el.textContent) {
+          try {
+            const parsed = JSON.parse(el.textContent)
+            if (
+              parsed &&
+              typeof parsed === 'object' &&
+              typeof parsed.route === 'string' &&
+              typeof parsed.generatedAt === 'number' &&
+              typeof parsed.ttlMs === 'number' &&
+              parsed.responses &&
+              typeof parsed.responses === 'object'
+            ) {
+              seoBootstrapCache = parsed
+            }
+          } catch {
+            seoBootstrapCache = null
+          }
+        }
+      }
+      if (!seoBootstrapCache) return null
+      if (Date.now() - seoBootstrapCache.generatedAt > seoBootstrapCache.ttlMs) return null
+      if (typeof window !== 'undefined' && normalizePathname(window.location.pathname) !== normalizePathname(seoBootstrapCache.route)) {
+        return null
+      }
+      const responses = seoBootstrapCache.responses
+      if (Object.prototype.hasOwnProperty.call(responses, fullPath)) {
+        return responses[fullPath]
+      }
+      return null
+    }
+
+    function publicBootstrapOrRequest(fullPath) {
+      if (getAdminToken()) return apiRequest(fullPath, { cache: 'no-store' })
+      const bootstrapHit = readSeoBootstrap(fullPath)
+      if (bootstrapHit !== null) {
+        publicCache.set(fullPath, { time: Date.now(), data: bootstrapHit })
+        return Promise.resolve(bootstrapHit)
+      }
+      return apiRequest(fullPath)
+    }
+
     export function getCachedPublicSync(endpoint, params = {}) {
       if (getAdminToken()) return null
       const fullPath = buildPublicPath(endpoint, params)
       const mem = publicCache.get(fullPath)
       if (mem && (Date.now() - mem.time < CACHE_TTL)) {
         return mem.data
+      }
+      const bootstrapHit = readSeoBootstrap(fullPath)
+      if (bootstrapHit !== null) {
+        publicCache.set(fullPath, { time: Date.now(), data: bootstrapHit })
+        return bootstrapHit
       }
       const sess = readSessionCache(fullPath)
       if (sess) {
@@ -228,6 +292,11 @@ const SESSION_PREFIX = 'inn_pub_v2:'
       if (hit && (now - hit.time < CACHE_TTL)) {
         return Promise.resolve(hit.data)
       }
+      const bootstrapHit = readSeoBootstrap(fullPath)
+      if (bootstrapHit !== null) {
+        publicCache.set(fullPath, { time: now, data: bootstrapHit })
+        return Promise.resolve(bootstrapHit)
+      }
       const sessHit = readSessionCache(fullPath)
       if (sessHit) {
         publicCache.set(fullPath, sessHit)
@@ -244,15 +313,15 @@ const SESSION_PREFIX = 'inn_pub_v2:'
     export const api = {
       // Public (Áp dụng cache tức thì khi chuyển trang qua lại, F5 sẽ xóa cache)
       getCategories: () => cachedPublicRequest('/categories'),
-      getCategoryBySlug: (slug) => apiRequest(`/categories/${slug}`),
+      getCategoryBySlug: (slug) => publicBootstrapOrRequest(`/categories/${slug}`),
       getProducts: (params = {}) => params.all ? apiRequest(buildPublicPath('/products', params), { cache: 'no-store' }) : cachedPublicRequest('/products', params),
-      getProductBySlug: (slug) => apiRequest(`/products/${slug}`),
+      getProductBySlug: (slug) => publicBootstrapOrRequest(`/products/${slug}`),
       getAdminProduct: (id) => apiRequest(`/products/${encodeURIComponent(id)}?all=1`, { cache: 'no-store' }),
       getBanners: (params = {}) => cachedPublicRequest('/banners', params),
       getPosts: (params = {}) => cachedPublicRequest('/posts', params),
-      getPostBySlug: (slug) => apiRequest(`/posts/${slug}`),
+      getPostBySlug: (slug) => publicBootstrapOrRequest(`/posts/${slug}`),
       submitQuote: (formData) => apiRequest('/quotes', { method: 'POST', body: formData }),
-      getSettings: () => apiRequest('/settings'),
+      getSettings: () => publicBootstrapOrRequest('/settings'),
 
       // Auth
       login: (credentials) => apiRequest('/auth/login', { method: 'POST', body: credentials }),

@@ -2,11 +2,18 @@
 
 namespace App\Providers;
 
+use App\Models\Banner;
+use App\Models\Category;
+use App\Models\Post;
+use App\Models\Product;
+use App\Models\SiteSetting;
+use App\Services\PublicSeoSnapshot;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AppServiceProvider extends ServiceProvider
@@ -54,6 +61,34 @@ class AppServiceProvider extends ServiceProvider
                             'message' => 'Too Many Attempts.',
                         ], 429, $headers);
                     });
+            });
+        }
+
+        foreach ([Product::class, Category::class, Post::class, Banner::class, SiteSetting::class] as $modelClass) {
+            $modelClass::saved(static function ($model): void {
+                if (!config('seo.snapshots')) {
+                    return;
+                }
+                DB::afterCommit(static function () use ($model): void {
+                    try {
+                        PublicSeoSnapshot::invalidateForModel($model, 'saved');
+                    } catch (\Throwable $e) {
+                        Log::warning('seo_snapshot_invalidation_failed', ['error' => $e->getMessage()]);
+                    }
+                });
+            });
+
+            $modelClass::deleted(static function ($model): void {
+                if (!config('seo.snapshots')) {
+                    return;
+                }
+                DB::afterCommit(static function () use ($model): void {
+                    try {
+                        PublicSeoSnapshot::invalidateForModel($model, 'deleted');
+                    } catch (\Throwable $e) {
+                        Log::warning('seo_snapshot_invalidation_failed', ['error' => $e->getMessage()]);
+                    }
+                });
             });
         }
     }
