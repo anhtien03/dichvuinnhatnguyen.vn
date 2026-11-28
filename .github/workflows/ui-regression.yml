@@ -162,6 +162,7 @@ jobs:
           mkdir -p visual-results
           status=0
           UI_BASE_URL=http://127.0.0.1:4174 UI_OUTPUT=visual-results/reference node tests/visual-capture.mjs || status=1
+          UI_BASE_URL=http://127.0.0.1:4174 UI_OUTPUT=visual-results/repeat node tests/visual-capture.mjs || status=1
           UI_BASE_URL=http://127.0.0.1:4173 UI_OUTPUT=visual-results/candidate node tests/visual-capture.mjs || status=1
           node --input-type=module <<'JS' || status=1
           import {readFileSync,writeFileSync,readdirSync,mkdirSync} from 'node:fs';
@@ -170,21 +171,21 @@ jobs:
           const root='visual-results', results=[];
           mkdirSync(root+'/diff',{recursive:true});
           const files=readdirSync(root+'/reference').filter(f=>f.endsWith('.png'));
-          for(const file of files){
+          for(const target of ['repeat','candidate']) for(const file of files){
             try{
               const a=PNG.sync.read(readFileSync(root+'/reference/'+file));
-              const b=PNG.sync.read(readFileSync(root+'/candidate/'+file));
-              if(a.width!==b.width||a.height!==b.height){results.push({file,ok:false,reason:'dimension mismatch',reference:[a.width,a.height],candidate:[b.width,b.height]});continue;}
+              const b=PNG.sync.read(readFileSync(root+'/'+target+'/'+file));
+              if(a.width!==b.width||a.height!==b.height){results.push({target,file,ok:false,reason:'dimension mismatch',reference:[a.width,a.height],candidate:[b.width,b.height]});continue;}
               const diff=new PNG({width:a.width,height:a.height});
               const pixels=pixelmatch(a.data,b.data,diff.data,a.width,a.height,{threshold:0.1,includeAA:false});
               const ratio=pixels/(a.width*a.height);
               results.push({file,pixels,ratio,ok:ratio<=0.001});
-              if(pixels)writeFileSync(root+'/diff/'+file,PNG.sync.write(diff));
+              if(pixels)writeFileSync(root+'/diff/'+target+'-'+file,PNG.sync.write(diff));
             }catch(e){results.push({file,ok:false,reason:e.message})}
           }
           writeFileSync(root+'/comparison.json',JSON.stringify(results,null,2));
           console.log(JSON.stringify(results,null,2));
-          if(files.length!==50||readdirSync(root+'/candidate').filter(f=>f.endsWith('.png')).length!==50||results.some(r=>!r.ok))process.exitCode=1;
+          if(files.length!==50||readdirSync(root+'/repeat').filter(f=>f.endsWith('.png')).length!==50||readdirSync(root+'/candidate').filter(f=>f.endsWith('.png')).length!==50||results.some(r=>!r.ok))process.exitCode=1;
           JS
           exit "$status"
       - uses: actions/upload-artifact@v4
